@@ -1,0 +1,15 @@
+ [
+	{
+	 	"modid": "jiucore",
+	 	"name": "JiuCore",
+	 	"description": "love of small_jiu",
+	 	"version": "1.12.2-1.0.0",
+	 	"mcversion": "1.12.2",
+	 	"url": "https://github.com/SmallJiu/JiuCore",
+	 	"updateUrl": "",
+	 	"authorList": ["small_jiu"],
+	 	"logoFile": "assets/jiucore/mod_logo.png",
+	 	"screenshots": [],
+	 	"dependencies": []
+	}
+ ]
