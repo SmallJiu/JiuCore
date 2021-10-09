@@ -449,6 +449,10 @@ public final class JiuUtils {
 			}
 		}
 		
+		public void registerCompressedOre(String oreDictName, Block blockIn, String materialName) {
+			this.registerCompressedOre(oreDictName, Item.getItemFromBlock(blockIn), materialName);
+		}
+		
 		/**
 		 * Mod 'MultipleCompressedStuffs' use this method
 		 * 
@@ -747,6 +751,10 @@ public final class JiuUtils {
 				list.add(o);
 			}
 			return list;
+		}
+		
+		public String upperCaseToFistLetter(String name) {
+			return name.substring(0, 1).toUpperCase() + name.substring(1);
 		}
 		
 		/**
