@@ -1,0 +1,9 @@
+command.jc.craft.influid.add.0.info=/jc craft influid add <fluid> <[item name]@[amout]@[meta]> <CanRemoveFluid> <[item name]@[amout]@[meta]#[item name]@[amout]@[meta] and more an more>
+command.jc.craft.influid.add.1.info=/jc craft influid add <[item name]@[amout]@[meta]> <[item name]@[amout]@[meta]#[item name]@[amout]@[meta] and more an more> (fluid default use water, default can't remove fluid)
+command.jc.craft.influid.add.error.info=This input recipe is already to add.
+command.jc.craft.influid.add.warn.info=Warning: This is cache recipe, Will be cleared after reloading
+command.jc.craft.influid.remove.0.info=/jc craft influid remove <input name> meta
+command.jc.craft.influid.remove.1.info=/jc craft influid remove <input name>@<meta>
+command.jc.craft.influid.remove.success.info=Remove recipe successful, took%s
+command.jc.craft.influid.reload.0.info=All cache recipe has been remove
+command.jc.craft.influid.reload.1.info=All recipe has been reload, took%s

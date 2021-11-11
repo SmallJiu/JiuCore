@@ -1,4 +1,4 @@
-package cat.jiu.core.api.events.player;
+package cat.jiu.core.api.events.client.player;
 
 import org.lwjgl.input.Mouse;
 
@@ -7,8 +7,8 @@ import cat.jiu.core.api.IJiuEvent;
 public interface IPlayerUseMouseInGameEvent extends IJiuEvent{
 	/**
 	 * 
-	 * key 0 = Left.
-	 * key 1 = right.
+	 * key 0 = Left.<p>
+	 * key 1 = right.<p>
 	 * key 2 = middle.
 	 * 
 	 * @param key Key number, number look this {@link Mouse}

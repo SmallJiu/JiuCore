@@ -1,11 +1,11 @@
-package cat.jiu.core.api.events.player;
+package cat.jiu.core.api.events.client.unfinsh;
 
 import org.lwjgl.input.Keyboard;
 
 import cat.jiu.core.api.IJiuEvent;
 import net.minecraft.client.gui.GuiScreen;
 
-public interface IPlayerUseKeyboardInGuiEvent extends IJiuEvent{
+public interface IPlayerKeepUseKeyboardInGuiEvent extends IJiuEvent{
 	/**
 	 * 
 	 * @param gui Player Open The Gui
@@ -13,5 +13,5 @@ public interface IPlayerUseKeyboardInGuiEvent extends IJiuEvent{
 	 * 
 	 * @author small_jiu
 	 */
-	void onPlayerUseKeyboardInGui(GuiScreen gui, int key);
+	void onPlayerKeepUseKeyboardInGui(GuiScreen gui, int key);
 }

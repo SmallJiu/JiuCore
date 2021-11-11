@@ -1,23 +1,26 @@
 package cat.jiu.core.util;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import cat.jiu.core.JiuCore;
-import cat.jiu.core.util.base.BaseBlockItem;
+import cat.jiu.core.util.base.BaseBlock;
 import cat.jiu.core.util.crafting.Recipes;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -26,6 +29,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -37,19 +41,20 @@ public final class JiuUtils {
 	public static final EntityUtils entity = new EntityUtils();
 	public static final OtherUtils other = new OtherUtils();
 	public static final Recipes recipe = new Recipes(JiuCore.MODID);
-
+	public static final DayUtils day = new DayUtils();
+	
 	public static class ItemUtils{
 		
-		public void itemInit(Item item, String name, CreativeTabs tab, boolean hasSubtypes, List<Item> ITEMS) {
+		public void itemInit(Item item, String modid, String name, CreativeTabs tab, boolean hasSubtypes, List<Item> ITEMS) {
 			item.setHasSubtypes(hasSubtypes);
-			item.setUnlocalizedName("mcs." + name);
+			item.setUnlocalizedName(modid + "." + name);
 			item.setCreativeTab(tab);
-			ForgeRegistries.ITEMS.register(item.setRegistryName(name));
+			ForgeRegistries.ITEMS.register(item.setRegistryName(modid, name));
 			ITEMS.add(item);
 		}
 		
-		public void blockInit(Block block, String name, CreativeTabs tab, float hardness, boolean hasSubType, List<Block> BLOCKS) {
-			block.setUnlocalizedName("mcs." + name);
+		public void blockInit(Block block, String modid, String name, CreativeTabs tab, float hardness, boolean hasSubType, List<Block> BLOCKS) {
+			block.setUnlocalizedName(modid + "." + name);
 			block.setCreativeTab(tab);
 			if(hardness < 0) {
 				block.setHardness(Float.MAX_VALUE);
@@ -57,8 +62,8 @@ public final class JiuUtils {
 				block.setHardness(hardness);
 			}
 			BLOCKS.add(block);
-			ForgeRegistries.BLOCKS.register(block.setRegistryName(name));
-			ForgeRegistries.ITEMS.register(new BaseBlockItem(block, hasSubType).setRegistryName(name));
+			ForgeRegistries.BLOCKS.register(block.setRegistryName(modid, name));
+			ForgeRegistries.ITEMS.register(new BaseBlock.BaseBlockItem(block, hasSubType).setRegistryName(modid, name));
 		}
 		
 		public void removeItem(ItemStack stack) {
@@ -66,6 +71,7 @@ public final class JiuUtils {
 		}
 		
 		public void removeItem(EntityItem stack) {
+			stack.getItem().setCount(0);
 			stack.setDead();
 		}
 		
@@ -77,7 +83,7 @@ public final class JiuUtils {
 				double x = (double)(worldIn.rand.nextFloat() * 0.5F) + 0.25D;
 	            double y = (double)(worldIn.rand.nextFloat() * 0.5F) + 0.25D;
 	            double z = (double)(worldIn.rand.nextFloat() * 0.5F) + 0.25D;
-				EntityItem eitem = new EntityItem(worldIn, (pos.getX() + x), (pos.getY() + y), (pos.getZ() + z), stack);
+				EntityItem eitem = new EntityItem(worldIn, (pos.getX() + x), (pos.getY() + y), (pos.getZ() + z), stack.copy());
 				eitem.setDefaultPickupDelay();
 				worldIn.spawnEntity(eitem);
 			}
@@ -85,18 +91,23 @@ public final class JiuUtils {
 //			Block.spawnAsEntity(worldIn, pos, stack);
 		}
 		
+		public void spawnAsEntity(World worldIn, BlockPos pos, ItemStack[] stack) {
+			spawnAsEntity(worldIn, pos, stack, false);
+		}
+		
 		public void spawnAsEntity(World worldIn, BlockPos pos, ItemStack[] stack, boolean clearList) {
 			for(int i = 0; i < stack.length; ++i) {
 				this.spawnAsEntity(worldIn, pos, stack[i]);
 				if(i == stack.length) {
 					if(clearList) {
-						for(int j = 0; j < stack.length; ++j) {
-							stack[j] = null;
-						}
-						break;
+						stack = new ItemStack[0];
 					}
 				}
 			}
+		}
+		
+		public void spawnAsEntity(World worldIn, BlockPos pos, List<ItemStack> stack) {
+			spawnAsEntity(worldIn, pos, stack, false);
 		}
 		
 		public void spawnAsEntity(World worldIn, BlockPos pos, List<ItemStack> stack, boolean clearList) {
@@ -105,7 +116,6 @@ public final class JiuUtils {
 				if(i == stack.size()) {
 					if(clearList) {
 						stack.clear();
-						break;
 					}
 				}
 			}
@@ -137,12 +147,12 @@ public final class JiuUtils {
 		}
 		
 		public Block getBlockFromItemStack(ItemStack stack) {
-			return isBlock(stack) ? ((ItemBlock)stack.getItem()).getBlock() : Blocks.AIR;
+			return isBlock(stack) ? ((ItemBlock)stack.getItem()).getBlock() : null;
 		}
 		
 		@SuppressWarnings("deprecation")
 		public IBlockState getStateFromItemStack(ItemStack stack) {
-			return isBlock(stack) ? getBlockFromItemStack(stack).getStateFromMeta(stack.getMetadata()) : Blocks.AIR.getDefaultState();
+			return isBlock(stack) ? getBlockFromItemStack(stack).getStateFromMeta(stack.getMetadata()) : null;
 		}
 		
 		public ItemStack getStackFormBlockState(IBlockState state) {
@@ -158,7 +168,7 @@ public final class JiuUtils {
 		}
 		
 		public void fixedItem(ItemStack stack) {
-			this.fixedItem(stack, 1);;
+			this.fixedItem(stack, 1);
 		}
 		
 		public void fixedItem(ItemStack stack, int damage) {
@@ -208,10 +218,16 @@ public final class JiuUtils {
 			}
 		}
 		
+		/**
+		 * {@link #getStackFromString(String, String)}
+		 */
 		public ItemStack getStackFromString(String name) {
 			return this.getStackFromString(name, "1");
 		}
 		
+		/**
+		 * {@link #getStackFromString(String, String, String)}
+		 */
 		public ItemStack getStackFromString(String name, String amout) {
 			return this.getStackFromString(name, amout, "0");
 		}
@@ -282,28 +298,30 @@ public final class JiuUtils {
 		}
 		
 		/**
-		 * default don't check amout
-		 * 
-		 * @param stackA original stack
-		 * @param stackB need to equals stack
-		 * @return if stackA = stackB, return 'true', else return 'false'.
-		 * 
-		 * @author small_jiu
+		 * {@link #equalsStack(ItemStack, ItemStack, boolean)}
 		 */
 		public boolean equalsStack(ItemStack stackA, ItemStack stackB) {
 			return this.equalsStack(stackA, stackB, false);
 		}
 		
 		/**
+		 * {@link #equalsStack(ItemStack, ItemStack, boolean, boolean)}
+		 */
+		public boolean equalsStack(ItemStack stackA, ItemStack stackB, boolean checkAmout) {
+			return this.equalsStack(stackA, stackB, true, checkAmout);
+		}
+		
+		/**
 		 * 
 		 * @param stackA original stack
 		 * @param stackB need to equals stack
-		 * @param checkAmout equals amout?
+		 * @param checkDamage check damage and meta
+		 * @param checkAmout check amout
 		 * @return if stackA = stackB, return 'true', else return 'false'.
 		 * 
 		 * @author small_jiu
 		 */
-		public boolean equalsStack(ItemStack stackA, ItemStack stackB, boolean checkAmout) {
+		public boolean equalsStack(ItemStack stackA, ItemStack stackB, boolean checkDamage, boolean checkAmout) {
 			if(stackA == null || stackB == null) {
 				return false;
 			}
@@ -313,25 +331,47 @@ public final class JiuUtils {
 				if(stackA.getItem().equals(stackB.getItem())) {
 					if(checkAmout) {
 						if(stackA.getCount() == stackB.getCount()) {
-							if(stackA.getMetadata() == stackB.getMetadata()) {
-								return true;
+							if(checkDamage) {
+								if(stackA.getItemDamage() == stackB.getItemDamage()) {
+									return true;
+								}else {
+									return false;
+								}
 							}else {
-								return false;
+								return true;
 							}
 						}else {
 							return false;
 						}
 					}else {
-						if(stackA.getMetadata() == stackB.getMetadata()) {
-							return true;
+						if(checkDamage) {
+							if(stackA.getItemDamage() == stackB.getItemDamage()) {
+								return true;
+							}else {
+								return false;
+							}
 						}else {
-							return false;
+							return true;
 						}
 					}
 				}else {
 					return false;
 				}
 			}
+		}
+		
+		public EntityEquipmentSlot getArmorSlotForID(int id) {
+			if(id > 4) {
+				return null;
+			}
+			EntityEquipmentSlot[] armorSlots = new EntityEquipmentSlot[] {EntityEquipmentSlot.FEET, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.CHEST, EntityEquipmentSlot.HEAD};
+			
+			for(EntityEquipmentSlot slot : armorSlots) {
+				if(slot.getIndex() == id && slot.getSlotIndex() == (id + 1)) {
+					return slot;
+				}
+			}
+			return null;
 		}
 		
 		/**
@@ -568,8 +608,17 @@ public final class JiuUtils {
 		 * 
 		 * @author small_jiu
 		 */
-		public void sendMessage(ICommandSender sender, String key) {
-			sender.sendMessage(new TextComponentTranslation(key, 4)); 
+		public void sendMessage(ICommandSender sender, String key, Object... obj) {
+			if(!sender.getEntityWorld().isRemote) {
+				sender.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4)); 
+			}
+		}
+		
+		public void sendMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
+			if(!sender.getEntityWorld().isRemote) {
+				TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
+				sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
+			}
 		}
 		
 		/*
@@ -586,11 +635,24 @@ public final class JiuUtils {
 		 * 
 		 * @author small_jiu
 		 */
-		public void sendMessageToAllPlayer(World world, String key) {
-			for (int i = 0; i < world.playerEntities.size(); ++i) {
-				EntityPlayer player = world.playerEntities.get(i);
+		public void sendMessageToAllPlayer(World world, String key, Object... obj) {
+			if(!world.isRemote) {
+				for (int i = 0; i < world.playerEntities.size(); ++i) {
+					EntityPlayer player = world.playerEntities.get(i);
 
-				player.sendMessage(new TextComponentTranslation(key, 4));
+					player.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4));
+				}
+			}
+		}
+		
+		public void sendMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
+			if(!world.isRemote) {
+				for (int i = 0; i < world.playerEntities.size(); ++i) {
+					EntityPlayer player = world.playerEntities.get(i);
+
+					TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
+					player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
+				}
 			}
 		}
 		
@@ -633,6 +695,42 @@ public final class JiuUtils {
 			}
 			
 			return date0;
+		}
+		
+		public <K> boolean containItemStackValue(Map<K, ItemStack> strs, ItemStack str) {
+			for(ItemStack stri : strs.values()) {
+				if(item.equalsStack(stri, str)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public <V> boolean containItemStackKey(Map<ItemStack, V> strs, ItemStack str) {
+			for(ItemStack stri : strs.keySet()) {
+				if(item.equalsStack(stri, str)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public <K, V> boolean containKey(Map<K, V> strs, K str) {
+			for(K stri : strs.keySet()) {
+				if(stri.equals(str)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public <K, V> boolean containValue(Map<K, V> strs, V str) {
+			for(V stri : strs.values()) {
+				if(stri.equals(str)) {
+					return true;
+				}
+			}
+			return false;
 		}
 		
 		/**
@@ -738,6 +836,14 @@ public final class JiuUtils {
 			return arg.split("\\" + separator);
 		}
 		
+		public <T> List<T> copyArrayToList(T[] list0){
+			List<T> list = new ArrayList<T>();
+			for(T o : list0) {
+				list.add(o);
+			}
+			return list;
+		}
+		
 		/**
 		 * 
 		 * @param list0 original list
@@ -790,5 +896,90 @@ public final class JiuUtils {
 	        	return potion;
 	        }
 	    }
+	}
+	
+	@SuppressWarnings("deprecation")
+	public static class DayUtils {
+		
+		public static final GlobalFestivalsDay global = new GlobalFestivalsDay();
+		public static final ChineseFestivalsDay chinese = new ChineseFestivalsDay();
+		
+		public int getYear() {
+			Date date = new Date();
+			return (date.getYear() + 1900);
+		}
+		
+		public int getMonth() {
+			Date date = new Date();
+			return (date.getMonth() + 1);
+		}
+		
+		public int getDay() {
+			Date date = new Date();
+			return date.getDay();
+		}
+		
+		public int getHour() {
+			Date date = new Date();
+			return date.getHours();
+		}
+		
+		public int getMinutes() {
+			Date date = new Date();
+			return date.getMinutes();
+		}
+		
+		public int getSecond() {
+			Date date = new Date();
+			return date.getSeconds();
+		}
+		
+		public boolean isTheDay(int month, int day) {
+			return this.getMonth() == month && this.getDay() == day;
+		}
+		
+		public String getDate() {
+			return "[" + this.getYear() + "/" + this.getMonth() + "/" + this.getDay() + " | " + this.getHour() + ":" + this.getMinutes() + ":" + this.getSecond() + "]";
+		}
+		
+		public static class ChineseFestivalsDay {
+			public boolean isChineseNationalDay() {
+				return day.isTheDay(10, 1);
+			}
+			
+			public boolean is918() {
+				return day.isTheDay(9, 18);
+			}
+			
+			public boolean isMartyrMarkDay() {
+				return day.isTheDay(9, 30);
+			}
+			
+			public boolean isNanjingMassacre() {
+				return day.isTheDay(12, 13);
+			}
+			
+			public boolean isChineseLunarNewYear() {
+				return false;
+			}
+		}
+		
+		public static class GlobalFestivalsDay {
+			public boolean isNewYear() {
+				return day.isTheDay(1, 1);
+			}
+			
+			public boolean isFoolsDay() {
+				return day.isTheDay(4, 1);
+			}
+			
+			public boolean isChristmas() {
+				return day.isTheDay(12, 25);
+			}
+			
+			public boolean isHalloween() {
+				return (day.isTheDay(10, 31) || day.isTheDay(10, 30)) || day.isTheDay(11, 1);
+			}
+		}
 	}
 }

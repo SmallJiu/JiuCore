@@ -1,9 +1,12 @@
-package cat.jiu.core.api.events.unfinsh;
+package cat.jiu.core.api.events.client.unfinsh;
 
 import org.lwjgl.input.Mouse;
 
 import cat.jiu.core.api.IJiuEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public interface IPlayerKeepUseMouseInGameEvent extends IJiuEvent{
 	/**
 	 * 

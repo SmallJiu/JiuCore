@@ -4,12 +4,25 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cat.jiu.core.api.IJiuEvent;
+import cat.jiu.core.api.events.game.IInFluidCraftingEvent;
+import cat.jiu.core.commands.CommandJiuCore;
 import cat.jiu.core.proxy.CommonProxy;
+import cat.jiu.core.test.Init;
 import cat.jiu.core.util.JiuCoreEvents;
+import cat.jiu.core.util.base.BaseCreativeTab;
 import cat.jiu.core.util.crafting.InFluidCrafting;
+import cat.jiu.core.util.crafting.Recipes;
+
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(
 	modid = JiuCore.MODID,
@@ -19,13 +32,15 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 	dependencies = "required:forge@[14.23.5.2847,)",
 	acceptedMinecraftVersions = "[1.12.2]"
 )
-public class JiuCore {
+public class JiuCore implements IInFluidCraftingEvent {
 	protected static final Logger logger = LogManager.getLogger(JiuCore.MODID);
 	public final LogOS log = new LogOS();
 	public static final String MODID = "jiucore";
 	public static final String NAME = "JiuCore";
 	public static final String OWNER = "small_jiu";
-	public static final String VERSION = "1.0.0";
+	public static final String VERSION = "1.0.2";
+	public static final boolean TEST_MODEL = false;
+	public static final CreativeTabs CORE = TEST_MODEL ? new BaseCreativeTab("core_test_tab", new ItemStack(Items.DIAMOND), false) : null;
 	
 	@Mod.Instance(value = JiuCore.MODID, owner = JiuCore.OWNER)
 	public static JiuCore instance = new JiuCore();
@@ -39,14 +54,33 @@ public class JiuCore {
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		JiuCoreEvents.addEvent(new InFluidCrafting());
-		
-		/*
-		Don't add like this the recipe! it has a BUG!
-		 
-		new Recipes(MODID).addInFluidCrafting(new ItemStack(Blocks.COAL_BLOCK), 1, new ItemStack(Items.COAL, 9));
-		new Recipes(MODID).addInFluidCrafting(new ItemStack(Items.COAL), 9, new ItemStack(Blocks.COAL_BLOCK));
-		*/
+		JiuCoreEvents.addEvent(new IJiuEvent[] {this, new InFluidCrafting()});
+		if(TEST_MODEL) {
+			new Init();
+		}
+	}
+	
+	@Mod.EventHandler
+	public void init(FMLInitializationEvent event) {
+		for(IJiuEvent events : JiuCoreEvents.getEvents()) {
+			if(events instanceof IInFluidCraftingEvent) {
+				((IInFluidCraftingEvent) events).onAddInFluidCrafting(new Recipes(JiuCore.MODID));
+			}
+		}
+	}
+	
+	@Override
+	public void onAddInFluidCrafting(Recipes rec) {
+		if(TEST_MODEL) {
+			rec.addInFluidCrafting(new ItemStack(Init.TestBlock), new ItemStack[] {new ItemStack(Items.PAPER, 4), new ItemStack(Items.GHAST_TEAR, 4), new ItemStack(Items.DIAMOND_AXE, 4), new ItemStack(Items.BED, 4)});
+			
+//			InFluidCrafting.removeCrafting(new ItemStack(Blocks.CLAY));
+		}
+	}
+	
+	@Mod.EventHandler
+	public void onServerstartting(FMLServerStartingEvent event) {
+		event.registerServerCommand(new CommandJiuCore("jc", false, true, 0));
 	}
 	
 	public static Logger getLogger() {
@@ -54,7 +88,7 @@ public class JiuCore {
 	}
 	
 	// 原木操作系统(雾)
-	public static class LogOS{
+	public static final class LogOS{
 		private final Logger logger;
 		
 		protected LogOS() {
@@ -110,7 +144,7 @@ public class JiuCore {
 		}
 		
 		public void fatal(String msg, Object... params) {
-			this.log(Level.FATAL, msg);
+			this.log(Level.FATAL, msg, params);
 		}
 	}
 }

@@ -1,0 +1,13 @@
+{
+    "variants": {
+		"level=state_0": {
+			"model": "jiucore:test_block/test_block.0"
+		},
+		"level=state_1": {
+			"model": "jiucore:test_block/test_block.1"
+		},
+		"level=state_2": {
+			"model": "jiucore:test_block/test_block.2"
+		}
+	}
+}

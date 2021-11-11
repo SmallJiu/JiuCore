@@ -13,6 +13,7 @@ public interface IPlayerLoggedOutEvent extends IJiuEvent{
 	 * @param pos Entity Pos
 	 * 
 	 * @author small_jiu
+	 * @param dim 
 	 */
-	void onPlayerLoggedOut(EntityPlayer player, World world, BlockPos pos);
+	void onPlayerLoggedOut(EntityPlayer player, World world, BlockPos pos, int dim);
 }

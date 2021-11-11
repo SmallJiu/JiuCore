@@ -11,7 +11,7 @@ public interface IPlayerInFluidEvent extends IJiuEvent{
 	 * 
 	 * @param player Entity Player
 	 * @param world is server world
-	 * @param pos Item Pos
+	 * @param pos Player Pos
 	 * @param state Fluid state
 	 * 
 	 * @author small_jiu

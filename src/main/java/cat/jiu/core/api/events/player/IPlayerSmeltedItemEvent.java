@@ -12,9 +12,9 @@ public interface IPlayerSmeltedItemEvent extends IJiuEvent{
 	 * @param player Entity Player
 	 * @param stack Player craft ItemStack
 	 * @param world Player World
-	 * @param pos Player Pos
+	 * @param ePos Player Pos
 	 * 
 	 * @author small_jiu
 	 */
-	void onPlayerSmeltedItem(EntityPlayer player, ItemStack stack, World world, BlockPos pos);
+	void onPlayerSmeltedItem(EntityPlayer player, ItemStack stack, World world, BlockPos ePos);
 }

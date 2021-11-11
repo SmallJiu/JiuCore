@@ -13,6 +13,7 @@ public interface IEntityJoinWorldEvent extends IJiuEvent{
 	 * @param pos Entity Pos
 	 * 
 	 * @author small_jiu
+	 * @param dim 
 	 */
-	void onEntityJoinWorld(Entity entity, World world, BlockPos pos);
+	void onEntityJoinWorld(Entity entity, World world, BlockPos pos, int dim);
 }

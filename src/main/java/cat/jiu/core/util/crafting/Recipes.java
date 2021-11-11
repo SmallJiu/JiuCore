@@ -1,5 +1,7 @@
 package cat.jiu.core.util.crafting;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 import cat.jiu.core.util.JiuUtils;
@@ -28,30 +30,55 @@ public class Recipes {
 		this.modid = modid;
 	}
 	
-	public void addInFluidCrafting(IBlockState state, ItemStack dropItem, ItemStack giveItem, int consumeItemAmount,  boolean consumeItem, boolean consumeFuid) {
-		InFluidCrafting.addInFluidCrafting(state, dropItem, giveItem, consumeItemAmount, consumeItem, consumeFuid);
+	public String getModid() {
+		return this.modid;
 	}
 	
-	public void addInFluidCrafting(IBlockState state, ItemStack dropItem, ItemStack giveItem, int consumeItemAmount, boolean consumeItem) {
-		this.addInFluidCrafting(state, dropItem, giveItem, consumeItemAmount, consumeItem, false);
+// =========================================================================================//
+	public void addInFluidCrafting(IBlockState fluid, ItemStack input, int inputAmout, List<ItemStack> output, boolean consumeFluid) {
+		InFluidCrafting.addInFluidCrafting(fluid, input, inputAmout, output, consumeFluid);
 	}
 	
-	public void addInFluidCrafting(IBlockState state, ItemStack dropItem, ItemStack giveItem, int consumeItemAmount) {
-		this.addInFluidCrafting(state, dropItem, giveItem, consumeItemAmount, true);
+	public void addInFluidCrafting(IBlockState fluid, ItemStack input, int inputAmout, List<ItemStack> output) {
+		this.addInFluidCrafting(fluid, input, inputAmout, output, false);
 	}
 	
-	public void addInFluidCrafting(IBlockState state, ItemStack dropItem, ItemStack giveItem) {
-		this.addInFluidCrafting(state, dropItem, giveItem, 1);
+	public void addInFluidCrafting(IBlockState fluid, ItemStack input, List<ItemStack> output) {
+		this.addInFluidCrafting(fluid, input, input.getCount(), output);
 	}
 	
-	public void addInFluidCrafting(ItemStack dropItem, int consumeItemAmount, ItemStack giveItem) {
-		this.addInFluidCrafting(Blocks.WATER.getDefaultState(), dropItem, giveItem, consumeItemAmount);
+	public void addInFluidCrafting(ItemStack input, int inputAmout, List<ItemStack> output) {
+		this.addInFluidCrafting(Blocks.WATER.getDefaultState(), input, inputAmout, output);
 	}
 	
-	public void addInFluidCrafting(ItemStack dropItem, ItemStack giveItem) {
-		this.addInFluidCrafting(Blocks.WATER.getDefaultState(), dropItem, giveItem, 1);
+	public void addInFluidCrafting(ItemStack input, List<ItemStack> output) {
+		this.addInFluidCrafting(Blocks.WATER.getDefaultState(), input, input.getCount(), output);
+	}
+// =========================================================================================//
+	public void addInFluidCrafting(IBlockState fluid, ItemStack input, int inputAmout, ItemStack[] output, boolean consumeFuid) {
+		InFluidCrafting.addInFluidCrafting(fluid, input, inputAmout, output, consumeFuid);
 	}
 	
+	public void addInFluidCrafting(IBlockState fluid, ItemStack input, int inputAmout, ItemStack[] output) {
+		this.addInFluidCrafting(fluid, input, inputAmout, output, false);
+	}
+	
+	public void addInFluidCrafting(IBlockState fluid, ItemStack input, ItemStack[] output) {
+		this.addInFluidCrafting(fluid, input, input.getCount(), output);
+	}
+	
+	public void addInFluidCrafting(ItemStack input, int inputAmout, ItemStack[] output) {
+		this.addInFluidCrafting(Blocks.WATER.getDefaultState(), input, inputAmout, output);
+	}
+	
+	public void addInFluidCrafting(ItemStack input, ItemStack[] output) {
+		this.addInFluidCrafting(Blocks.WATER.getDefaultState(), input, input.getCount(), output);
+	}
+	
+	public void addInFluidCrafting(ItemStack input, ItemStack output) {
+		this.addInFluidCrafting(input, new ItemStack[] {output});
+	}
+// =========================================================================================//
 	public void addSmelting(@Nonnull Item in, int inMeta,  @Nonnull ItemStack out) {
 		addSmelting(new ItemStack(in, 1, inMeta), out, 9);
 	}

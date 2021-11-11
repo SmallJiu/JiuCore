@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "jiucore:blocks/test_block/test_block.1"
+    }
+}

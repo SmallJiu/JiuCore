@@ -13,6 +13,7 @@ public interface IPlayerLoggedInEvent extends IJiuEvent{
 	 * @param pos Entity Pos
 	 * 
 	 * @author small_jiu
+	 * @param dim 
 	 */
-	void onPlayerLoggedIn(EntityPlayer player, World world, BlockPos pos);
+	void onPlayerLoggedIn(EntityPlayer player, World world, BlockPos pos, int dim);
 }

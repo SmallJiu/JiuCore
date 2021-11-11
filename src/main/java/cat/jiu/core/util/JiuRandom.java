@@ -16,7 +16,6 @@ public class JiuRandom extends Random {
 	}
 	
 	public JiuRandom(long seed) {
-		super(seed);
 		this.rand = new Random(seed);
 	}
 	
@@ -29,10 +28,10 @@ public class JiuRandom extends Random {
 	}
 	
 	public String nextIP() {
-		int i0 = this.nextInt(255);
-		int i1 = this.nextInt(255);
-		int i2 = this.nextInt(255);
-		int i3 = this.nextInt(255);
+		int i0 = this.nextIntNoZero(254);
+		int i1 = this.nextInt(254);
+		int i2 = this.nextInt(254);
+		int i3 = this.nextIntNoZero(254);
 		
 		return i0+"."+i1+"."+i2+"."+i3;
 	}
@@ -118,9 +117,7 @@ public class JiuRandom extends Random {
 	public int nextIntFromRange(int min, int max) {
 		int i = 0;
 		
-		if(max == min || max == (min+1)) {
-			throw new UnsupportedOperationException(max + " must be big than " + min);
-		}else if(max < min) {
+		if(min > max) {
 			i = this.nextInt(min);
 		}else {
 			i = this.nextInt(max);
@@ -152,17 +149,38 @@ public class JiuRandom extends Random {
 	public int nextInt(int seed) {
 		return rand.nextInt(seed);
 	}
-
+	
+	public boolean nextBoolean(int seed, int chance) {
+		int i = this.nextInt(seed);
+		return i <= chance;
+	}
+	
+	public boolean nextBoolean(int chance) {
+		return this.nextBoolean(100, chance);
+	}
+	
 	public boolean nextBoolean() {
 		return rand.nextBoolean();
 	}
-
+	
 	public void nextBytes(byte[] buf) {
 		rand.nextBytes(buf);
+	}
+	
+	public double nextDoubleNoZero() {
+		double i = rand.nextDouble();
+		
+		return i != 0 ? i : this.nextDoubleNoZero();
 	}
 
 	public double nextDouble() {
 		return rand.nextDouble();
+	}
+	
+	public float nextFloatNoZero() {
+		float i = rand.nextFloat();
+		
+		return i != 0 ? i : this.nextFloatNoZero();
 	}
 
 	public float nextFloat() {
@@ -171,6 +189,12 @@ public class JiuRandom extends Random {
 
 	public double nextGaussian() {
 		return rand.nextGaussian();
+	}
+	
+	public long nextLongNoZero() {
+		long i = rand.nextLong();
+		
+		return i != 0 ? i : this.nextLongNoZero();
 	}
 
 	public long nextLong() {
