@@ -2,13 +2,14 @@ package cat.jiu.core.util.base;
 
 import cat.jiu.core.api.IHasModel;
 import cat.jiu.core.api.IMetaName;
+import cat.jiu.core.api.ISubBlockSerializable;
 import cat.jiu.core.util.RegisterModel;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
@@ -16,7 +17,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
@@ -163,9 +163,8 @@ public class BaseBlock {
 		public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
 			if(this.drops != null) {
 				drops = this.drops;
-			}else {
-				super.getDrops(drops, world, pos, state, fortune);
 			}
+			super.getDrops(drops, world, pos, state, fortune);
 		}
 		
 		@Override
@@ -184,7 +183,7 @@ public class BaseBlock {
 		}
 	}
 	
-	public static abstract class Normal extends Base implements IHasModel, ITileEntityProvider {
+	public static class Normal extends Base implements IHasModel {
 		protected final RegisterModel model = new RegisterModel(this.modid);
 		
 		public Normal(String modid, String nameIn,  Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
@@ -214,41 +213,33 @@ public class BaseBlock {
 			return this;
 		}
 		
+		@SideOnly(Side.CLIENT)
 		@Override
 		public void getItemModel() {
 			if(this.model_res != null) {
 				this.model.registerItemModel(this, this.model_res[0], this.model_res[1]);
 			}else {
-				
+				this.model.registerItemModel(this, "block/normal/" + this.name, this.name);
 			}
 		}
 		
 		public String[] getBlockModelResourceLocation() {
 			return this.model_res;	
 		}
-		
-		@Override
-		public TileEntity createNewTileEntity(World worldIn, int meta) {
-			return null;
-		}
 	}
 	
-	public static abstract class Sub extends Base implements IHasModel, IMetaName, ITileEntityProvider {
+	public static abstract class Sub<T extends Enum<T> & ISubBlockSerializable> extends Base implements IHasModel, IMetaName{
 		protected final RegisterModel model = new RegisterModel(this.modid);
 		
 		public Sub(String modid, String nameIn, Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
 			super(modid, nameIn, materialIn, soundIn, tabIn, hardnessIn, true);
-//			this.setDefaultState(this.blockState.getBaseState().withProperty(this.getPropertyEnum(), this.getPropertyEnum().getValueClass().getEnumConstants()[0]));
+			this.setDefaultState(this.blockState.getBaseState().withProperty(this.getPropertyEnum(), getEnumArray()[0]));
 		}
 		
-		@SuppressWarnings("unused")
 		private String[] model_res = null;
 		
-		public BaseBlock.Sub setBlockModelResourceLocation(int meta, String name, String resname) {
-//			int enumLeg = this.getPropertyEnum().getValueClass().getEnumConstants().length;
-			int enumLeg = this.blockState.getProperties().toArray(new IProperty[0])[0].getValueClass().getEnumConstants().length;
-			int i = meta > enumLeg ? enumLeg : meta;
-			this.model_res = new String[] { Integer.toString(i), name, resname };
+		public BaseBlock.Sub<T> setBlockModelResourceLocation(String name) {
+			this.model_res = new String[] { name};
 			return this;
 		}
 		
@@ -257,63 +248,55 @@ public class BaseBlock {
 			return this.getMetaFromState(state);
 		}
 		
-		/*
-		 * This can't build mod
-		 */
 		/**
 		 * @return block PropertyEnum
 		 * 
 		 * @author small_jiu
-		 *
-		protected abstract <T extends Enum<T> & ISubBlockSerializable> PropertyEnum<T> getPropertyEnum();
+		 */
+		protected abstract PropertyEnum<T> getPropertyEnum();
 		
-		@SuppressWarnings("unchecked")
-		protected <T extends Enum<T> & ISubBlockSerializable> T getEnum(IBlockState state) {
-			return state.getValue((IProperty<T>) this.getPropertyEnum());
+		protected T[] getEnumArray() {
+			return this.getPropertyEnum().getValueClass().getEnumConstants();
 		}
 		
 		@Override
 		public int getMetaFromState(IBlockState state) {
-			return this.getEnum(state).getMeta();
+			return state.getValue((IProperty<T>) this.getPropertyEnum()).getMeta();
 		}
 		
 		@Override
 		public IBlockState getStateFromMeta(int meta) {
-			return this.getDefaultState().withProperty(this.getPropertyEnum(), this.getPropertyEnum().getValueClass().getEnumConstants()[meta]);
+			return this.getDefaultState().withProperty(this.getPropertyEnum(), this.getEnumArray()[meta]);
 		}
 		
 		@Override
 		public String getName(ItemStack stack) {
-			return this.getPropertyEnum().getValueClass().getEnumConstants()[stack.getMetadata()].getName();
+			return this.getEnumArray()[stack.getMetadata()].getName();
 		}
 		
 		@Override
 		protected BlockStateContainer createBlockState() {
 			return new BlockStateContainer(this, new IProperty[] { this.getPropertyEnum() });
 		}
-		*/
 		
 		@Override
-		public abstract int getMetaFromState(IBlockState state);
-		
-		@Override
-		public abstract IBlockState getStateFromMeta(int meta);
-		
-		@Override
-		public abstract String getName(ItemStack stack);
-		
-		@Override
-		protected abstract BlockStateContainer createBlockState();
-		
-		@Override
-		public abstract void getItemModel();
+		public void getItemModel() {
+			if(this.model_res != null) {
+				for(int i = 0; i < this.getEnumArray().length; ++i) {
+					this.model.registerItemModel(this, i, this.model_res[0], this.name + "." + i);
+				}
+			}else {
+				for(int i = 0; i < this.getEnumArray().length; ++i) {
+					this.model.registerItemModel(this, i, "block/sub/" + this.name, this.name + "." + i);
+				}
+			}
+		}
 		
 		@Override
 		public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
 			if(this.getHasSubtypes()){
 				if(this.isInCreativeTab(tab)){
-//					for(int i = 0; i < this.getPropertyEnum().getValueClass().getEnumConstants().length; +i) {
-					for(int i = 0; i < this.blockState.getProperties().toArray(new IProperty[0])[0].getValueClass().getEnumConstants().length; ++i) {
+					for(int i = 0; i < this.getEnumArray().length; ++i) {
 						items.add(new ItemStack(this, 1, i));
 					}
 				}
@@ -321,15 +304,9 @@ public class BaseBlock {
 				super.getSubBlocks(tab, items);
 			}
 		}
-		
-		@Override
-		public TileEntity createNewTileEntity(World worldIn, int meta) {
-			return null;
-		}
 	}
 	
 	public static class BaseBlockItem extends ItemBlock {
-		
 		public BaseBlockItem(Block block, boolean hasSubtypes) {
 			super(block);
 			this.setHasSubtypes(hasSubtypes);
@@ -344,11 +321,12 @@ public class BaseBlock {
 		@SideOnly(Side.CLIENT)
 		@Override
 		public String getItemStackDisplayName(ItemStack stack) {
+			ResourceLocation res = this.block.getRegistryName();
 			if(this.hasSubtypes) {
-				ResourceLocation res = this.block.getRegistryName();
-				return I18n.format("tile." + res.getResourceDomain() + "." + res.getResourcePath()  + "." + stack.getItemDamage());
+				return I18n.format("tile." + res.getResourceDomain() + "." + res.getResourcePath()  + "." + stack.getItemDamage() + ".name");
+			}else {
+				return I18n.format("tile." + res.getResourceDomain() + "." + res.getResourcePath() + ".name");
 			}
-			return super.getItemStackDisplayName(stack);
 		}
 	}
 }

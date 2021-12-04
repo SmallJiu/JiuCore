@@ -2,6 +2,11 @@ package cat.jiu.core.test;
 
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.util.base.BaseItem;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.world.World;
 
 public class ItemFoodTest extends BaseItem.Food{
 	public ItemFoodTest() {
@@ -9,4 +14,17 @@ public class ItemFoodTest extends BaseItem.Food{
 		this.setMaxMetadata(5);
 		Init.ITEMS.add(this);
 	}
+	
+	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+		ItemStack stack = player.getHeldItem(hand);
+		stack.damageItem(1, player);
+//		stack.setItemDamage(stack.getItemDamage() - 1);
+		return super.onItemRightClick(world, player, hand);
+	}
+	/*
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand, EntityEquipmentSlot slot) {
+		return null;
+	}
+	*/
 }

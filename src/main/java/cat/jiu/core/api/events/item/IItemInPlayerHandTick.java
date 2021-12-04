@@ -4,6 +4,6 @@ import cat.jiu.core.api.IJiuEvent;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
-public interface IItemInPlayerInventoryTick extends IJiuEvent{
-	void onItemInPlayerInventoryTick(EntityPlayer player, ItemStack invStack, int slot);
+public interface IItemInPlayerHandTick extends IJiuEvent{
+	void onItemInPlayerHandTick(EntityPlayer player, ItemStack mainHand, ItemStack offHand);
 }

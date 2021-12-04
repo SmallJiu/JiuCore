@@ -6,15 +6,15 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public class JiuEnergyStorage extends EnergyStorage {
 	public JiuEnergyStorage() {
-		this(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 0);
+		this(Integer.MAX_VALUE, 1000, 1000, 0);
 	}
 	
 	public JiuEnergyStorage(int maxEnergy) {
-		this(maxEnergy, Integer.MAX_VALUE, Integer.MAX_VALUE, 0);
+		this(maxEnergy, 1000, 1000, 0);
 	}
 	
 	public JiuEnergyStorage(int maxEnergy, int maxInput) {
-		this(maxEnergy, maxInput, Integer.MAX_VALUE, 0);
+		this(maxEnergy, maxInput, 1000, 0);
 	}
 	
 	public JiuEnergyStorage(int maxEnergy, int maxInput, int maxOutput) {
@@ -26,25 +26,6 @@ public class JiuEnergyStorage extends EnergyStorage {
 		super(maxEnergy, maxInput, maxOutput, energy);
 	}
 	
-	private ItemStack stack = null;
-	
-	public JiuEnergyStorage(ItemStack stack) {
-		this(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, getEnergy(stack));
-	}
-	
-	public JiuEnergyStorage(ItemStack stack, int maxEnergy) {
-		this(maxEnergy, Integer.MAX_VALUE, Integer.MAX_VALUE, getEnergy(stack));
-	}
-	
-	public JiuEnergyStorage(ItemStack stack, int maxEnergy, int maxInput) {
-		this(maxEnergy, maxInput, Integer.MAX_VALUE, getEnergy(stack));
-	}
-	
-	public JiuEnergyStorage(ItemStack stack, int maxEnergy, int maxInput, int maxOutput) {
-		super(maxEnergy, maxInput, maxOutput, getEnergy(stack));
-		this.stack = stack;
-	}
-	
 	@Override
 	public int receiveEnergy(int maxReceive, boolean simulate) {
 		return super.receiveEnergy(maxReceive, simulate);
@@ -52,6 +33,10 @@ public class JiuEnergyStorage extends EnergyStorage {
 	
 	public int inputEnergy(int energy, boolean simulate) {
 		return this.receiveEnergy(energy, simulate);
+	}
+	
+	public int addEnergy(int energy) {
+		return this.inputEnergy(energy, false);
 	}
 	
 	@Override
@@ -65,38 +50,11 @@ public class JiuEnergyStorage extends EnergyStorage {
 	
 	@Override
 	public int getEnergyStored() {
-		return this.stack != null ? getEnergy(this.stack) : this.energy;
+		return this.energy;
 	}
 	
-	public int setEnergyStored(int i) {
-		int j = (this.energy = i) >= this.capacity ? this.capacity : i;
-		
-		this.energy = j;
-		if(!this.stack.isEmpty()) {
-			setEnergy(this.stack, j);
-		}
-		return j;
-	}
-	
-	public int addEnergyStored() {
-		return this.addEnergyStored(1);
-	}
-	
-	public int addEnergyStored(int i) {
-		int j = (this.energy + i) > this.capacity ? this.capacity : (this.energy + i);
-		this.energy = j;
-		if(!this.stack.isEmpty()) {
-			addEnergy(stack, j);
-		}
-		return j;
-	}
-	
-	public int consumesEnergyStored() {
-		return this.consumesEnergyStored(1);
-	}
-	
-	public int consumesEnergyStored(int i) {
-		this.energy = (this.energy - i) <= 0 ? 0 : (this.energy - i);
+	public int setEnergyStored(int energy) {
+		this.energy = energy;
 		return this.energy;
 	}
 	
@@ -110,15 +68,6 @@ public class JiuEnergyStorage extends EnergyStorage {
 		return this;
 	}
 	
-	public JiuEnergyStorage addMaxEnergyStored() {
-		return this.addMaxEnergyStored(1);
-	}
-	
-	public JiuEnergyStorage addMaxEnergyStored(int i) {
-		this.capacity = (this.capacity + i);
-		return this;
-	}
-	
 	@Override
 	public boolean canReceive() {
 		return super.canReceive();
@@ -128,8 +77,8 @@ public class JiuEnergyStorage extends EnergyStorage {
 		return this.canReceive();
 	}
 	
-	public JiuEnergyStorage setMaxInput(int i) {
-		this.maxReceive = i;
+	public JiuEnergyStorage setMaxInput(int energy) {
+		this.maxReceive = energy;
 		return this;
 	}
 	
@@ -137,8 +86,8 @@ public class JiuEnergyStorage extends EnergyStorage {
 		return this.addMaxInput(1);
 	}
 	
-	public JiuEnergyStorage addMaxInput(int i) {
-		this.maxReceive = (this.maxReceive + i);
+	public JiuEnergyStorage addMaxInput(int energy) {
+		this.maxReceive = (this.maxReceive + energy);
 		return this;
 	}
 	
@@ -151,8 +100,8 @@ public class JiuEnergyStorage extends EnergyStorage {
 		return this.canExtract();
 	}
 	
-	public JiuEnergyStorage setMaxOutput(int i) {
-		this.maxExtract = i;
+	public JiuEnergyStorage setMaxOutput(int energy) {
+		this.maxExtract = energy;
 		return this;
 	}
 	
@@ -160,8 +109,8 @@ public class JiuEnergyStorage extends EnergyStorage {
 		return this.addMaxOutput(1);
 	}
 	
-	public JiuEnergyStorage addMaxOutput(int i) {
-		this.maxExtract = (this.maxExtract + i);
+	public JiuEnergyStorage addMaxOutput(int energy) {
+		this.maxExtract = (this.maxExtract + energy);
 		return this;
 	}
 	

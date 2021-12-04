@@ -14,13 +14,17 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+@SuppressWarnings("rawtypes")
 @EventBusSubscriber
 public class Init {
 	public static final List<Block> BLOCKS = new ArrayList<Block>();
 	public static final List<Item> ITEMS = new ArrayList<Item>();
 	
 	public static final BaseBlock.Sub TestBlock = JiuCore.TEST_MODEL ? new BlockTest() : null;
+	public static final BaseBlock.Normal TestBlockNormal = JiuCore.TEST_MODEL ? new BlockTestNormal() : null;
 	public static final BaseItem.Food TestFood = JiuCore.TEST_MODEL ? new ItemFoodTest() : null;
+	public static final BaseItem.Normal TestItem = JiuCore.TEST_MODEL ? new ItemSubTest() : null;
+	public static final BaseItem.Normal BUBBLE = JiuCore.TEST_MODEL ? new Bubble() : null;
 	
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void onBlockRegister(RegistryEvent.Register<Block> event) {

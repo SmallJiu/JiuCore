@@ -42,11 +42,11 @@ public class BaseItem {
 		}
 		
 		public Normal(String modid, String name, boolean hasSubtypes) {
-			this(name, name, CreativeTabs.MISC, hasSubtypes);
+			this(modid, name, CreativeTabs.MISC, hasSubtypes);
 		}
 		
 		public Normal(String modid, String name, CreativeTabs tab) {
-			this(name, name, tab, false);
+			this(modid, name, tab, false);
 		}
 		
 		public Normal(String modid, String name) {
@@ -81,10 +81,10 @@ public class BaseItem {
 		public void getItemModel() {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
-					this.model.registerItemModel(this, i, "normal/" + this.name + "/", this.name + "." + i);
+					this.model.registerItemModel(this, i, "normal/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "normal/", this.name);
+				this.model.registerItemModel(this, "normal", this.name);
 			}
 		}
 		
@@ -92,14 +92,13 @@ public class BaseItem {
 		@Override
 		public String getItemStackDisplayName(ItemStack stack) {
 			if(this.meta > 1) {
-				return I18n.format("item." + this.modid + "." + this.name + "." + stack.getMetadata());
+				return I18n.format("item." + this.modid + "." + this.name + "." + stack.getMetadata() + ".name");
 			}
 			return super.getItemStackDisplayName(stack);
 		}
 	}
 	
 	public static class Food extends ItemFood implements IHasModel{
-		
 		protected final String name;
 		protected final CreativeTabs tab;
 		protected final String modid;
@@ -163,10 +162,10 @@ public class BaseItem {
 		public void getItemModel() {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
-					this.model.registerItemModel(this, i, "foods/" + this.name + "/", this.name + "." + i);
+					this.model.registerItemModel(this, i, "foods/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "foods/", this.name);
+				this.model.registerItemModel(this, "foods", this.name);
 			}
 		}
 		
@@ -174,7 +173,7 @@ public class BaseItem {
 		@Override
 		public String getItemStackDisplayName(ItemStack stack) {
 			if(this.meta > 1) {
-				return I18n.format("item." + this.modid + "." + this.name + "." + stack.getMetadata());
+				return I18n.format("item." + this.modid + "." + this.name + "." + stack.getMetadata() + ".name");
 			}
 			return super.getItemStackDisplayName(stack);
 		}
@@ -237,10 +236,10 @@ public class BaseItem {
 		public void getItemModel() {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
-					this.model.registerItemModel(this, i, "tools/" + this.name + "/", this.name + "." + i);
+					this.model.registerItemModel(this, i, "tools/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/", this.name);
+				this.model.registerItemModel(this, "tools", this.name);
 			}
 		}
 		
@@ -248,7 +247,7 @@ public class BaseItem {
 		@Override
 		public String getItemStackDisplayName(ItemStack stack) {
 			if(this.meta > 1) {
-				return I18n.format("item." + this.modid + "." + this.name + "." + stack.getMetadata());
+				return I18n.format("item." + this.modid + "." + this.name + "." + stack.getMetadata() + ".name");
 			}
 			return super.getItemStackDisplayName(stack);
 		}
@@ -321,10 +320,10 @@ public class BaseItem {
 		public void getItemModel() {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
-					this.model.registerItemModel(this, i, "tools/sword/" + this.name + "/", this.name + "." + i);
+					this.model.registerItemModel(this, i, "tools/sword/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/sword/", this.name);
+				this.model.registerItemModel(this, "tools/sword", this.name);
 			}
 		}
 	}
@@ -392,10 +391,10 @@ public class BaseItem {
 		public void getItemModel() {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
-					this.model.registerItemModel(this, i, "tools/pickaxe/" + this.name + "/", this.name + "." + i);
+					this.model.registerItemModel(this, i, "tools/pickaxe/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/pickaxe/", this.name);
+				this.model.registerItemModel(this, "tools/pickaxe", this.name);
 			}
 		}
 		

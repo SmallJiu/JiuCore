@@ -4,7 +4,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;;
 
-public class CommonProxy {
+public class ServerProxy {
 	
 	public void preInit(FMLPreInitializationEvent event) {
 		

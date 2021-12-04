@@ -7,6 +7,8 @@ import cat.jiu.core.api.events.item.IItemInFluidTickEvent;
 import cat.jiu.core.util.JiuUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -137,17 +139,23 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 					if(JiuUtils.item.equalsStack(input, stack)) {
 						// check EntityItemStack amout
 						if(stack.getCount() >= inputAmout) {
-							stack.setCount(stack.getCount() - inputAmout);
+							if(stack.getItem() == Items.PAPER) {
+								stack.shrink(inputAmout);
+							}
+							
+//							stack.shrink(inputAmout);
+							if(world.getBlockState(pos.up()) != Blocks.AIR.getDefaultState()) {
+//								item.setPosition(pos.getX(), pos.getY() + 1.5, pos.getZ());
+							}
 							
 							// spawn item with the pos
-							JiuUtils.item.spawnAsEntity(world, pos, output, false);
+							JiuUtils.item.spawnAsEntity(world, item.getPosition(), output);
 //							JiuCore.instance.log.info(type.toString());
 							
 							// if fluid can be consume, set fluid to air
 							if(consumeFuid) {
 								world.setBlockToAir(pos);
 							}
-							break;
 						}
 					}
 				}
@@ -155,7 +163,7 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 		}
 	}
 	
-	public static class InFluidCraftingRecipeType {
+	public static final class InFluidCraftingRecipeType {
 		private final IBlockState fluid;
 		private final ItemStack input;
 		private final int inputAmout;

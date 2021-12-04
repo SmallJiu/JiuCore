@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import cat.jiu.core.api.IJiuEvent;
 import cat.jiu.core.api.events.game.IInFluidCraftingEvent;
 import cat.jiu.core.commands.CommandJiuCore;
-import cat.jiu.core.proxy.CommonProxy;
+import cat.jiu.core.proxy.ServerProxy;
 import cat.jiu.core.test.Init;
 import cat.jiu.core.util.JiuCoreEvents;
 import cat.jiu.core.util.base.BaseCreativeTab;
@@ -20,7 +20,7 @@ import net.minecraft.item.ItemStack;
 
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
@@ -38,7 +38,7 @@ public class JiuCore implements IInFluidCraftingEvent {
 	public static final String MODID = "jiucore";
 	public static final String NAME = "JiuCore";
 	public static final String OWNER = "small_jiu";
-	public static final String VERSION = "1.0.2";
+	public static final String VERSION = "1.0.3-202112050055";
 	public static final boolean TEST_MODEL = false;
 	public static final CreativeTabs CORE = TEST_MODEL ? new BaseCreativeTab("core_test_tab", new ItemStack(Items.DIAMOND), false) : null;
 	
@@ -47,10 +47,10 @@ public class JiuCore implements IInFluidCraftingEvent {
 	
 	@SidedProxy(
 		clientSide = "cat.jiu.core.proxy.ClientProxy",
-		serverSide = "cat.jiu.core.proxy.CommonProxy",
+		serverSide = "cat.jiu.core.proxy.ServerProxy",
 		modId = JiuCore.MODID
 	)
-	public static CommonProxy proxy;
+	public static ServerProxy proxy;
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -61,7 +61,7 @@ public class JiuCore implements IInFluidCraftingEvent {
 	}
 	
 	@Mod.EventHandler
-	public void init(FMLInitializationEvent event) {
+	public void loadComplete(FMLLoadCompleteEvent event) {
 		for(IJiuEvent events : JiuCoreEvents.getEvents()) {
 			if(events instanceof IInFluidCraftingEvent) {
 				((IInFluidCraftingEvent) events).onAddInFluidCrafting(new Recipes(JiuCore.MODID));
@@ -72,7 +72,8 @@ public class JiuCore implements IInFluidCraftingEvent {
 	@Override
 	public void onAddInFluidCrafting(Recipes rec) {
 		if(TEST_MODEL) {
-			rec.addInFluidCrafting(new ItemStack(Init.TestBlock), new ItemStack[] {new ItemStack(Items.PAPER, 4), new ItemStack(Items.GHAST_TEAR, 4), new ItemStack(Items.DIAMOND_AXE, 4), new ItemStack(Items.BED, 4)});
+			rec.addInFluidCrafting(new ItemStack(Init.TestBlock), new ItemStack[] {new ItemStack(Items.PAPER, 1)});
+			rec.addInFluidCrafting(new ItemStack(Items.PAPER), new ItemStack[] {new ItemStack(Items.AIR, 1)});
 			
 //			InFluidCrafting.removeCrafting(new ItemStack(Blocks.CLAY));
 		}

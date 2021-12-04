@@ -17,7 +17,11 @@ public class BaseCommand {
 		protected final String modid;
 		
 		public CommandNormal(String name, String modid){
-			this(name, modid, true, 0);
+			this(name, modid, 0);
+		}
+		
+		public CommandNormal(String name, String modid, int level){
+			this(modid, modid, true, level);
 		}
 		
 		public CommandNormal(String name, String modid, boolean checkPermission, int level){
@@ -44,8 +48,8 @@ public class BaseCommand {
 		
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-//			return this.checkPermission;
-			return super.checkPermission(server, sender);
+			return this.checkPermission;
+//			return super.checkPermission(server, sender);
 		}
 		
 		@Override

@@ -8,19 +8,14 @@ import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseBlock;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-public class BlockTest extends BaseBlock.Sub {
-	private static final PropertyEnum<TestModSubtypes> VARIANT = PropertyEnum.create("level", TestModSubtypes.class);
+public class BlockTest extends BaseBlock.Sub<BlockTest.TestModSubtypes> {
 	public BlockTest() {
 		super(JiuCore.MODID, "test_block", Material.ANVIL, SoundType.ANVIL, JiuCore.CORE, -1);
-		this.setDefaultState(this.blockState.getBaseState().withProperty(VARIANT, VARIANT.getValueClass().getEnumConstants()[0]));
 		Init.BLOCKS.add(this);
 	}
 	
@@ -30,30 +25,8 @@ public class BlockTest extends BaseBlock.Sub {
 	}
 	
 	@Override
-	public int getMetaFromState(IBlockState state) {
-		return state.getValue(VARIANT).getMeta();
-	}
-	
-	@Override
-	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(VARIANT, VARIANT.getValueClass().getEnumConstants()[meta]);
-	}
-	
-	@Override
-	public String getName(ItemStack stack) {
-		return VARIANT.getValueClass().getEnumConstants()[stack.getMetadata()].getName();
-	}
-	
-	@Override
-	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[] { VARIANT });
-	}
-	
-	@Override
-	public void getItemModel() {
-		for(int i = 0; i < VARIANT.getValueClass().getEnumConstants().length; ++i) {
-			this.model.registerItemModel(this, i, "block/normal/" + this.name, this.name + "." + i);
-		}
+	protected PropertyEnum<TestModSubtypes> getPropertyEnum() {
+		return PropertyEnum.create("level", TestModSubtypes.class);
 	}
 	
 	public enum TestModSubtypes implements ISubBlockSerializable {
@@ -82,6 +55,6 @@ public class BlockTest extends BaseBlock.Sub {
 		@Override
 		public int getMeta() { return this.meta; }
 		@Override
-		public String getName() { return "state_" + meta; }
+		public String getName() { return "state_" + this.meta; }
 	}
 }

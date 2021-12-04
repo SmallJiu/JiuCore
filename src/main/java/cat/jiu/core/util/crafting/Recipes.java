@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import cat.jiu.core.util.JiuUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -54,6 +53,7 @@ public class Recipes {
 	public void addInFluidCrafting(ItemStack input, List<ItemStack> output) {
 		this.addInFluidCrafting(Blocks.WATER.getDefaultState(), input, input.getCount(), output);
 	}
+	
 // =========================================================================================//
 	public void addInFluidCrafting(IBlockState fluid, ItemStack input, int inputAmout, ItemStack[] output, boolean consumeFuid) {
 		InFluidCrafting.addInFluidCrafting(fluid, input, inputAmout, output, consumeFuid);
@@ -78,17 +78,34 @@ public class Recipes {
 	public void addInFluidCrafting(ItemStack input, ItemStack output) {
 		this.addInFluidCrafting(input, new ItemStack[] {output});
 	}
+	
 // =========================================================================================//
+	public void addSmelting(@Nonnull Item in, @Nonnull ItemStack out) {
+		addSmelting(new ItemStack(in, 1, 0), out, 9);
+	}
+	
 	public void addSmelting(@Nonnull Item in, int inMeta,  @Nonnull ItemStack out) {
 		addSmelting(new ItemStack(in, 1, inMeta), out, 9);
+	}
+	
+	public void addSmelting(@Nonnull Block in, @Nonnull ItemStack out) {
+		addSmelting(new ItemStack(in, 1, 0), out, 9);
 	}
 	
 	public void addSmelting(@Nonnull Block in, int inMeta,  @Nonnull ItemStack out) {
 		addSmelting(new ItemStack(in, 1, inMeta), out, 9);
 	}
 
+	public void addSmelting(@Nonnull Item in, @Nonnull ItemStack out, float xp) {
+		addSmelting(new ItemStack(in, 1, 0), out, xp);
+	}
+	
 	public void addSmelting(@Nonnull Item in, int inMeta,  @Nonnull ItemStack out, float xp) {
 		addSmelting(new ItemStack(in, 1, inMeta), out, xp);
+	}
+	
+	public void addSmelting(@Nonnull Block in, @Nonnull ItemStack out, float xp) {
+		addSmelting(new ItemStack(in, 1, 0), out, xp);
 	}
 	
 	public void addSmelting(@Nonnull Block in, int inMeta,  @Nonnull ItemStack out, float xp) {
@@ -99,34 +116,28 @@ public class Recipes {
 		GameRegistry.addSmelting(in, out, xp);
 	}
 	
-	public void add1x1RecipesWithOreDictionary(ItemStack out, ItemStack in){
-		if(JiuUtils.item.getOreDict(in).isEmpty()) {
-			addShapedRecipe(out, "X", 'X', in);
-		}else {
-			for(String ore : JiuUtils.item.getOreDict(in)) {
-				addShapedRecipe(out, "X", 'X', ore);
-			}
-		}
+	public void add1x1RecipesWithOreDictionary(ItemStack out, String ore) {
+		addShapedRecipe(out, "X", 'X', ore);
 	}
 	
-	public void add2x2AllRecipesWithOreDictionary(ItemStack output, ItemStack input) {
-		if(JiuUtils.item.getOreDict(input).isEmpty()) {
-			addShapedRecipe(output, "XX", "XX", 'X', input);
-		}else {
-			for(String ore : JiuUtils.item.getOreDict(input)) {
-				addShapedRecipe(output, "XX", "XX", 'X', ore);
-			}
-		}
+	public void add1x1Recipes(ItemStack out, ItemStack in) {
+		addShapedRecipe(out, "X", 'X', in);
+	}
+	
+	public void add2x2AllRecipesWithOreDictionary(ItemStack output, String ore) {
+		addShapedRecipe(output, "XX", "XX", 'X', ore);
+	}
+	
+	public void add2x2AllRecipes(ItemStack output, ItemStack input) {
+		addShapedRecipe(output, "XX", "XX", 'X', input);
     }
 	
-	public void add3x3AllRecipesWithOreDictionary(ItemStack output, ItemStack input) {
-		if(JiuUtils.item.getOreDict(input).isEmpty()) {
-			addShapedRecipe(output, "XXX", "XXX", "XXX", 'X', input);
-		}else {
-			for(String ore : JiuUtils.item.getOreDict(input)) {
-				addShapedRecipe(output, "XXX", "XXX", "XXX", 'X', ore);
-			}
-		}
+	public void add3x3AllRecipesWithOreDictionary(ItemStack output, String ore) {
+		addShapedRecipe(output, "XXX", "XXX", "XXX", 'X', ore);
+	}
+	
+	public void add3x3AllRecipes(ItemStack output, ItemStack input) {
+		addShapedRecipe(output, "XXX", "XXX", "XXX", 'X', input);
     }
 	
 	public void addShapedRecipes(ItemStack output, ItemStack input) {
