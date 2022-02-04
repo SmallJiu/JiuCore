@@ -62,9 +62,9 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 	
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-		EnergyUtils util = new EnergyUtils(stack, this.energyName);
+		EnergyUtils util = new EnergyUtils();
 		NBTTagCompound nbt = stack.getTagCompound() != null ? stack.getTagCompound() : new NBTTagCompound();
-		tooltip.add("JiuE: " + util.getEnergyWihtLong() + "/" +  Long.MAX_VALUE + " | " + nbt.getBoolean("TestEnergy"));
+		tooltip.add("JiuE: " + util.getFEEnergy(stack) + "/" +  Long.MAX_VALUE + " | " + nbt.getBoolean("TestEnergy"));
 		tooltip.add(nbt.getInteger("WorldM") + "/" + nbt.getInteger("WorldS") + "/" + nbt.getInteger("WorldTick"));
 		tooltip.add("NBTValue: " + nbt.toString());
 		tooltip.add("========");
@@ -81,7 +81,7 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 	}
 	
 	private void addEnergy(EnergyUtils util, ItemStack stack) {
-		util.addEnergy(1L);
+		util.inputFEEnergy(stack, 1);
 	}
 	
 	@Override
@@ -90,10 +90,10 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			NBTTagCompound nbt = invStack.getTagCompound() != null ? invStack.getTagCompound() : new NBTTagCompound();
 			if(nbt.getBoolean("TestEnergy")) {
 				if(!JiuUtils.item.equalsStack(player.getHeldItemMainhand(), invStack)) {
-					EnergyUtils util = new EnergyUtils(invStack, this.energyName);
+					EnergyUtils util = new EnergyUtils();
 					this.addEnergy(util, invStack);
 					
-					JiuUtils.entity.sendMessage(player, util.getEnergyWihtLong() +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
+					JiuUtils.entity.sendClientMessage(player, util.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
 				}
 			}
 		}
@@ -105,15 +105,15 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			NBTTagCompound mainnbt = mainHand.getTagCompound() != null ? mainHand.getTagCompound() : new NBTTagCompound();
 			NBTTagCompound offnbt = offHand.getTagCompound() != null ? offHand.getTagCompound() : new NBTTagCompound();
 			if(mainnbt.getBoolean("TestEnergy") || offnbt.getBoolean("TestEnergy")) {
-				EnergyUtils mainutil = new EnergyUtils(mainHand, this.energyName);
-				EnergyUtils offutil = new EnergyUtils(offHand, this.energyName);
+				EnergyUtils mainutil = new EnergyUtils();
+				EnergyUtils offutil = new EnergyUtils();
 				
 				if(mainHand.getItem() == this) {
 					this.addEnergy(mainutil, mainHand);
-					JiuUtils.entity.sendMessage(player, mainutil.getEnergyWihtLong()+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
+					JiuUtils.entity.sendClientMessage(player, mainutil.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
 				}else if(offHand.getItem() == this) {
 					this.addEnergy(offutil, offHand);
-					JiuUtils.entity.sendMessage(player, offutil.getEnergyWihtLong()+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
+					JiuUtils.entity.sendClientMessage(player, offutil.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
 				}
 			}
 		}
@@ -125,9 +125,9 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			NBTTagCompound nbt = item.getItem().getTagCompound() != null ? item.getItem().getTagCompound() : new NBTTagCompound();
 			if(nbt.getBoolean("TestEnergy")) {
 				if(JiuUtils.item.equalsStack(item.getItem(), new ItemStack(this), false, false)) {
-					EnergyUtils util = new EnergyUtils(item.getItem(), this.energyName);
+					EnergyUtils util = new EnergyUtils();
 					this.addEnergy(util, item.getItem());
-					JiuUtils.entity.sendMessageToAllPlayer(world, util.getEnergyWihtLong()+": World", TextFormatting.GREEN);
+					JiuUtils.entity.sendClientMessageToAllPlayer(world, util.getFEEnergy(item.getItem())+": World", TextFormatting.GREEN);
 				}
 			}else {
 				if(item.getItem().getItem() == this || item.getItem().getItem() == Item.getItemFromBlock(Init.TestBlock)) {
@@ -166,7 +166,7 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 									item.setPosition(tpos.getX(), tpos.getY(), tpos.getZ());
 								}
 								
-								JiuUtils.entity.sendMessageToAllPlayer(world, "In World: Meta: " + item.getItem().getMetadata() + " Y: " + item.getPosition().getY(), TextFormatting.GREEN);
+								JiuUtils.entity.sendClientMessageToAllPlayer(world, "In World: Meta: " + item.getItem().getMetadata() + " Y: " + item.getPosition().getY(), TextFormatting.GREEN);
 								item.getItem().setCount(0);
 							}
 						}
@@ -175,4 +175,5 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			}
 		}
 	}
+	
 }

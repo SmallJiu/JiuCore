@@ -1,17 +1,117 @@
 package cat.jiu.core.util.helpers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Lists;
+
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.util.JiuUtils;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 
 public final class OtherUtils {
+	public long parseTick(int s, int tick) {
+		return this.parseTick(0, s, tick);
+	}
+	
+	public long parseTick(int m, int s, int tick) {
+		return this.parseTick(0, m, s, tick);
+	}
+	
+	public long parseTick(int h, int m, int s, int tick) {
+		return this.parseTick(0, h, m, s, tick);
+	}
+	
+	public long parseTick(int day, int h, int m, int s, int tick) {
+		return (((((((day*24)+h)*60)+m)*60)+s)*20)+tick;
+	}
+	
+	public boolean runBatFile(String file, boolean canEjectWindow) {
+		String out = canEjectWindow ? "/b " : "";
+		return this.runSystemCommand("cmd /c start " + out + file);
+	}
+	
+	public boolean runSystemCommand(String cmd) {
+		Runtime rt = Runtime.getRuntime();
+		Process ps = null;
+		
+		try {
+			ps = rt.exec(cmd);
+			ps.waitFor();
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		boolean lag = ps.exitValue() == 0;
+		ps.destroy();
+		ps = null;
+		
+		return lag;
+	}
+	
+	public String formatNumber(long value) {
+		if(value >= 1000000000000000000L) {
+			return (Math.round((float)value / 100000000.0)) / 10000000000.0 + "E";
+		}
+		if(value >= 1000000000000000L) {
+			return (Math.round((float)value / 100000000.0)) / 10000000.0 + "P";
+		}
+		if(value >= 1000000000000L) {
+			return (Math.round((float)value / 1000000.0) / 1000000.0) + "T";
+		}
+		if(value >= 1000000000L) {
+			return (Math.round((float)value / 100000.0)) / 10000.0 + "G";
+		}
+		if(value >= 1000000L) {
+			return (Math.round((float)value / 1000.0) / 1000.0) + "M";
+		}
+		if(value > 1000L) {
+			return ((Math.round(value)) / 1000.0) + "K";
+		}
+		if(value < 1000L) {
+			return Long.toString(value);
+		}
+		return "to big!";
+	}
+	
+	public Integer[] toArray(int[] args) {
+		Integer[] arg = new Integer[args.length];
+		for (int i = 0; i < arg.length; i++) {
+			arg[i] = args[i];
+		}
+		return arg;
+	}
+	
+	public Long[] toArray(long[] args) {
+		Long[] arg = new Long[args.length];
+		for (int i = 0; i < arg.length; i++) {
+			arg[i] = args[i];
+		}
+		return arg;
+	}
+	
+	public Double[] toArray(double[] args) {
+		Double[] arg = new Double[args.length];
+		for (int i = 0; i < arg.length; i++) {
+			arg[i] = args[i];
+		}
+		return arg;
+	}
+	
+	public Float[] toArray(float[] args) {
+		Float[] arg = new Float[args.length];
+		for (int i = 0; i < arg.length; i++) {
+			arg[i] = args[i];
+		}
+		return arg;
+	}
+	
 	public String numberToHexadecimal(Integer seed) {
 		return Integer.toHexString(seed);
 	}
@@ -25,6 +125,7 @@ public final class OtherUtils {
 				x = Integer.parseInt(seed,16);
 			}
 		} catch (NumberFormatException e) {
+			e.printStackTrace();
 //			JiuCore.instance.log.error(e.getMessage() + " is not Hexadecimal!");
 			System.out.println(JiuUtils.day.getDate() + ": " + e.getMessage() + " is not Hexadecimal!");
 		}
@@ -40,53 +141,60 @@ public final class OtherUtils {
 		if(args.length == 0) {
 			return "null";
 		}
-		String v = "";
+		StringBuilder v = new StringBuilder();
 		for(int i = 0; i < args.length; ++i) {
 			if(i == args.length - 1) {
-				v += args[i];
+				v.append(args[i]);
 			}else {
-				v += args[i] + ",";
+				StringBuilder v1 = new StringBuilder();
+				v1.append(args[i]);
+				v1.append(",");
+				v.append(v1);
 			}
 		}
-		return v;
+		return v.toString();
 	}
 	
 	public <T> String toString(List<T> args) {
-		List<String> v = new ArrayList<>();
+		if(args.size() == 0) {
+			return "null";
+		}
+		List<String> v = Lists.newArrayList();
 		for(T t : args) {
-			v.add(t+"");
+			v.add(t.toString());
 		}
-		return this.toString(v.toArray(new String[0]));
+		return this.toString(v.toArray(new String[v.size()]));
 	}
 	
-	public String toString(int[] args) {
-		List<Integer> l = new ArrayList<>();
-		for(int i : args) {
+	public <T extends Number> String toString(T[] args) {
+		if(args.length == 0) {
+			return "null";
+		}
+		List<T> l = Lists.newArrayList();
+		for(T i : args) {
 			l.add(i);
 		}
 		return this.toString(l);
 	}
 	
-	public String toString(long[] args) {
-		List<Long> l = new ArrayList<>();
-		for(long i : args) {
-			l.add(i);
+	public String toString(List<ItemStack> args, int empty) {
+		if(args.size() == 0) {
+			return "null";
+		}
+		List<String> l = Lists.newArrayList();
+		for(ItemStack i : args) {
+			l.add(JiuUtils.item.toString(i));
 		}
 		return this.toString(l);
 	}
 	
-	public String toString(float[] args) {
-		List<Float> l = new ArrayList<>();
-		for(float i : args) {
-			l.add(i);
+	public String toString(ItemStack[] args) {
+		if(args.length == 0) {
+			return "null";
 		}
-		return this.toString(l);
-	}
-	
-	public String toString(double[] args) {
-		List<Double> l = new ArrayList<>();
-		for(double i : args) {
-			l.add(i);
+		List<String> l = Lists.newArrayList();
+		for(ItemStack i : args) {
+			l.add(JiuUtils.item.toString(i));
 		}
 		return this.toString(l);
 	}
@@ -106,8 +214,8 @@ public final class OtherUtils {
 		
 		T[][] date0 = date.clone();
 		
-		for(int i =0; i < date.length; ++i) {
-			for(int j =0; j < date[0].length; ++j) {
+		for(int i = 0; i < date.length; ++i) {
+			for(int j = 0; j < date[0].length; ++j) {
 				date0[i][j] = da[k];
 				k++;
 			}
@@ -116,18 +224,24 @@ public final class OtherUtils {
 		return date0;
 	}
 	
-	public <K> boolean containItemStackValue(Map<K, ItemStack> strs, ItemStack str) {
+	public <K> boolean containItemStackValue(Map<K, ItemStack> strs, ItemStack str, boolean checkAmout) {
+		if(strs.isEmpty()) {
+			return false;
+		}
 		for(ItemStack stri : strs.values()) {
-			if(JiuUtils.item.equalsStack(stri, str)) {
+			if(JiuUtils.item.equalsStack(stri, str, checkAmout)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public <V> boolean containItemStackKey(Map<ItemStack, V> strs, ItemStack str) {
+	public <V> boolean containItemStackKey(Map<ItemStack, V> strs, ItemStack str, boolean checkAmout) {
+		if(strs.isEmpty()) {
+			return false;
+		}
 		for(ItemStack stri : strs.keySet()) {
-			if(JiuUtils.item.equalsStack(stri, str)) {
+			if(JiuUtils.item.equalsStack(stri, str, checkAmout)) {
 				return true;
 			}
 		}
@@ -135,6 +249,9 @@ public final class OtherUtils {
 	}
 	
 	public <K, V> boolean containKey(Map<K, V> strs, K str) {
+		if(strs.isEmpty()) {
+			return false;
+		}
 		for(K stri : strs.keySet()) {
 			if(stri.equals(str)) {
 				return true;
@@ -144,6 +261,9 @@ public final class OtherUtils {
 	}
 	
 	public <K, V> boolean containValue(Map<K, V> strs, V str) {
+		if(strs.isEmpty()) {
+			return false;
+		}
 		for(V stri : strs.values()) {
 			if(stri.equals(str)) {
 				return true;
@@ -161,6 +281,9 @@ public final class OtherUtils {
 	 * @author small_jiu
 	 */
 	public <T> boolean containKey(T[] strs, T str) {
+		if(strs.length == 0) {
+			return false;
+		}
 		for(T stri : strs) {
 			if(stri.equals(str)) {
 				return true;
@@ -178,8 +301,59 @@ public final class OtherUtils {
 	 * @author small_jiu
 	 */
 	public boolean containKey(String[] strs, String str) {
+		if(strs.length == 0) {
+			return false;
+		}
 		for(String stri : strs) {
 			if(stri.equals(str)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containKey(int[] strs, int str) {
+		if(strs.length == 0) {
+			return false;
+		}
+		for(int stri : strs) {
+			if(stri == str) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containKey(List<Integer> strs, int str) {
+		if(strs.isEmpty()) {
+			return false;
+		}
+		for(int stri : strs) {
+			if(stri == str) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containKey(long[] strs, long str) {
+		if(strs.length == 0) {
+			return false;
+		}
+		for(long stri : strs) {
+			if(stri == str) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containKey(List<Long> strs, long str) {
+		if(strs.isEmpty()) {
+			return false;
+		}
+		for(long stri : strs) {
+			if(stri == str) {
 				return true;
 			}
 		}
@@ -195,6 +369,9 @@ public final class OtherUtils {
 	 * @author small_jiu
 	 */
 	public boolean containKey(List<String> strs, String str) {
+		if(strs.isEmpty()) {
+			return false;
+		}
 		for(String stri : strs) {
 			if(stri.equals(str)) {
 				return true;
@@ -252,15 +429,15 @@ public final class OtherUtils {
 	 * @author small_jiu
 	 */
 	public String[] custemSplitString(String arg, String separator){
-		if(arg.equals("")) {
+		if(arg.isEmpty() || arg.equals("")) {
 			return new String[] {"null"};
 		}
 		return arg.split("\\" + separator);
 	}
 	
-	public <T> List<T> copyArrayToList(T[] list0){
+	public <T> List<T> copyArrayToList(T[] args){
 		List<T> list = new ArrayList<T>();
-		for(T o : list0) {
+		for(T o : args) {
 			list.add(o);
 		}
 		return list;
@@ -268,21 +445,21 @@ public final class OtherUtils {
 	
 	/**
 	 * 
-	 * @param list0 original list
+	 * @param args original list
 	 * @return copy
 	 * 
 	 * @author small_jiu
 	 */
-	public <T> List<T> copyList(List<T> list0){
-		List<T> list = new ArrayList<T>();
-		for(T o : list0) {
+	public <E> List<E> copyList(List<E> args){
+		List<E> list = Lists.newArrayList();
+		for(E o : args) {
 			list.add(o);
 		}
 		return list;
 	}
 	
-	public String upperCaseToFistLetter(String name) {
-		return name.substring(0, 1).toUpperCase() + name.substring(1);
+	public String upperCaseToFirstLetter(String arg) {
+		return arg.substring(0, 1).toUpperCase() + arg.substring(1);
 	}
 	
 	/**
@@ -292,21 +469,15 @@ public final class OtherUtils {
 	 * 
 	 * @author small_jiu
 	 */
-	@SuppressWarnings("unchecked")
-	public <T extends Object> T[][] copyArray(T[][] array){
-		T[][] temp = (T[][]) new Object[array.length+1][array[0].length];
-		
-		for(int i = 0; i < array.length; ++i) {
-			for(int j = 0; j < array[i].length; ++j) {
-				temp[i][j] = array[i][j];
-			}
-		}
-		return temp;
+	@Deprecated
+	public <T> T[][] copyArray(T[][] array){
+		return array.clone();
 	}
+	
 	/*
 	@SuppressWarnings("unchecked")
 	public <T extends Object> T[] addArray(T[] array, T... e) {
-		ArrayList<T> l = new ArrayList<T>();
+		ArrayList<T> l = Lists.newArrayList();
 		
 		for(T t : array) {
 			l.add(t);

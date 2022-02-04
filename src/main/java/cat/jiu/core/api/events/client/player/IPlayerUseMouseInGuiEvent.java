@@ -11,8 +11,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public interface IPlayerUseMouseInGuiEvent extends IJiuEvent{
 	/**
 	 * 
-	 * key 0 = Left.
-	 * key 1 = right.
+	 * key 0 = Left.<p>
+	 * key 1 = right.<p>
 	 * key 2 = middle.
 	 * 
 	 * @param gui Player open the gui

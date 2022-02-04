@@ -22,9 +22,4 @@ public class ItemFoodTest extends BaseItem.Food{
 //		stack.setItemDamage(stack.getItemDamage() - 1);
 		return super.onItemRightClick(world, player, hand);
 	}
-	/*
-	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand, EntityEquipmentSlot slot) {
-		return null;
-	}
-	*/
 }

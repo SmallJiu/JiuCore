@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import cat.jiu.core.util.JiuUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.INBTSerializable;
 
 public final class NBTUtils {
 	public NBTTagCompound getItemNBT(ItemStack stack) {
@@ -161,5 +162,24 @@ public final class NBTUtils {
 		return JiuUtils.other.custemSplitString(s, ",");
 	}
 	//=================================================================================================//
+	@SuppressWarnings("rawtypes")
+	public void writeSlotItemToNBT(NBTTagCompound nbt, String nbtName, INBTSerializable slot) {
+		nbt.setTag(nbtName, slot.serializeNBT());
+	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void readSlotItemFromNBT(INBTSerializable slot, NBTTagCompound nbt, String nbtName) {
+		slot.deserializeNBT(nbt.getTag(nbtName));
+	}
+	//=================================================================================================//
+	public void setItemNBT(ItemStack stack, String nbtName, boolean value) {
+		NBTTagCompound nbt = this.getItemNBT(stack);
+		nbt.setBoolean(nbtName, value);
+		stack.setTagCompound(nbt);
+	}
+	
+	public boolean getItemNBTBoolean(ItemStack stack, String nbtName) {
+		NBTTagCompound nbt = this.getItemNBT(stack);
+		return nbt.getBoolean(nbtName);
+	}
 }

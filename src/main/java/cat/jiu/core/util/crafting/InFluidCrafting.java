@@ -18,7 +18,6 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 	
 	// recipe id, input
 	private static HashMap<Integer, ItemStack> recipe_map = new HashMap<Integer, ItemStack>();
-	
 	// input, recipe type
 	private static HashMap<ItemStack, InFluidCraftingRecipeType> map = new HashMap<ItemStack, InFluidCraftingRecipeType>();
 	
@@ -37,9 +36,9 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 	
 	/**
 	 * 
-	 * Please never add the recipe, it has a bug
+	 * Please never add the recipe, it has a bug<p>
 	 * 
-	 * new Recipes(MODID).addInFluidCrafting(new ItemStack(Blocks.COAL_BLOCK, 1), new ItemStack(Items.COAL, 9));
+	 * new Recipes(MODID).addInFluidCrafting(new ItemStack(Blocks.COAL_BLOCK, 1), new ItemStack(Items.COAL, 9));<p>
 	 * new Recipes(MODID).addInFluidCrafting(new ItemStack(Items.COAL, 9), new ItemStack(Blocks.COAL_BLOCK));
 	 * 
 	 * @param fluidState fluid state
@@ -53,7 +52,6 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 	 */
 	public static void addInFluidCrafting(IBlockState fluid, ItemStack input, List<ItemStack> output, boolean consumeFluid) {
 		addInFluidCrafting(fluid, input, input.getCount(), output, consumeFluid);
-		
 	}
 	
 	public static void addInFluidCrafting(IBlockState fluid, ItemStack input, ItemStack[] output, boolean consumeFluid) {
@@ -62,9 +60,9 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 	
 	/**
 	 * 
-	 * Please never add the recipe, it has a bug
+	 * Please never add the recipe, it has a bug<p>
 	 * 
-	 * new Recipes(MODID).addInFluidCrafting(new ItemStack(Blocks.COAL_BLOCK), 1, new ItemStack(Items.COAL, 9));
+	 * new Recipes(MODID).addInFluidCrafting(new ItemStack(Blocks.COAL_BLOCK), 1, new ItemStack(Items.COAL, 9));<p>
 	 * new Recipes(MODID).addInFluidCrafting(new ItemStack(Items.COAL), 9, new ItemStack(Blocks.COAL_BLOCK));
 	 * @param input recipe input
 	 * @param inputAmout input amout
@@ -92,14 +90,14 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 		HashMap<Integer, ItemStack> recipe_map_t = new HashMap<Integer, ItemStack>();
 		
 		for(ItemStack in : map.keySet()) {
-			if(!JiuUtils.item.equalsStack(in, input)) {
+			if(!JiuUtils.item.equalsStack(in, input, true)) {
 				map_t.put(in, map.get(in));
 			}
 		}
 		
 		for(int i : recipe_map.keySet()) {
 			ItemStack in = recipe_map.get(i);
-			if(!JiuUtils.item.equalsStack(in, input)) {
+			if(!JiuUtils.item.equalsStack(in, input, true)) {
 				recipe_map_t.put(recipe_map_t.size(), in);
 			}
 		}
@@ -107,8 +105,8 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 		recipe_map = recipe_map_t;
 		map = map_t;
 		
-		recipe_map_t.clear();
-		map_t.clear();
+		recipe_map_t = null;
+		map_t = null;
 	}
 	
 	public static HashMap<ItemStack, InFluidCraftingRecipeType> getRecipes() {
@@ -143,14 +141,13 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 								stack.shrink(inputAmout);
 							}
 							
-//							stack.shrink(inputAmout);
+							stack.shrink(inputAmout);
 							if(world.getBlockState(pos.up()) != Blocks.AIR.getDefaultState()) {
 //								item.setPosition(pos.getX(), pos.getY() + 1.5, pos.getZ());
 							}
 							
 							// spawn item with the pos
 							JiuUtils.item.spawnAsEntity(world, item.getPosition(), output);
-//							JiuCore.instance.log.info(type.toString());
 							
 							// if fluid can be consume, set fluid to air
 							if(consumeFuid) {
@@ -199,7 +196,7 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 		}
 		
 		public ItemStack[] getOutputsArray() {
-			return this.outputs.toArray(new ItemStack[0]);
+			return this.outputs.toArray(new ItemStack[this.outputs.size()]);
 		}
 		
 		public boolean canConsumeFluid() {

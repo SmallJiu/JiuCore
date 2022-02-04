@@ -49,7 +49,6 @@ public class BaseCommand {
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 			return this.checkPermission;
-//			return super.checkPermission(server, sender);
 		}
 		
 		@Override

@@ -1,5 +1,11 @@
 package cat.jiu.core.util.base;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import cat.jiu.core.api.IHasModel;
 import cat.jiu.core.api.IMetaName;
 import cat.jiu.core.api.ISubBlockSerializable;
@@ -7,6 +13,7 @@ import cat.jiu.core.util.RegisterModel;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
+import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
@@ -26,12 +33,15 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import net.minecraftforge.fluids.BlockFluidClassic;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BaseBlock {
-	public static class Base extends Block {
+	public static abstract class Base extends Block {
 		protected final String modid;
 		protected final String name;
 		protected final CreativeTabs tab;
@@ -56,8 +66,10 @@ public class BaseBlock {
 			}
 			
 			ForgeRegistries.BLOCKS.register(this);
-			ForgeRegistries.ITEMS.register(new BaseBlockItem(this, hasSubType).setRegistryName(this.modid, this.name));
+			ForgeRegistries.ITEMS.register(this.getRegisterItemBlock());
 		}
+		
+		public abstract ItemBlock getRegisterItemBlock();
 		
 		boolean isOpaqueCube = false;
 		
@@ -173,17 +185,12 @@ public class BaseBlock {
 			return BlockRenderLayer.TRANSLUCENT;
 		}
 		
-		protected boolean isInCreativeTab(CreativeTabs targetTab) {
-			CreativeTabs creativetabs = this.getCreativeTabToDisplayOn();
-			return creativetabs != null && (targetTab == CreativeTabs.SEARCH || targetTab == creativetabs);
-		}
-		
 		public boolean getHasSubtypes() {
 			return this.hasSubtypes;
 		}
 	}
 	
-	public static class Normal extends Base implements IHasModel {
+	public static abstract class Normal extends Base implements IHasModel {
 		protected final RegisterModel model = new RegisterModel(this.modid);
 		
 		public Normal(String modid, String nameIn,  Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
@@ -213,6 +220,33 @@ public class BaseBlock {
 			return this;
 		}
 		
+		/**
+		 * if you add more BlockState, you must override {@link #getMetaFromState(IBlockState)} and {@link #getStateFromMeta(Integer)}}
+		 */
+		protected IProperty<?>[] addBlockOthersProperty() {
+			return null;
+		}
+		
+		@SuppressWarnings("rawtypes")
+		@Override
+		protected BlockStateContainer createBlockState() {
+			ArrayList<IProperty> pros = new ArrayList<>();
+			
+			if(this.addBlockOthersProperty() != null) {
+				if(this.addBlockOthersProperty().length != 0) {
+					for(IProperty pro : this.addBlockOthersProperty()) {
+						pros.add(pro);
+					}
+				}
+			}
+			return new BlockStateContainer(this, pros.toArray(new IProperty[0]));
+		}
+		
+		@Override
+		public int getMetaFromState(IBlockState state) {
+			return 0;
+		}
+		
 		@SideOnly(Side.CLIENT)
 		@Override
 		public void getItemModel() {
@@ -233,7 +267,7 @@ public class BaseBlock {
 		
 		public Sub(String modid, String nameIn, Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
 			super(modid, nameIn, materialIn, soundIn, tabIn, hardnessIn, true);
-			this.setDefaultState(this.blockState.getBaseState().withProperty(this.getPropertyEnum(), getEnumArray()[0]));
+			this.setDefaultState(this.blockState.getBaseState().withProperty(this.getPropertyEnum(), this.getEnumArray()[0]));
 		}
 		
 		private String[] model_res = null;
@@ -254,6 +288,10 @@ public class BaseBlock {
 		 * @author small_jiu
 		 */
 		protected abstract PropertyEnum<T> getPropertyEnum();
+		
+		protected IProperty<?>[] addBlockOthersProperty() {
+			return null;
+		}
 		
 		protected T[] getEnumArray() {
 			return this.getPropertyEnum().getValueClass().getEnumConstants();
@@ -276,7 +314,17 @@ public class BaseBlock {
 		
 		@Override
 		protected BlockStateContainer createBlockState() {
-			return new BlockStateContainer(this, new IProperty[] { this.getPropertyEnum() });
+			ArrayList<IProperty<?>> pros = new ArrayList<IProperty<?>>();
+			
+			pros.add(this.getPropertyEnum());
+			if(this.addBlockOthersProperty() != null) {
+				if(this.addBlockOthersProperty().length != 0) {
+					for(IProperty<?> pro : this.addBlockOthersProperty()) {
+						pros.add(pro);
+					}
+				}
+			}
+			return new BlockStateContainer(this, pros.toArray(new IProperty[0]));
 		}
 		
 		@Override
@@ -295,10 +343,8 @@ public class BaseBlock {
 		@Override
 		public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
 			if(this.getHasSubtypes()){
-				if(this.isInCreativeTab(tab)){
-					for(int i = 0; i < this.getEnumArray().length; ++i) {
-						items.add(new ItemStack(this, 1, i));
-					}
+				for(int i = 0; i < this.getEnumArray().length; ++i) {
+					items.add(new ItemStack(this, 1, i));
 				}
 			}else{
 				super.getSubBlocks(tab, items);
@@ -306,11 +352,84 @@ public class BaseBlock {
 		}
 	}
 	
+	public static class BaseFluid extends Fluid {
+		protected final String name;
+		protected final String modid;
+		public BaseFluid(String fluidName, String modid){
+			super(fluidName, new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_still"), new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_flow"));
+			this.name = fluidName;
+			this.modid = modid;
+			FluidRegistry.registerFluid(this);
+			FluidRegistry.addBucketForFluid(this);
+	    }
+		
+		public BaseFluid(String fluidName, String modid, Color color){
+			super(fluidName, new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_still"), new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_flow"), color);
+			this.name = fluidName;
+			this.modid = modid;
+			FluidRegistry.registerFluid(this);
+			FluidRegistry.addBucketForFluid(this);
+	    }
+		
+	    public BaseFluid(String fluidName, String modid, @Nullable ResourceLocation overlay) {
+	    	super(fluidName, new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_still"), new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_flow"), overlay);
+//	    	super.setLuminosity(15);
+//	    	super.setDensity(-500);
+//	    	super.setViscosity(100);
+//	    	super.setGaseous(true);
+//			super.setRarity(EnumRarity.UNCOMMON);
+	    	this.name = fluidName;
+			this.modid = modid;
+			FluidRegistry.registerFluid(this);
+			FluidRegistry.addBucketForFluid(this);
+	    }
+	}
+	
+	public static class FluidBlock extends BlockFluidClassic implements IHasModel {
+		private final String modid;
+		@SuppressWarnings("unused")
+		private final String name;
+		public FluidBlock(Fluid fluid, String modid, String name, CreativeTabs tab, Material material, List<Block> BLOCKS) {
+	        this(fluid, modid, name, tab, material, material == null ? Material.WATER.getMaterialMapColor() : material.getMaterialMapColor(), BLOCKS);
+	    }
+		
+	    public FluidBlock(Fluid fluid, String modid, String name, CreativeTabs tab, Material material, MapColor mapColor, List<Block> BLOCKS) {
+	    	super(fluid, material == null ? Material.WATER : material, mapColor == null ? Material.WATER.getMaterialMapColor() : mapColor);
+	    	this.modid = modid;
+	    	this.name = name;
+	    	this.setUnlocalizedName(modid + "." + name);
+	    	if(tab != null) {
+	    		this.setCreativeTab(tab);
+	    	}
+	    	if(BLOCKS != null) {
+				BLOCKS.add(this);
+			}
+			this.setRegistryName(modid, name);
+			ForgeRegistries.BLOCKS.register(this);
+			ForgeRegistries.ITEMS.register(new BaseBlockItem(this) {
+				@SideOnly(Side.CLIENT)
+				@Override
+				public String getItemStackDisplayName(ItemStack stack) {
+					return I18n.format(fluid.getUnlocalizedName());
+				}
+			});
+	    }
+		
+		@Override
+		public void getItemModel() {
+			new RegisterModel(this.modid).registerFluidModel(this, "fluid/fluid_");
+		}
+	}
+	
 	public static class BaseBlockItem extends ItemBlock {
+		public BaseBlockItem(Block block) {
+			this(block, false);
+		}
 		public BaseBlockItem(Block block, boolean hasSubtypes) {
 			super(block);
 			this.setHasSubtypes(hasSubtypes);
 			this.setMaxDamage(0);
+			this.setRegistryName(block.getRegistryName());
 		}
 		
 		@Override

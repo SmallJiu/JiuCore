@@ -3,3 +3,6 @@ command.jc.craft.influid.add.error.info=用此物品做输入的合成表已添�
 command.jc.craft.influid.reload.0.info=所有临时合成表已移除！
 command.jc.craft.influid.reload.1.info=所有合成表已重载, 用时%s
 command.jc.craft.influid.remove.success.info=移除合成表成功, 用时%s
+
+#test
+fluid.test_gas=测试流体

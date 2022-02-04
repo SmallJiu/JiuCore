@@ -98,6 +98,7 @@ public class BaseItem {
 		}
 	}
 	
+	
 	public static class Food extends ItemFood implements IHasModel{
 		protected final String name;
 		protected final CreativeTabs tab;

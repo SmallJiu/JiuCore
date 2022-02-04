@@ -63,25 +63,31 @@ public final class EntityUtils {
 	 * 
 	 * @author small_jiu
 	 */
-	public void sendMessage(ICommandSender sender, String key, Object... obj) {
+	public void sendClientMessage(ICommandSender sender, String key, Object... obj) {
 		if(sender.getEntityWorld().isRemote) {
 			sender.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4)); 
 		}
 	}
 	
-	public void sendMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
+	public void sendClientMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
 		if(sender.getEntityWorld().isRemote) {
 			TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
 			sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
 		}
 	}
 	
-	/*
-	looks like the last one, but this use Generic<T>
-	public <T extends ICommandSender> void sendMessage(T sender, String key) {
-		sender.sendMessage(new TextComponentTranslation(key, 4));
+	public void sendServerMessage(ICommandSender sender, String key, Object... obj) {
+		if(!sender.getEntityWorld().isRemote) {
+			sender.sendMessage(new TextComponentTranslation(key, obj)); 
+		}
 	}
-	*/
+	
+	public void sendServerMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
+		if(!sender.getEntityWorld().isRemote) {
+			TextComponentTranslation text = new TextComponentTranslation(key, obj);
+			sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
+		}
+	}
 	
 	/**
 	 * 
@@ -90,7 +96,7 @@ public final class EntityUtils {
 	 * 
 	 * @author small_jiu
 	 */
-	public void sendMessageToAllPlayer(World world, String key, Object... obj) {
+	public void sendClientMessageToAllPlayer(World world, String key, Object... obj) {
 		if(world.isRemote) {
 			for (int i = 0; i < world.playerEntities.size(); ++i) {
 				EntityPlayer player = world.playerEntities.get(i);
@@ -100,12 +106,33 @@ public final class EntityUtils {
 		}
 	}
 	
-	public void sendMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
+	public void sendClientMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
 		if(world.isRemote) {
 			for (int i = 0; i < world.playerEntities.size(); ++i) {
 				EntityPlayer player = world.playerEntities.get(i);
 
 				TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
+				player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
+			}
+		}
+	}
+	
+	public void sendServerMessageToAllPlayer(World world, String key, Object... obj) {
+		if(!world.isRemote) {
+			for (int i = 0; i < world.playerEntities.size(); ++i) {
+				EntityPlayer player = world.playerEntities.get(i);
+
+				player.sendMessage(new TextComponentTranslation(key, obj));
+			}
+		}
+	}
+	
+	public void sendServerMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
+		if(!world.isRemote) {
+			for (int i = 0; i < world.playerEntities.size(); ++i) {
+				EntityPlayer player = world.playerEntities.get(i);
+
+				TextComponentTranslation text = new TextComponentTranslation(key, obj);
 				player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
 			}
 		}

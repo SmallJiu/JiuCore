@@ -1,6 +1,7 @@
 package cat.jiu.core.util;
 
 import cat.jiu.core.JiuCore;
+import cat.jiu.core.energy.EnergyUtils;
 import cat.jiu.core.util.crafting.Recipes;
 import cat.jiu.core.util.helpers.DayUtils;
 import cat.jiu.core.util.helpers.EntityUtils;
@@ -15,4 +16,5 @@ public final class JiuUtils {
 	public static final OtherUtils other = new OtherUtils();
 	public static final Recipes recipe = new Recipes(JiuCore.MODID);
 	public static final NBTUtils nbt = new NBTUtils();
+	public static final EnergyUtils energy = new EnergyUtils();
 }

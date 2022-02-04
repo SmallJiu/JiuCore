@@ -4,14 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cat.jiu.core.JiuCore;
+import cat.jiu.core.test.BlockTest.TestModSubtypes;
 import cat.jiu.core.util.JiuUtils;
-import cat.jiu.core.util.ModSubtypes;
 import cat.jiu.core.util.base.BaseBlock;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -19,6 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.items.IItemHandler;
@@ -26,7 +29,6 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.oredict.OreDictionary;
 
 public final class ItemUtils {
-
 	public void itemInit(Item item, String modid, String name, CreativeTabs tab, boolean hasSubtypes, List<Item> ITEMS) {
 		item.setHasSubtypes(hasSubtypes);
 		item.setUnlocalizedName(modid + "." + name);
@@ -48,13 +50,14 @@ public final class ItemUtils {
 		ForgeRegistries.ITEMS.register(new BaseBlock.BaseBlockItem(block, hasSubType).setRegistryName(modid, name));
 	}
 	
-	public void removeItem(ItemStack stack) {
-		stack.setCount(0);
-	}
-	
-	public void removeItem(EntityItem stack) {
-		stack.getItem().setCount(0);
-		stack.setDead();
+	public String toString(ItemStack args) {
+		StringBuilder s = new StringBuilder();
+		s.append(args.getItem().getRegistryName().toString());
+		s.append("@");
+		s.append(args.getCount());
+		s.append("@");
+		s.append(args.getMetadata());
+		return s.toString();
 	}
 	
 	/**
@@ -330,7 +333,7 @@ public final class ItemUtils {
 		if(stackA == stackB) {
 			return true;
 		}else {
-			if(stackA.getItem().equals(stackB.getItem())) {
+			if(stackA.getItem() == stackB.getItem()) {
 				if(checkAmout) {
 					if(stackA.getCount() == stackB.getCount()) {
 						if(checkDamage) {
@@ -444,13 +447,15 @@ public final class ItemUtils {
 	 */
 	@SuppressWarnings({ "deprecation", "unused" })
 	public ResourceLocation getTexture(ItemStack stack) {
+		TextureMap map = Minecraft.getMinecraft().getTextureMapBlocks();
+		
 		if(isBlock(stack)) {
 			Block block = getBlockFromItemStack(stack);
 			IBlockState state = block.getStateFromMeta(stack.getMetadata());
 		}else if(stack.getItem() instanceof Item) {
 			Item item = stack.getItem();
 		}
-		return null;
+		return new ResourceLocation(map.getAtlasSprite(stack.getItem().getRegistryName().toString()).getIconName());
 	}
 	
 	/**
@@ -476,7 +481,7 @@ public final class ItemUtils {
 	 * @author small_jiu
 	 */
 	public void registerCompressedOre(String oreDictName, Item itemIn, boolean isHas) {
-		for(ModSubtypes type : ModSubtypes.values()){
+		for(TestModSubtypes type : TestModSubtypes.values()){
 			int meta = type.getMeta();
 			
 			if(isHas){
@@ -505,7 +510,7 @@ public final class ItemUtils {
 	 * @author small_jiu
 	 */
 	public void registerCompressedOre(String oreDictName, Item itemIn, String materialName) {
-		for(ModSubtypes type : ModSubtypes.values()){
+		for(TestModSubtypes type : TestModSubtypes.values()){
 			int meta = type.getMeta();
 			
 			registerOre("compressed" + (meta + 1) + "x" + materialName + oreDictName, itemIn, meta);

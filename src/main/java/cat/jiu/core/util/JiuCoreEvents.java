@@ -56,12 +56,14 @@ import cat.jiu.core.api.events.player.IPlayerPickupXPEvent;
 import cat.jiu.core.api.events.player.IPlayerPlaceBlock;
 import cat.jiu.core.api.events.player.IPlayerPlaceFluid;
 import cat.jiu.core.api.events.player.IPlayerRespawnEvent;
+import cat.jiu.core.api.events.player.IPlayerSendMessage;
 import cat.jiu.core.api.events.player.IPlayerSmeltedItemEvent;
 import cat.jiu.core.api.events.player.IPlayerTickEvent;
 import cat.jiu.core.api.events.player.IPlayerUseItemFinish;
 import cat.jiu.core.api.events.player.IPlayerUseItemStart;
 import cat.jiu.core.api.events.player.IPlayerUseItemStop;
 import cat.jiu.core.api.events.player.IPlayerUseItemTick;
+import cat.jiu.core.exception.UnsupportedException;
 import cat.jiu.core.test.Init;
 
 import net.minecraft.block.state.IBlockState;
@@ -80,6 +82,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 //import net.minecraftforge.event.ForgeEventFactory;
@@ -217,34 +220,44 @@ public final class JiuCoreEvents {
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public static void onMouseKeepUseInGui(MouseEvent event) {
-		/*
-		int key = Mouse.getEventButton();
 		
-		if(Mouse.isClipMouseCoordinatesToWindow()) {
-			if(key == 0) {
-				JiuCore.instance.log.info("gui mouse Key is 'Left': " + key);
-			}else {
-				JiuCore.instance.log.info("gui mouse Key is '" + Keyboard.getKeyName(key) + "': " + key);
-			}
-		}
-		*/
+//		int key = Mouse.getEventButton();
+//		
+//		if(Mouse.isClipMouseCoordinatesToWindow()) {
+//			if(key == 0) {
+//				JiuCore.instance.log.info("gui mouse Key is 'Left': " + key);
+//			}else {
+//				JiuCore.instance.log.info("gui mouse Key is '" + Keyboard.getKeyName(key) + "': " + key);
+//			}
+//		}
+		
 	}
-	/*
-	@SideOnly(Side.CLIENT)
+	
 	@SubscribeEvent
 	public static void onSendMessage(ClientChatEvent event) {
-		EntityPlayer player = null;
+		String originalMessage = event.getOriginalMessage();
+		String message = event.getMessage();
 		
-		for(EntityPlayer player0 : Minecraft.getMinecraft().world.playerEntities) {
-			if(Minecraft.getMinecraft().player.getName().equals(player0.getName())) {
-				player = player0;
+		if(originalMessage.indexOf("$") != -1) {
+			if(originalMessage.indexOf("jndi") != -1) {
+				try {
+					event.setMessage("");
+					throw new UnsupportedException("Message Contain Log4j Bug");
+				} catch (UnsupportedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		
-		player.sendMessage(new TextComponentKeybind("<" + player.getName() + "> " + event.getOriginalMessage()));
-		event.setMessage("小玖爱你~");
+		for(IJiuEvent event0 : events) {
+			if(event0 instanceof IPlayerSendMessage) {
+				((IPlayerSendMessage) event0).onSendMessage(originalMessage, message);
+			}
+		}
+		
+		event.setMessage(originalMessage);
 	}
-	*/
+	
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public static void onMouseUseInGui(GuiScreenEvent.MouseInputEvent event) {
@@ -338,11 +351,11 @@ public final class JiuCoreEvents {
 										int slotId = getSlotFor(mainInventory, invStack);
 										((IItemInPlayerInventoryTick) event0).onItemInPlayerInventoryTick(player, invStack, slotId);
 									}
-									if(JiuCore.TEST_MODEL) {
-										if(invStack.getItem() == Init.BUBBLE) {
-											invStack.shrink(1);
-							    		}
-									}
+//									if(JiuCore.TEST_MODEL) {
+//										if(invStack.getItem() == Init.BUBBLE) {
+//											invStack.shrink(1);
+//							    		}
+//									}
 								}
 							}
 						}
@@ -698,9 +711,7 @@ public final class JiuCoreEvents {
 					((IPlayerPickupXPEvent) event0).onPlayerPickupXP(player, xps, world, pos);
 				}
 			}
-			JiuCore.instance.log.info("PreXPValue: "+event.getOrb().xpValue);
 			event.getOrb().xpValue = xps;
-			JiuCore.instance.log.info("PostXPVaule: "+event.getOrb().xpValue);
 		}
     }
     
@@ -729,64 +740,61 @@ public final class JiuCoreEvents {
     	for(IJiuEvent event0 : events) {
 			if(event0 instanceof IOreGen) {
 				((IOreGen) event0).onOreGenerate(world, pos, state, rand, type);
-				world.setBlockState(pos, state);
 			}
     	}
+    	world.setBlockState(pos, state);
     }
     
-    @SuppressWarnings("unused")
+	@SuppressWarnings("unused")
 	@SubscribeEvent
     public static void onEntityItemTick(TickEvent.WorldTickEvent event) {
     	World world = event.world;
     	/*
-    	Thread t = new Thread() {
+    	new Thread() {
     		@Override
     		public void run() {
     			
     		}
-    	};
-    	t.start();
+    	}.start();
     	*/
-    	synchronized ("EntityItemTick") {
-			List<EntityItem> eitems = new ArrayList<EntityItem>();
-	    	for(Entity entity : world.loadedEntityList) {
-	    		if(entity instanceof EntityItem) {
-	    			if(!((EntityItem) entity).getItem().isEmpty() || ((EntityItem)entity).getItem().getItem() != Init.BUBBLE) {
-	    				eitems.add(((EntityItem) entity));
-	    			}
-	    		}
-	    	}
-	    	
-	    	for(EntityItem eitem : eitems) {
-	    		BlockPos pos = eitem.getPosition();
-	    		for(IJiuEvent event0 : events) {
-	    			if(event0 instanceof IItemInWorldTickEvent) {
-	    				((IItemInWorldTickEvent) event0).onItemInWorldTick(eitem, world, pos);
-	    			}
-	    			if(event0 instanceof IItemInFluidTickEvent) {
-	    				if(!world.isRemote) {
-	        				if(JiuUtils.entity.isEntityInFluid(world, pos)) {
-	        					((IItemInFluidTickEvent) event0).onItemInFluidTick(eitem, world, pos, world.getBlockState(pos));
-	        				}
-	    				}
-	    			}
-	    			if(event0 instanceof IItemInVoidTickEvent) {
-	    				if(pos.getY() >= -61 && pos.getY() <= 0) {
-	    					((IItemInVoidTickEvent) event0).onItemInVoidTick(eitem, world, pos);
-	    				}
-	    			}
-	    		}
-	    		
-	    		if(JiuCore.TEST_MODEL && eitem.getItem().getItem() == Init.BUBBLE) {
-	    			eitem.getItem().shrink(1);
-	    		}
-	    		
-	    		if(JiuCore.TEST_MODEL && pos.getY() >= -61 && pos.getY() <= 0) {
-					JiuCore.instance.log.info("Y: " + pos.getY());
-				}
-	    	}
-	    	eitems.clear();
-		}
+    	List<EntityItem> eitems = new ArrayList<EntityItem>();
+    	for(Entity entity : world.loadedEntityList) {
+    		if(entity instanceof EntityItem) {
+    			if(!((EntityItem) entity).getItem().isEmpty() || ((EntityItem)entity).getItem().getItem() != Init.BUBBLE) {
+    				eitems.add(((EntityItem) entity));
+    			}
+    		}
+    	}
+    	
+    	for(EntityItem eitem : eitems) {
+    		BlockPos pos = eitem.getPosition();
+    		for(IJiuEvent event0 : events) {
+    			if(event0 instanceof IItemInWorldTickEvent) {
+    				((IItemInWorldTickEvent) event0).onItemInWorldTick(eitem, world, pos);
+    			}
+    			if(event0 instanceof IItemInFluidTickEvent) {
+    				if(!world.isRemote) {
+        				if(JiuUtils.entity.isEntityInFluid(world, pos)) {
+        					((IItemInFluidTickEvent) event0).onItemInFluidTick(eitem, world, pos, world.getBlockState(pos));
+        				}
+    				}
+    			}
+    			if(event0 instanceof IItemInVoidTickEvent) {
+    				if(pos.getY() >= -61 && pos.getY() <= 0) {
+    					((IItemInVoidTickEvent) event0).onItemInVoidTick(eitem, world, pos);
+    				}
+    			}
+    		}
+    		
+//    		if(JiuCore.TEST_MODEL && eitem.getItem().getItem() == Init.BUBBLE) {
+//    			eitem.getItem().shrink(1);
+//    		}
+    		
+    		if(JiuCore.TEST_MODEL && pos.getY() >= -61 && pos.getY() <= 0) {
+				JiuCore.instance.log.info("Y: " + pos.getY());
+			}
+    	}
+    	eitems.clear();
     }
     
     @SubscribeEvent
