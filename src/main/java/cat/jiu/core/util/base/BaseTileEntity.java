@@ -82,7 +82,7 @@ public class BaseTileEntity {
 		@Override
 		public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 			if(capability == CapabilityEnergy.ENERGY) {
-				return CapabilityEnergy.ENERGY.cast(this.storage);
+				return CapabilityEnergy.ENERGY.cast(this.storage.toFEStorage());
 			}
 			if(capability == CapabilityJiuEnergy.ENERGY) {
 				return CapabilityJiuEnergy.ENERGY.cast(this.storage);

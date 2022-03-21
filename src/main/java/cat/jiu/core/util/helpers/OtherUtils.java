@@ -1,7 +1,6 @@
 package cat.jiu.core.util.helpers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +13,20 @@ import cat.jiu.core.util.JiuUtils;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 
 public final class OtherUtils {
+	public ITextComponent createTextComponent(String arg, Object... objs) {
+		return new TextComponentTranslation(arg, objs);
+	}
+	
+	public ITextComponent createTextComponent(String arg, TextFormatting color, Object... objs) {
+		ITextComponent text = new TextComponentTranslation(arg, objs);
+		return text.setStyle(text.getStyle().setColor(color)); 
+	}
+	
 	public long parseTick(int s, int tick) {
 		return this.parseTick(0, s, tick);
 	}
@@ -55,29 +66,9 @@ public final class OtherUtils {
 		return lag;
 	}
 	
+	@Deprecated
 	public String formatNumber(long value) {
-		if(value >= 1000000000000000000L) {
-			return (Math.round((float)value / 100000000.0)) / 10000000000.0 + "E";
-		}
-		if(value >= 1000000000000000L) {
-			return (Math.round((float)value / 100000000.0)) / 10000000.0 + "P";
-		}
-		if(value >= 1000000000000L) {
-			return (Math.round((float)value / 1000000.0) / 1000000.0) + "T";
-		}
-		if(value >= 1000000000L) {
-			return (Math.round((float)value / 100000.0)) / 10000.0 + "G";
-		}
-		if(value >= 1000000L) {
-			return (Math.round((float)value / 1000.0) / 1000.0) + "M";
-		}
-		if(value > 1000L) {
-			return ((Math.round(value)) / 1000.0) + "K";
-		}
-		if(value < 1000L) {
-			return Long.toString(value);
-		}
-		return "to big!";
+		return JiuUtils.big_integer.format(value, 3);
 	}
 	
 	public Integer[] toArray(int[] args) {
@@ -126,8 +117,7 @@ public final class OtherUtils {
 			}
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
-//			JiuCore.instance.log.error(e.getMessage() + " is not Hexadecimal!");
-			System.out.println(JiuUtils.day.getDate() + ": " + e.getMessage() + " is not Hexadecimal!");
+			JiuCore.instance.log.error(e.getMessage() + " is not Hexadecimal!");
 		}
 		
 		if(checkTheMCWorldSize && x > 30000000) {
@@ -177,7 +167,7 @@ public final class OtherUtils {
 		return this.toString(l);
 	}
 	
-	public String toString(List<ItemStack> args, int empty) {
+	public String toString(List<ItemStack> args, int qwq) {
 		if(args.size() == 0) {
 			return "null";
 		}
@@ -248,28 +238,19 @@ public final class OtherUtils {
 		return false;
 	}
 	
+	@Deprecated
 	public <K, V> boolean containKey(Map<K, V> strs, K str) {
 		if(strs.isEmpty()) {
 			return false;
 		}
-		for(K stri : strs.keySet()) {
-			if(stri.equals(str)) {
-				return true;
-			}
-		}
-		return false;
+		return strs.containsKey(str);
 	}
-	
+	@Deprecated
 	public <K, V> boolean containValue(Map<K, V> strs, V str) {
 		if(strs.isEmpty()) {
 			return false;
 		}
-		for(V stri : strs.values()) {
-			if(stri.equals(str)) {
-				return true;
-			}
-		}
-		return false;
+		return strs.containsValue(str);
 	}
 	
 	/**
@@ -324,16 +305,12 @@ public final class OtherUtils {
 		return false;
 	}
 	
+	@Deprecated
 	public boolean containKey(List<Integer> strs, int str) {
 		if(strs.isEmpty()) {
 			return false;
 		}
-		for(int stri : strs) {
-			if(stri == str) {
-				return true;
-			}
-		}
-		return false;
+		return strs.contains(str);
 	}
 	
 	public boolean containKey(long[] strs, long str) {
@@ -347,37 +324,21 @@ public final class OtherUtils {
 		}
 		return false;
 	}
-	
+
+	@Deprecated
 	public boolean containKey(List<Long> strs, long str) {
 		if(strs.isEmpty()) {
 			return false;
 		}
-		for(long stri : strs) {
-			if(stri == str) {
-				return true;
-			}
-		}
-		return false;
+		return strs.contains(str);
 	}
 	
-	/**
-	 * 
-	 * @param strs original list
-	 * @param str contain key
-	 * @return if is the key, return 'true', else return 'false'.
-	 * 
-	 * @author small_jiu
-	 */
+	@Deprecated
 	public boolean containKey(List<String> strs, String str) {
 		if(strs.isEmpty()) {
 			return false;
 		}
-		for(String stri : strs) {
-			if(stri.equals(str)) {
-				return true;
-			}
-		}
-		return false;
+		return strs.contains(str);
 	}
 	
 	/**
@@ -435,27 +396,13 @@ public final class OtherUtils {
 		return arg.split("\\" + separator);
 	}
 	
+	@Deprecated
 	public <T> List<T> copyArrayToList(T[] args){
-		List<T> list = new ArrayList<T>();
-		for(T o : args) {
-			list.add(o);
-		}
-		return list;
+		return Lists.newArrayList(args);
 	}
-	
-	/**
-	 * 
-	 * @param args original list
-	 * @return copy
-	 * 
-	 * @author small_jiu
-	 */
+	@Deprecated
 	public <E> List<E> copyList(List<E> args){
-		List<E> list = Lists.newArrayList();
-		for(E o : args) {
-			list.add(o);
-		}
-		return list;
+		return Lists.newArrayList(args);
 	}
 	
 	public String upperCaseToFirstLetter(String arg) {
@@ -524,18 +471,9 @@ public final class OtherUtils {
 		return temp;
 	}
 	*/
-	/**
-	 * {@link Potion#getPotionFromResourceLocation(String)}
-	 */
+	@Deprecated
 	@Nullable
     public Potion getRegisteredMobEffect(String id) {
-        Potion potion = Potion.getPotionFromResourceLocation(id);
-        
-        if(potion == null) {
-        	JiuCore.instance.log.fatal("Effect not found: " + id);
-        	return null;
-        }else {
-        	return potion;
-        }
+        return JiuUtils.entity.getRegisteredMobEffect(id);
     }
 }

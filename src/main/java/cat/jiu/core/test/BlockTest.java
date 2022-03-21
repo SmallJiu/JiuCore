@@ -1,5 +1,6 @@
 package cat.jiu.core.test;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import cat.jiu.core.JiuCore;
@@ -48,6 +49,13 @@ public class BlockTest extends BaseBlock.Sub<BlockTest.TestModSubtypes> {
 	@Override
 	public void addInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag advanced) {
 		tooltip.add(stack.getMetadata() + " : " + this.getMetaFromState(JiuUtils.item.getStateFromItemStack(stack)));
+//		JiuUtils.nbt.setItemNBT(stack, "Test", BigInteger.valueOf(1));
+//		JiuUtils.nbt.addItemNBT(stack, "Test", JiuUtils.nbt.getItemNBTBigInteger(stack, "Test"));
+		BigInteger value = JiuUtils.nbt.getItemNBTBigInteger(stack, "Test");
+//		BigInteger value = BigInteger.valueOf(Long.MAX_VALUE);
+		tooltip.add(JiuUtils.big_integer.format(value, 3));
+		tooltip.add("");
+		tooltip.add(value.toString());
 	}
 	
 	@Override

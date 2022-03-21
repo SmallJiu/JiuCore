@@ -53,6 +53,4 @@ public class BlockTestNormal extends BaseBlock.Normal implements ITileEntityProv
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
 		return null;
 	}
-
-	
 }

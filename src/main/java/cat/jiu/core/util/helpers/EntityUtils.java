@@ -1,5 +1,22 @@
 package cat.jiu.core.util.helpers;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Map.Entry;
+import java.util.HashMap;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.Maps;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import cat.jiu.core.JiuCore;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.command.ICommandSender;
@@ -8,11 +25,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.BlockFluidBase;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public final class EntityUtils {
 	// 是否是指定玩家名
@@ -21,7 +41,7 @@ public final class EntityUtils {
 	 * 
 	 * @param name the player name
 	 * @param player player
-	 * @return if 'player' name is 'name', return 'true', else return 'false'
+	 * @return 'player' name is 'name'
 	 * 
 	 * @author small_jiu
 	 */
@@ -35,7 +55,7 @@ public final class EntityUtils {
 	 * 
 	 * @param name the player name
 	 * @param player player
-	 * @return if 'player' name has 'name', return 'true', else return 'false'
+	 * @return 'player' name has 'name'
 	 * 
 	 * @author small_jiu
 	 */
@@ -56,85 +76,51 @@ public final class EntityUtils {
 			|| world.getBlockState(pos).getBlock() instanceof BlockLiquid;
 	}
 	
-	/**
-	 * 
-	 * @param sender Player, or any Entity
-	 * @param key Message
-	 * 
-	 * @author small_jiu
-	 */
-	public void sendClientMessage(ICommandSender sender, String key, Object... obj) {
-		if(sender.getEntityWorld().isRemote) {
-			sender.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4)); 
+	@SideOnly(Side.CLIENT)
+	public void sendI18nMessage(ICommandSender sender, String key, Object... obj) {
+		sender.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4)); 
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public void sendI18nMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
+		TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
+		sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
+	}
+	
+	public void sendMessage(ICommandSender sender, String key, Object... obj) {
+		sender.sendMessage(new TextComponentTranslation(key, obj)); 
+	}
+	
+	public void sendMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
+		TextComponentTranslation text = new TextComponentTranslation(key, obj);
+		sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public void sendI18nMessageToAllPlayer(World world, String key, Object... obj) {
+		for (EntityPlayer player : world.playerEntities) {
+			player.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4));
 		}
 	}
 	
-	public void sendClientMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
-		if(sender.getEntityWorld().isRemote) {
+	@SideOnly(Side.CLIENT)
+	public void sendI18nMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
+		for (EntityPlayer player : world.playerEntities) {
 			TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
-			sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
+			player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
 		}
 	}
 	
-	public void sendServerMessage(ICommandSender sender, String key, Object... obj) {
-		if(!sender.getEntityWorld().isRemote) {
-			sender.sendMessage(new TextComponentTranslation(key, obj)); 
+	public void sendMessageToAllPlayer(World world, String key, Object... obj) {
+		for(EntityPlayer player : world.playerEntities) {
+			player.sendMessage(new TextComponentTranslation(key, obj));
 		}
 	}
 	
-	public void sendServerMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
-		if(!sender.getEntityWorld().isRemote) {
+	public void sendMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
+		for(EntityPlayer player : world.playerEntities) {
 			TextComponentTranslation text = new TextComponentTranslation(key, obj);
-			sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
-		}
-	}
-	
-	/**
-	 * 
-	 * @param world The World!
-	 * @param key Message
-	 * 
-	 * @author small_jiu
-	 */
-	public void sendClientMessageToAllPlayer(World world, String key, Object... obj) {
-		if(world.isRemote) {
-			for (int i = 0; i < world.playerEntities.size(); ++i) {
-				EntityPlayer player = world.playerEntities.get(i);
-
-				player.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4));
-			}
-		}
-	}
-	
-	public void sendClientMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
-		if(world.isRemote) {
-			for (int i = 0; i < world.playerEntities.size(); ++i) {
-				EntityPlayer player = world.playerEntities.get(i);
-
-				TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
-				player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
-			}
-		}
-	}
-	
-	public void sendServerMessageToAllPlayer(World world, String key, Object... obj) {
-		if(!world.isRemote) {
-			for (int i = 0; i < world.playerEntities.size(); ++i) {
-				EntityPlayer player = world.playerEntities.get(i);
-
-				player.sendMessage(new TextComponentTranslation(key, obj));
-			}
-		}
-	}
-	
-	public void sendServerMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
-		if(!world.isRemote) {
-			for (int i = 0; i < world.playerEntities.size(); ++i) {
-				EntityPlayer player = world.playerEntities.get(i);
-
-				TextComponentTranslation text = new TextComponentTranslation(key, obj);
-				player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
-			}
+			player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
 		}
 	}
 	
@@ -147,7 +133,76 @@ public final class EntityUtils {
 	 * 
 	 * @author small_jiu
 	 */
-	public void addPotionEffect(EntityLivingBase entity, Potion potion, int potionTime, int potionLevel){
+	public void addPotionEffect(EntityLivingBase entity, Potion potion, int potionTime, int potionLevel) {
 		entity.addPotionEffect(new PotionEffect(potion, potionTime * 20, potionLevel));
+	}
+	
+	/**
+	 * {@link Potion#getPotionFromResourceLocation(String)}
+	 */
+	@Nullable
+    public Potion getRegisteredMobEffect(String id) {
+        Potion potion = Potion.getPotionFromResourceLocation(id);
+        
+        if(potion == null) {
+        	JiuCore.instance.log.fatal("Effect not found: " + id);
+        	return null;
+        }else {
+        	return potion;
+        }
+    }
+
+	public final HashMap<String, UUID> NameToUUID = Maps.newHashMap();
+	public final HashMap<UUID, String> UUIDToName = Maps.newHashMap();
+
+	public void initNameAndUUID(@Nullable MinecraftServer server) {
+		if(server != null) {
+			server.getPlayerProfileCache().save();
+			server.getPlayerProfileCache().load();
+		}
+		File file = new File("./usernamecache.json");
+		if(file.exists()) {
+			NameToUUID.clear();
+			UUIDToName.clear();
+			try(FileInputStream in = new FileInputStream(file)) {
+				JsonObject obj = new JsonParser().parse(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
+				for(Entry<String, JsonElement> cache : obj.entrySet()) {
+					String name = cache.getValue().getAsString();
+					UUID uid = UUID.fromString(cache.getKey());
+					NameToUUID.put(name, uid);
+					UUIDToName.put(uid, name);
+				}
+				NameToUUID.put("Initialization", new UUID(0, 0));
+				UUIDToName.put(new UUID(0, 0), "Initialization");
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public boolean hasNameOrUUID(String name) {
+		return this.NameToUUID.containsKey(name) && this.UUIDToName.containsValue(name);
+	}
+
+	public boolean hasNameOrUUID(UUID uid) {
+		return this.UUIDToName.containsKey(uid) && this.NameToUUID.containsValue(uid);
+	}
+
+	public UUID getUUID(String name) {
+		if(!this.NameToUUID.isEmpty()) {
+			if(this.hasNameOrUUID(name)) {
+				return this.NameToUUID.get(name);
+			}
+		}
+		return null;
+	}
+
+	public String getName(UUID uid) {
+		if(!this.UUIDToName.isEmpty()) {
+			if(this.hasNameOrUUID(uid)) {
+				return this.UUIDToName.get(uid);
+			}
+		}
+		return null;
 	}
 }

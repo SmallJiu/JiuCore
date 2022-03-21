@@ -120,38 +120,12 @@ public final class EnergyUtils {
 		return false;
 	}
 	
-	public static int insertFEEnergy(TileEntity tile, int energy, EnumFacing side, boolean simulate) {
-        if (tile.hasCapability(CapabilityEnergy.ENERGY, side)) {
-            IEnergyStorage cap = tile.getCapability(CapabilityEnergy.ENERGY, side);
-            if (cap != null && cap.canReceive()) {
-                return cap.receiveEnergy(energy, simulate);
-            }
-        }
-        return 0;
-    }
-	
 	public int sendFEEnergyTo(ItemStack stack, int energy, boolean simulate) {
 		if(energy < 0) {
 			return 0;
 		}
 		if(this.hasFEStorage(stack)) {
 			return this.getFEStorage(stack).receiveEnergy(energy, simulate);
-		}
-		
-		return 0;
-	}
-	
-	public int sendFEEnergyTo(TileEntity tile, int energy, EnumFacing side, boolean simulate) {
-		return this.sendFEEnergyTo(tile.getWorld(), tile.getPos(), energy, side, simulate);
-	}
-	
-	public int sendFEEnergyTo(World world, BlockPos pos, int energy, EnumFacing side, boolean simulate) {
-		if(energy < 0 || world.isRemote) {
-			return 0;
-		}
-		TileEntity sendTe = world.getTileEntity(pos.offset(side));
-		if(this.hasFEStorage(sendTe, side.getOpposite())) {
-			return this.getFEStorage(sendTe, side.getOpposite()).receiveEnergy(energy, false);
 		}
 		
 		return 0;
@@ -166,5 +140,31 @@ public final class EnergyUtils {
 			i += this.sendFEEnergyTo(tile, energy - i, side, simulate);
 		}
 		return i;
+	}
+	
+	public int sendFEEnergyTo(TileEntity tile, int energy, EnumFacing[] sides, boolean simulate) {
+		if(energy < 0 || tile.getWorld().isRemote) {
+			return 0;
+		}
+		int i = 0;
+		for(EnumFacing side : sides) {
+			i += this.sendFEEnergyTo(tile.getWorld(), tile.getPos(), energy, side, simulate);
+		}
+		return i;
+	}
+	
+	public int sendFEEnergyTo(TileEntity tile, int energy, EnumFacing side, boolean simulate) {
+		return this.sendFEEnergyTo(tile.getWorld(), tile.getPos(), energy, side, simulate);
+	}
+	
+	public int sendFEEnergyTo(World world, BlockPos pos, int energy, EnumFacing side, boolean simulate) {
+		if(energy < 0 || world.isRemote) {
+			return 0;
+		}
+		TileEntity sendTe = world.getTileEntity(pos.offset(side));
+		if(this.hasFEStorage(sendTe, side.getOpposite())) {
+			return this.getFEStorage(sendTe, side.getOpposite()).receiveEnergy(energy, false);
+		}
+		return 0;
 	}
 }

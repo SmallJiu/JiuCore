@@ -3,33 +3,19 @@ package cat.jiu.core.api;
 import java.math.BigInteger;
 
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fml.common.Optional.Interface;
+import net.minecraftforge.fml.common.Optional.InterfaceList;
 
-public interface IJiuEnergyStorage extends IEnergyStorage {
+@InterfaceList({
+	@Interface(iface = "cofh.redstoneflux.api.IEnergyStorage", modid = "redstoneflux") 
+})
+public interface IJiuEnergyStorage  {
 	BigInteger receiveEnergyWithBigInteger(BigInteger maxReceive, boolean simulate);
     BigInteger extractEnergyWithBigInteger(BigInteger maxExtract, boolean simulate);
     BigInteger getEnergyStoredWithBigInteger();
     BigInteger getMaxEnergyStoredWithBigInteger();
-    boolean canExtract();/** {@link IEnergyStorage#canExtract()} */
-    boolean canReceive();/** {@link IEnergyStorage#canReceive()} */
-    
-	    default int receiveEnergyWithInt(int maxReceive, boolean simulate) {
-	    	return this.receiveEnergyWithBigInteger(BigInteger.valueOf(maxReceive), simulate).intValue();
-	    }
-	    default int extractEnergyWithInt(int maxExtract, boolean simulate) {
-	    	return this.extractEnergyWithBigInteger(BigInteger.valueOf(maxExtract), simulate).intValue();
-	    }
-	    default int getEnergyStoredWithInt() {
-	    	return this.getEnergyStoredWithBigInteger().intValue();
-	    }
-	    default int getMaxEnergyStoredWithInt() {
-	    	return this.getMaxEnergyStoredWithBigInteger().intValue();
-	    }
-	    default int inputEnergyWithInt(int maxReceive, boolean simulate) {
-	    	return this.receiveEnergyWithInt(maxReceive, simulate);
-	    }
-	    default int outputEnergyWithInt(int maxExtract, boolean simulate) {
-	    	return this.extractEnergyWithInt(maxExtract, simulate);
-	    }
+    boolean canExtract();
+    boolean canReceive();
 	    
 	    default long receiveEnergyWithLong(long maxReceive, boolean simulate) {
 	    	return this.receiveEnergyWithBigInteger(BigInteger.valueOf(maxReceive), simulate).longValue();
@@ -57,28 +43,25 @@ public interface IJiuEnergyStorage extends IEnergyStorage {
 	    	return this.extractEnergyWithBigInteger(maxExtract, simulate);
 	    }
 	    
-	    /**
-	     * {@link IEnergyStorage#receiveEnergy(int, boolean)}
-	     */
-	    default int receiveEnergy(int maxReceive, boolean simulate) {
-	    	return this.receiveEnergyWithInt(maxReceive, simulate);
+	    default cofh.redstoneflux.api.IEnergyStorage toRFStorage() {
+	    	final IJiuEnergyStorage storage = this;
+	    	return new cofh.redstoneflux.api.IEnergyStorage() {
+	    		public int receiveEnergy(int maxReceive, boolean simulate) {return storage.receiveEnergyWithBigInteger(BigInteger.valueOf(maxReceive), simulate).intValue();}
+				public int extractEnergy(int maxExtract, boolean simulate) {return storage.extractEnergyWithBigInteger(BigInteger.valueOf(maxExtract), simulate).intValue();}
+				public int getEnergyStored() {return storage.getEnergyStoredWithBigInteger().intValue();}
+				public int getMaxEnergyStored() {return storage.getMaxEnergyStoredWithBigInteger().intValue();}
+	    	};
 	    }
-	    /**
-	     * {@link IEnergyStorage#extractEnergy(int, boolean)}
-	     */
-	    default int extractEnergy(int maxExtract, boolean simulate) {
-	    	return this.extractEnergyWithInt(maxExtract, simulate);
-	    }
-	    /**
-	     * {@link IEnergyStorage#getEnergyStored()}
-	     */
-	    default int getEnergyStored() {
-	    	return this.getEnergyStoredWithInt();
-	    }
-	    /**
-	     * {@link IEnergyStorage#getMaxEnergyStored()}
-	     */
-	    default int getMaxEnergyStored() {
-	    	return this.getMaxEnergyStoredWithInt();
+	    
+	    default IEnergyStorage toFEStorage() {
+	    	final IJiuEnergyStorage storage = this;
+	    	return new IEnergyStorage() {
+				public int receiveEnergy(int maxReceive, boolean simulate) {return storage.receiveEnergyWithBigInteger(BigInteger.valueOf(maxReceive), simulate).intValue();}
+				public int extractEnergy(int maxExtract, boolean simulate) {return storage.extractEnergyWithBigInteger(BigInteger.valueOf(maxExtract), simulate).intValue();}
+				public int getEnergyStored() {return storage.getEnergyStoredWithBigInteger().intValue();}
+				public int getMaxEnergyStored() {return storage.getMaxEnergyStoredWithBigInteger().intValue();}
+				public boolean canExtract() {return storage.canExtract();}
+				public boolean canReceive() {return storage.canReceive();}
+	    	};
 	    }
 }

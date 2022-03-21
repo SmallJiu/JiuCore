@@ -12,8 +12,8 @@ public interface IPlayerPickupXPEvent extends IJiuEvent{
 	 * @param xpVaule Player pickup XP vaule, you can set vaule to change player get the xp vaule
 	 * @param world Player World
 	 * @param pos Player Pos
-	 * 
+	 * @param originalXps TODO
 	 * @author small_jiu
 	 */
-	void onPlayerPickupXP(EntityPlayer player, int xpVaule, World world, BlockPos pos);
+	void onPlayerPickupXP(EntityPlayer player, int xpVaule, World world, BlockPos pos, final int originalXps);
 }

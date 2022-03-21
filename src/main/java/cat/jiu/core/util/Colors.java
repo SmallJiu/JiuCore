@@ -8,7 +8,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-
 import net.minecraftforge.client.event.ColorHandlerEvent;
 
 //@EventBusSubscriber
@@ -26,4 +25,5 @@ public class Colors {
 			return 0;
 		}, (Item)null);
 	}
+
 }

@@ -3,11 +3,13 @@ package cat.jiu.core.util;
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.energy.EnergyUtils;
 import cat.jiu.core.util.crafting.Recipes;
+import cat.jiu.core.util.helpers.BigIntegerUtils;
 import cat.jiu.core.util.helpers.DayUtils;
 import cat.jiu.core.util.helpers.EntityUtils;
 import cat.jiu.core.util.helpers.ItemUtils;
 import cat.jiu.core.util.helpers.NBTUtils;
 import cat.jiu.core.util.helpers.OtherUtils;
+import cat.jiu.core.util.system.file.JsonUtil;
 
 public final class JiuUtils {
 	public static final DayUtils day = new DayUtils();
@@ -17,4 +19,6 @@ public final class JiuUtils {
 	public static final Recipes recipe = new Recipes(JiuCore.MODID);
 	public static final NBTUtils nbt = new NBTUtils();
 	public static final EnergyUtils energy = new EnergyUtils();
+	public static final BigIntegerUtils big_integer = new BigIntegerUtils();
+	public static final JsonUtil json = new JsonUtil();
 }

@@ -8,6 +8,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public final class NBTUtils {
+	public boolean hasNBT(ItemStack stack, String nbtName) {
+		if(stack.getTagCompound() == null) {
+			return false;
+		}
+		return stack.getTagCompound().hasKey(nbtName);
+	}
+	
 	public NBTTagCompound getItemNBT(ItemStack stack) {
 		NBTTagCompound nbt = stack.getTagCompound();
 		return nbt != null ? nbt : new NBTTagCompound();
@@ -42,6 +49,10 @@ public final class NBTUtils {
 	
 	public void addItemNBT(ItemStack stack, String nbtName, int value) {
 		this.setItemNBT(stack, nbtName, this.getItemNBTInt(stack, nbtName) + value);
+	}
+	
+	public void subtractItemNBT(ItemStack stack, String nbtName, int value) {
+		this.setItemNBT(stack, nbtName, this.getItemNBTInt(stack, nbtName) - value);
 	}
 	
 	public int getItemNBTInt(ItemStack stack, String nbtName) {

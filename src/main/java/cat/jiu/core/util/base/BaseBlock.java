@@ -361,7 +361,7 @@ public class BaseBlock {
 			this.modid = modid;
 			FluidRegistry.registerFluid(this);
 			FluidRegistry.addBucketForFluid(this);
-	    }
+		}
 		
 		public BaseFluid(String fluidName, String modid, Color color){
 			super(fluidName, new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_still"), new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_flow"), color);
@@ -373,11 +373,6 @@ public class BaseBlock {
 		
 	    public BaseFluid(String fluidName, String modid, @Nullable ResourceLocation overlay) {
 	    	super(fluidName, new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_still"), new ResourceLocation(modid, "blocks/fluid/" + fluidName + "_flow"), overlay);
-//	    	super.setLuminosity(15);
-//	    	super.setDensity(-500);
-//	    	super.setViscosity(100);
-//	    	super.setGaseous(true);
-//			super.setRarity(EnumRarity.UNCOMMON);
 	    	this.name = fluidName;
 			this.modid = modid;
 			FluidRegistry.registerFluid(this);

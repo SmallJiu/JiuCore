@@ -98,7 +98,6 @@ public class BaseItem {
 		}
 	}
 	
-	
 	public static class Food extends ItemFood implements IHasModel{
 		protected final String name;
 		protected final CreativeTabs tab;
@@ -180,6 +179,11 @@ public class BaseItem {
 		}
 	}
 	
+	/**
+	 * {@link BaseItemTool.Tool}
+	 * @author small_jiu
+	 */
+	@Deprecated
 	public static class Tool extends ItemTool implements IHasModel{
 		protected final String name;
 		protected final CreativeTabs tab;
@@ -210,20 +214,20 @@ public class BaseItem {
 			this(name, name, CreativeTabs.TOOLS, materialIn, effectiveBlocksIn);
 		}
 		
-		private int meta = 1;
+		protected int maxMeta = 1;
 		
 		public Tool setMaxMetadata(int maxMeta) {
 			if(this.getHasSubtypes()) {
-				this.meta = maxMeta > 1 ? maxMeta : 1;
+				this.maxMeta = maxMeta > 1 ? maxMeta : 1;
 			}
 			return this;
 		}
 		
 		@Override
 		public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-			if(this.meta > 1) {
+			if(this.maxMeta > 1) {
 				if(this.isInCreativeTab(tab)) {
-					for(int i = 0; i < this.meta; ++i) {
+					for(int i = 0; i < this.maxMeta; ++i) {
 						items.add(new ItemStack(this, 1, i));
 					}
 				}
@@ -235,8 +239,8 @@ public class BaseItem {
 		@Override
 		@SideOnly(Side.CLIENT)
 		public void getItemModel() {
-			if(this.meta > 1) {
-				for(int i = 0; i < this.meta; ++i) {
+			if(this.maxMeta > 1) {
+				for(int i = 0; i < this.maxMeta; ++i) {
 					this.model.registerItemModel(this, i, "tools/" + this.name, this.name + "." + i);
 				}
 			}else {
@@ -247,7 +251,7 @@ public class BaseItem {
 		@SideOnly(Side.CLIENT)
 		@Override
 		public String getItemStackDisplayName(ItemStack stack) {
-			if(this.meta > 1) {
+			if(this.maxMeta > 1) {
 				return I18n.format("item." + this.modid + "." + this.name + "." + stack.getMetadata() + ".name");
 			}
 			return super.getItemStackDisplayName(stack);
@@ -267,6 +271,11 @@ public class BaseItem {
 		}
 	}
 	
+	/**
+	 * {@link BaseItemTool.Sword}
+	 * @author small_jiu
+	 */
+	@Deprecated
 	public static class Sword extends ItemSword implements IHasModel {
 		protected final String name;
 		protected final CreativeTabs tab;
@@ -329,6 +338,11 @@ public class BaseItem {
 		}
 	}
 	
+	/**
+	 * {@link BaseItemTool.Pickaxe}
+	 * @author small_jiu
+	 */
+	@Deprecated
 	public static abstract class Pickaxe extends Tool implements IHasModel {
 		protected final String name;
 		protected final CreativeTabs tab;
@@ -406,6 +420,11 @@ public class BaseItem {
 		public abstract float getDestroySpeed(ItemStack stack, IBlockState state);
 	}
 	
+	/**
+	 * {@link BaseItemTool.Axe}
+	 * @author small_jiu
+	 */
+	@Deprecated
 	public static abstract class Axe extends Tool implements IHasModel {
 		protected final String name;
 		protected final CreativeTabs tab;
@@ -482,7 +501,12 @@ public class BaseItem {
 		@Override
 		public abstract float getDestroySpeed(ItemStack stack, IBlockState state);
 	}
-
+	
+	/**
+	 * {@link BaseItemTool.Shovel}
+	 * @author small_jiu
+	 */
+	@Deprecated
 	public static abstract class Shovel extends Tool implements IHasModel {
 		protected final String name;
 		protected final CreativeTabs tab;
@@ -559,5 +583,5 @@ public class BaseItem {
 		@Override
 		public abstract float getDestroySpeed(ItemStack stack, IBlockState state);
 	}
-
+	
 }

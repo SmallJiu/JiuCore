@@ -109,18 +109,23 @@ public final class ItemUtils {
 		}
 	}
 	
-	public void addItemToSlot(IItemHandlerModifiable slots, ItemStack stack) {
+	public boolean addItemToSlot(IItemHandlerModifiable slots, ItemStack stack, boolean simulate) {
 		for (int slot = 0; slot < slots.getSlots(); ++slot) {
 			ItemStack putStack = slots.getStackInSlot(slot);
 			if (JiuUtils.item.equalsStack(putStack, stack)) {
-				putStack.grow(stack.getCount());
-				slots.setStackInSlot(slot, putStack);
-				break;
+				if(!simulate) {
+					putStack.grow(stack.getCount());
+					slots.setStackInSlot(slot, putStack);
+				}
+				return true;
 			}else if(putStack == null || putStack.isEmpty()){
-				slots.setStackInSlot(slot, stack);
-				break;
+				if(!simulate) {
+					slots.setStackInSlot(slot, stack);
+				}
+				return true;
 			}
 		}
+		return false;
 	}
 	
 	/**
@@ -339,30 +344,19 @@ public final class ItemUtils {
 						if(checkDamage) {
 							if(stackA.getItemDamage() == stackB.getItemDamage()) {
 								return true;
-							}else {
-								return false;
 							}
-						}else {
-							return true;
 						}
-					}else {
-						return false;
 					}
 				}else {
 					if(checkDamage) {
 						if(stackA.getItemDamage() == stackB.getItemDamage()) {
 							return true;
-						}else {
-							return false;
 						}
-					}else {
-						return true;
 					}
 				}
-			}else {
-				return false;
 			}
 		}
+		return false;
 	}
 	
 	public EntityEquipmentSlot getArmorSlotForID(int id) {
@@ -397,13 +391,10 @@ public final class ItemUtils {
 			if(stateA.getBlock().equals(stateB.getBlock())) {
 				if(stateA.getBlock().getMetaFromState(stateA) == stateB.getBlock().getMetaFromState(stateB)) {
 					return true;
-				}else {
-					return false;
 				}
-			}else {
-				return false;
 			}
 		}
+		return false;
 	}
 	
 	/**

@@ -93,7 +93,7 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 					EnergyUtils util = new EnergyUtils();
 					this.addEnergy(util, invStack);
 					
-					JiuUtils.entity.sendClientMessage(player, util.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
+					JiuUtils.entity.sendI18nMessage(player, util.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
 				}
 			}
 		}
@@ -110,10 +110,10 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 				
 				if(mainHand.getItem() == this) {
 					this.addEnergy(mainutil, mainHand);
-					JiuUtils.entity.sendClientMessage(player, mainutil.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
+					JiuUtils.entity.sendI18nMessage(player, mainutil.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
 				}else if(offHand.getItem() == this) {
 					this.addEnergy(offutil, offHand);
-					JiuUtils.entity.sendClientMessage(player, offutil.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
+					JiuUtils.entity.sendI18nMessage(player, offutil.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
 				}
 			}
 		}
@@ -127,7 +127,7 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 				if(JiuUtils.item.equalsStack(item.getItem(), new ItemStack(this), false, false)) {
 					EnergyUtils util = new EnergyUtils();
 					this.addEnergy(util, item.getItem());
-					JiuUtils.entity.sendClientMessageToAllPlayer(world, util.getFEEnergy(item.getItem())+": World", TextFormatting.GREEN);
+					JiuUtils.entity.sendI18nMessageToAllPlayer(world, util.getFEEnergy(item.getItem())+": World", TextFormatting.GREEN);
 				}
 			}else {
 				if(item.getItem().getItem() == this || item.getItem().getItem() == Item.getItemFromBlock(Init.TestBlock)) {
@@ -166,7 +166,7 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 									item.setPosition(tpos.getX(), tpos.getY(), tpos.getZ());
 								}
 								
-								JiuUtils.entity.sendClientMessageToAllPlayer(world, "In World: Meta: " + item.getItem().getMetadata() + " Y: " + item.getPosition().getY(), TextFormatting.GREEN);
+								JiuUtils.entity.sendI18nMessageToAllPlayer(world, "In World: Meta: " + item.getItem().getMetadata() + " Y: " + item.getPosition().getY(), TextFormatting.GREEN);
 								item.getItem().setCount(0);
 							}
 						}

@@ -3,6 +3,8 @@ package cat.jiu.core.util.crafting;
 import java.util.HashMap;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import cat.jiu.core.api.events.item.IItemInFluidTickEvent;
 import cat.jiu.core.util.JiuUtils;
 import net.minecraft.block.state.IBlockState;
@@ -168,7 +170,7 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 		private final boolean consumeFluid;
 		
 		public InFluidCraftingRecipeType(IBlockState fluid, ItemStack input, int inputAmout, ItemStack[] outputs, boolean consumeFluid) {
-			this(fluid, input, inputAmout, JiuUtils.other.copyArrayToList(outputs), consumeFluid);
+			this(fluid, input, inputAmout, Lists.newArrayList(outputs), consumeFluid);
 		}
 		
 		public InFluidCraftingRecipeType(IBlockState fluid, ItemStack input, int inputAmout, List<ItemStack> outputs, boolean consumeFluid) {

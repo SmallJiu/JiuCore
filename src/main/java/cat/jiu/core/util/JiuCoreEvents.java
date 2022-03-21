@@ -2,13 +2,15 @@ package cat.jiu.core.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import com.google.common.collect.Lists;
+
 import cat.jiu.core.JiuCore;
+import cat.jiu.core.test.Init;
 import cat.jiu.core.api.IJiuEvent;
 import cat.jiu.core.api.events.client.player.IPlayerMoveMouseInGameEvent;
 import cat.jiu.core.api.events.client.player.IPlayerMoveMouseInGuiEvent;
@@ -63,8 +65,6 @@ import cat.jiu.core.api.events.player.IPlayerUseItemFinish;
 import cat.jiu.core.api.events.player.IPlayerUseItemStart;
 import cat.jiu.core.api.events.player.IPlayerUseItemStop;
 import cat.jiu.core.api.events.player.IPlayerUseItemTick;
-import cat.jiu.core.exception.UnsupportedException;
-import cat.jiu.core.test.Init;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
@@ -85,6 +85,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.MouseEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 //import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -105,66 +106,26 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-//@SuppressWarnings("unused")
 @EventBusSubscriber
 public final class JiuCoreEvents {
 	private static final List<IJiuEvent> events = new ArrayList<IJiuEvent>();
 	
-	/*
-	public static <T extends IJiuEvent> void addEvents(T... envs) {
-		for(IJiuEvent event : envs) {
-			addEvent(event);
-		}
-	}
-	*/
-	
-	public static void addEvent(IJiuEvent[]... envs) {
-		for(IJiuEvent[] env : envs) {
-			for(IJiuEvent event : env) {
-				addEvent(event);
-			}
+	@SuppressWarnings("unchecked")
+	public static <T extends IJiuEvent> void addEvent(List<T>... envs) {
+		for(List<T> env : envs) {
+			events.addAll(env);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void addEvent(List<IJiuEvent>... envs) {
-		for(List<IJiuEvent> env : envs) {
-			for(IJiuEvent event : env) {
-				addEvent(event);
-			}
+	public static <T extends IJiuEvent> void addEvent(T... event) {
+		for(T t : event) {
+			events.add(t);
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	public static <K> void addEventWithMapValues(Map<K, IJiuEvent>... envs) {
-		for(Map<K, IJiuEvent> env : envs) {
-			for(IJiuEvent event : env.values()) {
-				addEvent(event);
-			}
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static <V> void addEventWhitMapKeys(Map<IJiuEvent, V>... envs) {
-		for(Map<IJiuEvent, V> env : envs) {
-			for(IJiuEvent event : env.keySet()) {
-				addEvent(event);
-			}
-		}
-	}
-	
-	public static void addEvent(IJiuEvent event) {
-		events.add(event);
-	}
-	
-	/*
-	public static final void removeEvent(IJiuEvent event) {
-		events.remove(event);
-	}
-	*/
-	
+
 	public static List<IJiuEvent> getEvents() {
-		return JiuUtils.other.copyList(events);
+		return Lists.newArrayList(events);
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -233,19 +194,24 @@ public final class JiuCoreEvents {
 		
 	}
 	
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public static void render(RenderGameOverlayEvent event) {
+		
+	}
+	
+	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public static void onSendMessage(ClientChatEvent event) {
 		String originalMessage = event.getOriginalMessage();
 		String message = event.getMessage();
 		
 		if(originalMessage.indexOf("$") != -1) {
-			if(originalMessage.indexOf("jndi") != -1) {
-				try {
-					event.setMessage("");
-					throw new UnsupportedException("Message Contain Log4j Bug");
-				} catch (UnsupportedException e) {
-					e.printStackTrace();
-				}
+			if(originalMessage.contains("jndi")
+			|| originalMessage.contains("ldap")
+			|| originalMessage.contains("rmi")) {
+				event.setMessage("I send a Log4j Bug message to Server, ban me.");
+				return;
 			}
 		}
 		
@@ -301,22 +267,11 @@ public final class JiuCoreEvents {
 		}
 	}
 	
-//	static long i = 0L;
-	
 	@SubscribeEvent
 	public static void onEntityTick(LivingUpdateEvent event) {
 		Entity entity = event.getEntity();
 		BlockPos pos = entity.getPosition();
 		World world = entity.getEntityWorld();
-		/*
-    	Thread t = new Thread() {
-    		@Override
-    		public void run() {
-    			
-    		}
-    	};
-    	t.start();
-		*/
 		
 		synchronized ("EntityTick") {
 			for(IJiuEvent event0 : events) {
@@ -351,22 +306,13 @@ public final class JiuCoreEvents {
 										int slotId = getSlotFor(mainInventory, invStack);
 										((IItemInPlayerInventoryTick) event0).onItemInPlayerInventoryTick(player, invStack, slotId);
 									}
-//									if(JiuCore.TEST_MODEL) {
-//										if(invStack.getItem() == Init.BUBBLE) {
-//											invStack.shrink(1);
-//							    		}
-//									}
 								}
 							}
 						}
 					}
 					
 					if(event0 instanceof IItemInPlayerHandTick) {
-						ItemStack mainHand = player.getHeldItemMainhand();
-						ItemStack offHand = player.getHeldItemOffhand();
-						if(!mainHand.isEmpty() || !offHand.isEmpty()) {
-							((IItemInPlayerHandTick) event0).onItemInPlayerHandTick(player, mainHand, offHand);
-						}
+						((IItemInPlayerHandTick) event0).onItemInPlayerHandTick(player, player.getHeldItemMainhand(), player.getHeldItemOffhand());
 					}
 					
 					if(event0 instanceof IItemInPlayerArmorTick) {
@@ -400,13 +346,6 @@ public final class JiuCoreEvents {
 				}
 			}
 		}
-//		i = System.currentTimeMillis();
-		
-//		i = System.currentTimeMillis() - i;
-		
-//		if(!world.isRemote) {
-//			JiuCore.instance.log.info(i+"");
-//		}
 	}
 	
 	/**
@@ -414,7 +353,7 @@ public final class JiuCoreEvents {
 	 */
     private static int getSlotFor(NonNullList<ItemStack> inv, ItemStack stack) {
         for (int i = 0; i < inv.size(); ++i) {
-            if (!inv.get(i).isEmpty() && JiuUtils.item.equalsStack(stack, inv.get(i), true, true)){
+            if (inv != null && !inv.get(i).isEmpty() && JiuUtils.item.equalsStack(stack, inv.get(i), true, true)){
                 return i;
             }
         }
@@ -450,7 +389,6 @@ public final class JiuCoreEvents {
 		for(IJiuEvent event0 : events) {
 			if(entity instanceof EntityPlayer) {
 				EntityPlayer player = (EntityPlayer) entity;
-				
 				if(event0 instanceof IPlayerDeathEvent) {
 					((IPlayerDeathEvent) event0).onPlayerDeath(player, world, pos);
 				}
@@ -623,6 +561,10 @@ public final class JiuCoreEvents {
 		BlockPos pos = player.getPosition();
 		int dim = player.dimension;
 		
+		world.getMinecraftServer().getPlayerProfileCache().save();
+		world.getMinecraftServer().getPlayerProfileCache().load();
+		JiuUtils.entity.initNameAndUUID(world.getMinecraftServer());
+		
 		for(IJiuEvent event0 : events) {
 			if(event0 instanceof IPlayerLoggedInEvent) {
 				((IPlayerLoggedInEvent) event0).onPlayerLoggedIn(player, world, pos, dim);
@@ -650,6 +592,7 @@ public final class JiuCoreEvents {
 		World world = player.getEntityWorld();
 		BlockPos ePos = player.getPosition();
 		ItemStack stack = event.smelting;
+		
 		
 		for(IJiuEvent event0 : events) {
 			if(event0 instanceof IPlayerSmeltedItemEvent) {
@@ -693,24 +636,14 @@ public final class JiuCoreEvents {
 		BlockPos pos = player.getPosition();
 		World world = player.getEntityWorld();
 		int xps = event.getOrb().getXpValue();
-		/*
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				
+		final int originalXps = event.getOrb().getXpValue();
+		
+		for(IJiuEvent event0 : events) {
+			if(event0 instanceof IPlayerPickupXPEvent) {
+				((IPlayerPickupXPEvent) event0).onPlayerPickupXP(player, xps, world, pos, originalXps);
 			}
-		};
-		t.start();
-		try {
-			t.join();
-		} catch (InterruptedException e) { e.printStackTrace(); }
-		*/
-		synchronized ("PlayerPickupXp") {
-			for(IJiuEvent event0 : events) {
-				if(event0 instanceof IPlayerPickupXPEvent) {
-					((IPlayerPickupXPEvent) event0).onPlayerPickupXP(player, xps, world, pos);
-				}
-			}
+		}
+		if(xps != originalXps) {
 			event.getOrb().xpValue = xps;
 		}
     }
@@ -749,50 +682,44 @@ public final class JiuCoreEvents {
 	@SubscribeEvent
     public static void onEntityItemTick(TickEvent.WorldTickEvent event) {
     	World world = event.world;
-    	/*
-    	new Thread() {
-    		@Override
-    		public void run() {
-    			
-    		}
-    	}.start();
-    	*/
+    	
     	List<EntityItem> eitems = new ArrayList<EntityItem>();
-    	for(Entity entity : world.loadedEntityList) {
-    		if(entity instanceof EntityItem) {
-    			if(!((EntityItem) entity).getItem().isEmpty() || ((EntityItem)entity).getItem().getItem() != Init.BUBBLE) {
-    				eitems.add(((EntityItem) entity));
-    			}
-    		}
+    	if(!world.loadedEntityList.isEmpty()) {
+    		for(Entity entity : world.loadedEntityList) {
+        		if(entity instanceof EntityItem) {
+        			EntityItem item = (EntityItem) entity;
+        			if(!item.getItem().isEmpty() && item.getItem().getItem() != Init.BUBBLE) {
+        				eitems.add(item);
+        			}
+        		}
+        	}
     	}
     	
-    	for(EntityItem eitem : eitems) {
-    		BlockPos pos = eitem.getPosition();
-    		for(IJiuEvent event0 : events) {
-    			if(event0 instanceof IItemInWorldTickEvent) {
-    				((IItemInWorldTickEvent) event0).onItemInWorldTick(eitem, world, pos);
-    			}
-    			if(event0 instanceof IItemInFluidTickEvent) {
-    				if(!world.isRemote) {
-        				if(JiuUtils.entity.isEntityInFluid(world, pos)) {
-        					((IItemInFluidTickEvent) event0).onItemInFluidTick(eitem, world, pos, world.getBlockState(pos));
+    	if(!eitems.isEmpty()) {
+    		for(EntityItem eitem : eitems) {
+        		BlockPos pos = eitem.getPosition();
+        		for(IJiuEvent event0 : events) {
+        			if(event0 instanceof IItemInWorldTickEvent) {
+        				((IItemInWorldTickEvent) event0).onItemInWorldTick(eitem, world, pos);
+        			}
+        			if(event0 instanceof IItemInFluidTickEvent) {
+        				if(!world.isRemote) {
+            				if(JiuUtils.entity.isEntityInFluid(world, pos)) {
+            					((IItemInFluidTickEvent) event0).onItemInFluidTick(eitem, world, pos, world.getBlockState(pos));
+            				}
         				}
-    				}
+        			}
+        			if(event0 instanceof IItemInVoidTickEvent) {
+        				if(pos.getY() >= -61 && pos.getY() <= 0) {
+        					((IItemInVoidTickEvent) event0).onItemInVoidTick(eitem, world, pos);
+        				}
+        			}
+        		}
+        		
+        		if(JiuCore.TEST_MODEL && pos.getY() >= -61 && pos.getY() <= 0) {
+    				JiuCore.instance.log.info("Y: " + pos.getY());
     			}
-    			if(event0 instanceof IItemInVoidTickEvent) {
-    				if(pos.getY() >= -61 && pos.getY() <= 0) {
-    					((IItemInVoidTickEvent) event0).onItemInVoidTick(eitem, world, pos);
-    				}
-    			}
-    		}
-    		
-//    		if(JiuCore.TEST_MODEL && eitem.getItem().getItem() == Init.BUBBLE) {
-//    			eitem.getItem().shrink(1);
-//    		}
-    		
-    		if(JiuCore.TEST_MODEL && pos.getY() >= -61 && pos.getY() <= 0) {
-				JiuCore.instance.log.info("Y: " + pos.getY());
-			}
+        	}
     	}
     	eitems.clear();
     }

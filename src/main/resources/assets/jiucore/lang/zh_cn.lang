@@ -4,5 +4,21 @@ command.jc.craft.influid.reload.0.info=所有临时合成表已移除！
 command.jc.craft.influid.reload.1.info=所有合成表已重载, 用时%s
 command.jc.craft.influid.remove.success.info=移除合成表成功, 用时%s
 
+command.value.get.success.info=玩家 %s 现在有 %s 个 %s
+command.value.add.success.info=添加 %s 个 %s 到玩家 %s 成功, Ta现在有 %s 个 %s
+command.value.subtract.success.info=从玩家 %s 扣除 %s 个 %s 成功, Ta现在有 %s 个 %s
+command.value.remove.success.info=玩家 %s 的 %s 已重置成功, Ta现在有 0 个 %s
+
+command.value.reload.success.info=重载成功
+
+command.value.reload.not_found_file.info=找不到文件: values/value.json
+command.value.reload.unknown=未知错误,请查看日志
+command.value.add.fail.not_found_player.info=找不到玩家: %s, 请检查大小写或是否有此玩家
+command.value.null.info=ID不能为空
+command.value.value_not_found.info=找不到指定的值: %s
+command.value.unable_write.info=但未写入文件
+command.value.subtract.is_zero.info=玩家 %s 的 %s 不可扣除, 因为会变成负数
+
 #test
 fluid.test_gas=测试流体
+value.coin.name=硬币

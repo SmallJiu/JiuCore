@@ -44,25 +44,25 @@ public class RegisterModel {
 	
 	/**
 	 * @param item the item
-	 * @param name the dir name
-	 * @param resname the model name
+	 * @param dir the dir name
+	 * @param file the model name
 	 */
 	// 不含有meta的物品模型注册，模型文件路径可自定义
 	@SideOnly(Side.CLIENT)
-	public void registerItemModel(Item item, String name, String resname) {
-		this.register(item, 0, this.modid + ":" + name + "/" + resname, "inventory");
+	public void registerItemModel(Item item, String dir, String file) {
+		this.register(item, 0, this.modid + ":" + dir + (dir.endsWith("/") ? "" : "/") + file, "inventory");
 	}
 	
 	/**
 	 * @param item the item
 	 * @param meta the meta
-	 * @param name the dir name
-	 * @param resname the model name
+	 * @param dir the dir name
+	 * @param file the model name
 	 */
 	// 含有meta的物品模型注册，模型文件路径可自定义
 	@SideOnly(Side.CLIENT)
-	public void registerItemModel(Item item, int meta, String name, String resname) {
-		this.register(item, meta, this.modid + ":" + name + "/" + resname, "inventory");
+	public void registerItemModel(Item item, int meta, String dir, String file) {
+		this.register(item, meta, this.modid + ":" + dir + (dir.endsWith("/") ? "" : "/") + file, "inventory");
 	}
 	
 	/**
@@ -76,25 +76,25 @@ public class RegisterModel {
 	
 	/**
 	 * @param block the block
-	 * @param name the dir name
-	 * @param resname the model name
+	 * @param dir the dir name
+	 * @param file the model name
 	 */
 	// 不含有meta方块的模型注册，模型文件路径可自定义
 	@SideOnly(Side.CLIENT)
-	public void registerItemModel(Block block, String name, String resname) {
-		this.register(Item.getItemFromBlock(block), 0, this.modid + ":" + name + "/" + resname, "inventory");
+	public void registerItemModel(Block block, String dir, String file) {
+		this.register(Item.getItemFromBlock(block), 0, this.modid + ":" + dir + (dir.endsWith("/") ? "" : "/") + file, "inventory");
 	}
 	
 	/**
 	 * @param block the block
 	 * @param meta the meta
-	 * @param name the dir name
-	 * @param resname the model name
+	 * @param dir the dir name
+	 * @param file the model name
 	 */
 	// 含有meta方块的模型注册，模型文件路径可自定义
 	@SideOnly(Side.CLIENT)
-	public void registerItemModel(Block block, int meta, String name, String resname) {
-		this.register(Item.getItemFromBlock(block), meta, this.modid + ":" + name + "/" + resname, "inventory");
+	public void registerItemModel(Block block, int meta, String dir, String file) {
+		this.register(Item.getItemFromBlock(block), meta, this.modid + ":" + dir + (dir.endsWith("/") ? "" : "/") + file, "inventory");
 	}
 	
 	/**
@@ -168,12 +168,12 @@ public class RegisterModel {
 	/**
 	 * @param item the item
 	 * @param meta the meta
-	 * @param name the dir name
-	 * @param resname the model name
+	 * @param file the file name
+	 * @param variant the variant name
 	 */
 	@SideOnly(Side.CLIENT)
-	public void register(Item item, int meta, String pathName, String variant) {
-		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(new ResourceLocation(pathName), variant));
+	public void register(Item item, int meta, String file, String variant) {
+		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(new ResourceLocation(file), variant));
 	}
 	
 	@SubscribeEvent

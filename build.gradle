@@ -2,16 +2,19 @@ buildscript {
     repositories {
         jcenter()
 //        maven { url = "http://lss233.littleservice.cn/repositories/minecraft" }
-        maven { url = "https://files.minecraftforge.net/maven" }
+       maven { url = "https://repo.spongepowered.org/maven/" }
+//        maven { url = "https://files.minecraftforge.net/maven/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+		classpath 'org.spongepowered:mixin:0.8.5'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
+//apply plugin: 'org.spongepowered.mixingradle:0.8.5'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-version = "1.12.2-1.0.0"
+version = "1.12.2-1.0.8-20220315202836"
 group = "cat.jiu.core" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "JiuCore"
 
@@ -33,8 +36,34 @@ minecraft {
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
-dependencies {
+def commonManifest = {
+    attributes('FMLAT': 'jc_at.cfg')
+}
 
+jar {
+	manifest commonManifest
+}
+
+task deobfJar(type: Jar) {
+    manifest commonManifest
+}
+
+artifacts {
+    deobfJar
+}
+
+repositories {
+    mavenLocal()
+	maven {
+        name "CoFH Maven"
+        url "https://maven.covers1624.net"
+    }
+}
+
+dependencies {
+	deobfCompile 'cofh:RedstoneFlux:1.12-2.1.0.7:universal'
+	//deobfCompile 'org.spongepowered:mixin:0.8.5'
+	
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
@@ -62,15 +91,15 @@ processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
-
+	
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
+	
         // replace version and mcversion
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
-        
+	
     // copy everything else except the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'

@@ -31,7 +31,6 @@ public class CapabilityJiuEnergy {
 					 throw new IllegalArgumentException("Can not deserialize to an instance that isn't the default implementation");
 				}
 			}
-        	
         }, () -> new JiuEnergyStorage(10000));
     }
 }

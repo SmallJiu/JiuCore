@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class FileDownload {
-	
 	public static String downLoadFile(String url, String fileName, String fileDir, String exName) {
 //		String filePathDir = "c:/";
 		String method = "GET";// 以Post方式提交表单，默认get方式

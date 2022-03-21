@@ -3,7 +3,6 @@ package cat.jiu.core.util.crafting;
 import java.util.HashMap;
 import java.util.Map;
 
-import cat.jiu.core.JiuCore;
 import cat.jiu.core.util.JiuUtils;
 
 import net.minecraft.item.ItemStack;
@@ -16,8 +15,12 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public final class AnvilRecipe {
 	private static final Map<Integer, AnvilRecipeType> recipeType = new HashMap<Integer, AnvilRecipeType>();
 	
+	public static void addAnvilRecipe(AnvilRecipeType type) {
+		recipeType.put(recipeType.size(), type);
+	}
+	
 	public static void addAnvilRecipe(ItemStack left, ItemStack right, ItemStack out, int expLevel) {
-		recipeType.put(recipeType.size(), new AnvilRecipeType(left, right, out, expLevel));
+		addAnvilRecipe(new AnvilRecipeType(left, right, out, expLevel));
 	}
 	
 	@SubscribeEvent
@@ -26,17 +29,19 @@ public final class AnvilRecipe {
 			for(int i : recipeType.keySet()) {
 				AnvilRecipeType type = recipeType.get(i);
 				
-				if(JiuUtils.item.equalsStack(type.getLeftInput(), event.getLeft())
-				&& JiuUtils.item.equalsStack(type.getRightInput(), event.getRight())) {
-					ItemStack stack = type.getOutput();
-//					stack.setCount(stack.getCount() * Math.min(event.getLeft().getCount(), event.getRight().getCount()));
+				if((JiuUtils.item.equalsStack(type.getLeftInput(), event.getLeft()) && type.getLeftInput().getCount() <= event.getLeft().getCount())
+				&& (JiuUtils.item.equalsStack(type.getRightInput(), event.getRight()) && type.getRightInput().getCount() <= event.getRight().getCount())) {
 					event.setCost(type.getExpLevel());
-					event.setOutput(stack);
-					JiuCore.instance.log.info("AnvilUpdate1");
+					ItemStack out = type.getOutput();
+					
+					if(event.getLeft().getCount() / type.getLeftInput().getCount() <=  event.getRight().getCount() / type.getRightInput().getCount()) {
+						out.setCount(out.getCount() * (event.getLeft().getCount() / type.getLeftInput().getCount()));
+					}
+					
+					event.setOutput(out);
 				}
 			}
 		}
-		JiuCore.instance.log.info("AnvilUpdate0");
 	}
 	
 	public static final class AnvilRecipeType {
@@ -53,19 +58,19 @@ public final class AnvilRecipe {
 		}
 		
 		public ItemStack getLeftInput() {
-			return this.left;
+			return this.left.copy();
 		}
-
+		
 		public ItemStack getRightInput() {
-			return this.right;
+			return this.right.copy();
 		}
 		
 		public ItemStack getOutput() {
-			return this.out;
+			return this.out.copy();
 		}
 		
 		public int getExpLevel() {
-			return this.expLevel;
+			return new Integer(this.expLevel);
 		}
 	}
 }

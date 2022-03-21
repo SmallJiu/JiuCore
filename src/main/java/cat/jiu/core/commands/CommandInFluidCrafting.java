@@ -64,11 +64,11 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 					}
 					
 					if(InFluidCrafting.getRecipesMap().isEmpty()) {
-						JiuUtils.entity.sendClientMessage(sender, "UseFluid: < "+ fluid + " >");
-						JiuUtils.entity.sendClientMessage(sender, "InputItem: < "+ input + " >");
-						JiuUtils.entity.sendClientMessage(sender, "OutputItems: < "+ outputs + " >");
-						JiuUtils.entity.sendClientMessage(sender, "CanConsumeFluid: < "+ canConsumeFluid + " >");
-						JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.warn.info", TextFormatting.RED);
+						JiuUtils.entity.sendI18nMessage(sender, "UseFluid: < "+ fluid + " >");
+						JiuUtils.entity.sendI18nMessage(sender, "InputItem: < "+ input + " >");
+						JiuUtils.entity.sendI18nMessage(sender, "OutputItems: < "+ outputs + " >");
+						JiuUtils.entity.sendI18nMessage(sender, "CanConsumeFluid: < "+ canConsumeFluid + " >");
+						JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.warn.info", TextFormatting.RED);
 						
 						InFluidCrafting.addInFluidCrafting(fluid, input, outputs, canConsumeFluid);
 					}
@@ -78,19 +78,19 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 						
 						if(!JiuUtils.other.containItemStackKey(InFluidCrafting.getRecipes(), input, false)) {
 							if(!JiuUtils.item.equalsStack(type.getInput(), input)) {
-								JiuUtils.entity.sendClientMessage(sender, "UseFluid: < "+ fluid + " >");
-								JiuUtils.entity.sendClientMessage(sender, "InputItem: < "+ input + " >");
-								JiuUtils.entity.sendClientMessage(sender, "OutputItems: < "+ outputs + " >");
-								JiuUtils.entity.sendClientMessage(sender, "CanConsumeFluid: < "+ canConsumeFluid + " >");
-								JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.warn.info", TextFormatting.RED);
+								JiuUtils.entity.sendI18nMessage(sender, "UseFluid: < "+ fluid + " >");
+								JiuUtils.entity.sendI18nMessage(sender, "InputItem: < "+ input + " >");
+								JiuUtils.entity.sendI18nMessage(sender, "OutputItems: < "+ outputs + " >");
+								JiuUtils.entity.sendI18nMessage(sender, "CanConsumeFluid: < "+ canConsumeFluid + " >");
+								JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.warn.info", TextFormatting.RED);
 								
 								InFluidCrafting.addInFluidCrafting(fluid, input, outputs, canConsumeFluid);
 								break;
 							}else {
-								JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
+								JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
 							}
 						}else {
-							JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
+							JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
 							break;
 						}
 					}
@@ -113,25 +113,25 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 						
 						if(!JiuUtils.other.containItemStackKey(InFluidCrafting.getRecipes(), input, false)) {
 							if(!JiuUtils.item.equalsStack(type.getInput(), input)) {
-								JiuUtils.entity.sendClientMessage(sender, "UseFluid: < "+ Blocks.WATER.getDefaultState() + " >");
-								JiuUtils.entity.sendClientMessage(sender, "InputItem: < "+ input + " >");
-								JiuUtils.entity.sendClientMessage(sender, "OutputItems: < "+ outputs + " >");
-								JiuUtils.entity.sendClientMessage(sender, "CanConsumeFluid: < false >");
-								JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.warn.info", TextFormatting.RED);
+								JiuUtils.entity.sendI18nMessage(sender, "UseFluid: < "+ Blocks.WATER.getDefaultState() + " >");
+								JiuUtils.entity.sendI18nMessage(sender, "InputItem: < "+ input + " >");
+								JiuUtils.entity.sendI18nMessage(sender, "OutputItems: < "+ outputs + " >");
+								JiuUtils.entity.sendI18nMessage(sender, "CanConsumeFluid: < false >");
+								JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.warn.info", TextFormatting.RED);
 								
 								InFluidCrafting.addInFluidCrafting(Blocks.WATER.getDefaultState(), input, outputs, false);
 								break;
 							}else {
-								JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
+								JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
 							}
 						}else {
-							JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
+							JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.error.info", TextFormatting.GREEN);
 							break;
 						}
 					}
 				}else {
-					JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.0.info");
-					JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.add.1.info");
+					JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.0.info");
+					JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.add.1.info");
 				}
 				
 //				JiuUtils.entity.sendMessage(sender, "commands size: "+ args.length);
@@ -168,7 +168,7 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			InFluidCrafting.removeAllRecipes();
-			JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.reload.0.info", TextFormatting.RED);
+			JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.reload.0.info", TextFormatting.RED);
 			
 			long time = System.currentTimeMillis();
 			
@@ -178,7 +178,7 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 				}
 			}
 			
-			JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.reload.1.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time)+"ms )");
+			JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.reload.1.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time)+"ms )");
 		}
 		
 		@Override
@@ -197,7 +197,7 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 				long time = System.currentTimeMillis();
 				
 				InFluidCrafting.removeCrafting(output);
-				JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.remove.success.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time) + "ms )");
+				JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.remove.success.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time) + "ms )");
 			}else if(args.length == 2) {
 				Item item = getItemByText(sender, args[0]);
 				int meta = parseInt(args[1]);
@@ -205,10 +205,10 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 				long time = System.currentTimeMillis();
 				
 				InFluidCrafting.removeCrafting(input);
-				JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.remove.success.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time) + "ms )");
+				JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.remove.success.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time) + "ms )");
 			}else {
-				JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.remove.0.info", TextFormatting.RED);
-				JiuUtils.entity.sendClientMessage(sender, "command.jc.craft.influid.remove.1.info", TextFormatting.RED);
+				JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.remove.0.info", TextFormatting.RED);
+				JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.remove.1.info", TextFormatting.RED);
 			}
 		}
 		
@@ -223,11 +223,11 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if(InFluidCrafting.getRecipes().isEmpty()) {
-				JiuUtils.entity.sendClientMessage(sender, "All recipe has been remove");
+				JiuUtils.entity.sendI18nMessage(sender, "All recipe has been remove");
 			}else {
 				long time = System.currentTimeMillis();
 				InFluidCrafting.removeAllRecipes();
-				JiuUtils.entity.sendClientMessage(sender, "All recipe remove successful, took( " + (System.currentTimeMillis() - time) + "ms )", TextFormatting.GREEN);
+				JiuUtils.entity.sendI18nMessage(sender, "All recipe remove successful, took( " + (System.currentTimeMillis() - time) + "ms )", TextFormatting.GREEN);
 			}
 		}
 		

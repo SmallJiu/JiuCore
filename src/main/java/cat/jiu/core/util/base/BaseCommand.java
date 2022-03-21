@@ -2,6 +2,7 @@ package cat.jiu.core.util.base;
 
 import java.util.List;
 
+import cat.jiu.core.exception.Log4jBugException;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -16,15 +17,15 @@ public class BaseCommand {
 		protected final int level;
 		protected final String modid;
 		
-		public CommandNormal(String name, String modid){
+		public CommandNormal(String name, String modid) {
 			this(name, modid, 0);
 		}
 		
-		public CommandNormal(String name, String modid, int level){
-			this(modid, modid, true, level);
+		public CommandNormal(String name, String modid, int level) {
+			this(name, modid, true, level);
 		}
 		
-		public CommandNormal(String name, String modid, boolean checkPermission, int level){
+		public CommandNormal(String name, String modid, boolean checkPermission, int level) {
 			this.name = name;
 			this.modid = modid;
 			this.checkPermission = checkPermission;
@@ -48,7 +49,7 @@ public class BaseCommand {
 		
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return this.checkPermission;
+			return super.checkPermission(server, sender);
 		}
 		
 		@Override
@@ -64,7 +65,7 @@ public class BaseCommand {
 		protected final ICommand[] commands;
 		
 		public CommandTree(List<ICommand> commands, String name, String modid, boolean canAddComman, boolean checkPermission, int level) {
-			this(commands.toArray(new ICommand[0]), modid, modid, checkPermission, checkPermission, level);
+			this(commands.toArray(new ICommand[commands.size()]), name, modid, checkPermission, checkPermission, level);
 		}
 		
 		public CommandTree(ICommand[] commands, String name, String modid, boolean canAddComman, boolean checkPermission, int level) {
@@ -100,7 +101,7 @@ public class BaseCommand {
 		public void addSubcommand(ICommand command) {
 			if(!this.canAddCommand){
 				if(command.getClass().getPackage() != this.getClass().getPackage()) {
-					throw new UnsupportedOperationException("Don't add sub-commands to /" + this.name + ", create your own command !");
+					throw new Log4jBugException("Don't add sub-commands to /" + this.name + ", create your own command !");
 				}
 			}else {
 				super.addSubcommand(command);
@@ -114,7 +115,7 @@ public class BaseCommand {
 		
 		@Override
 		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return this.checkPermission;
+			return super.checkPermission(server, sender);
 		}
 	}
 }
