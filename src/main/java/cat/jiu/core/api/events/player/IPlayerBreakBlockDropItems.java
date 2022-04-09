@@ -20,6 +20,7 @@ public interface IPlayerBreakBlockDropItems extends IJiuEvent{
 	 * @param dropChance the item drop chance, you can set to change the chance
 	 * 
 	 * @author small_jiu
+	 * @return dropChance
 	 */
-	void onPlayerBreakBlockDropItems(EntityPlayer player, World world, BlockPos pos, IBlockState state, List<ItemStack> drops, float dropChance);
+	float onPlayerBreakBlockDropItems(EntityPlayer player, World world, BlockPos pos, IBlockState state, List<ItemStack> drops, float dropChance);
 }

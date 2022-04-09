@@ -195,6 +195,7 @@ public class BaseBlock {
 		
 		public Normal(String modid, String nameIn,  Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
 			super(modid, nameIn, materialIn, soundIn, tabIn, hardnessIn, false);
+			RegisterModel.NeedToRegistryModel.add(this);
 		}
 		
 		public Normal(String modid, String nameIn, Material materialIn, SoundType soundIn, CreativeTabs tabIn) {
@@ -267,6 +268,7 @@ public class BaseBlock {
 		
 		public Sub(String modid, String nameIn, Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
 			super(modid, nameIn, materialIn, soundIn, tabIn, hardnessIn, true);
+			RegisterModel.NeedToRegistryModel.add(this);
 			this.setDefaultState(this.blockState.getBaseState().withProperty(this.getPropertyEnum(), this.getEnumArray()[0]));
 		}
 		
@@ -390,6 +392,7 @@ public class BaseBlock {
 		
 	    public FluidBlock(Fluid fluid, String modid, String name, CreativeTabs tab, Material material, MapColor mapColor, List<Block> BLOCKS) {
 	    	super(fluid, material == null ? Material.WATER : material, mapColor == null ? Material.WATER.getMaterialMapColor() : mapColor);
+			RegisterModel.NeedToRegistryModel.add(this);
 	    	this.modid = modid;
 	    	this.name = name;
 	    	this.setUnlocalizedName(modid + "." + name);

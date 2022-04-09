@@ -70,6 +70,7 @@ public class BaseUI {
 			this.sendChanges();
 		}
 		
+		@SideOnly(Side.CLIENT)
 		protected abstract void updateChanges(int id, int data);
 		
 		@SideOnly(Side.CLIENT)
@@ -83,6 +84,5 @@ public class BaseUI {
 			boolean haveBlock = player.world.getBlockState(this.blockPos).getBlock() != Blocks.AIR;
 			return player.world.equals(player.getEntityWorld()) && player.getDistanceSq(this.blockPos) <= 32.0 && haveBlock;
 		}
-		
 	}
 }

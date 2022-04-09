@@ -1,5 +1,9 @@
 package cat.jiu.core.util;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.api.IHasModel;
 import cat.jiu.core.test.Init;
@@ -22,7 +26,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @EventBusSubscriber
 public class RegisterModel {
-	
 	private final String modid;
 	
 	public RegisterModel(String modid) {
@@ -176,6 +179,8 @@ public class RegisterModel {
 		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(new ResourceLocation(file), variant));
 	}
 	
+	public static final List<IHasModel> NeedToRegistryModel = Lists.newArrayList();
+	
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public static void onModelRegister(ModelRegistryEvent event) {
@@ -191,6 +196,9 @@ public class RegisterModel {
 					((IHasModel) block).getItemModel();
 				}
 			}
+		}
+		for(IHasModel entry : NeedToRegistryModel) {
+			entry.getItemModel();
 		}
 	}
 }

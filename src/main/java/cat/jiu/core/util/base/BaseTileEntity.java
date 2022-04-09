@@ -3,60 +3,61 @@ package cat.jiu.core.util.base;
 import cat.jiu.core.energy.CapabilityJiuEnergy;
 import cat.jiu.core.energy.JiuEnergyStorage;
 import cat.jiu.core.util.JiuUtils;
-
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 
 public class BaseTileEntity {
 	public static abstract class Normal extends TileEntity implements ITickable {
 		@Override
-		public abstract void update();
+		public final void update() {
+			this.markDirty();
+			this.tick(this.world, this.pos, this.world.getBlockState(this.pos));
+		}
+		public abstract void tick(World world, BlockPos pos, IBlockState state);
 		@Override
-		public void readFromNBT(NBTTagCompound nbt) {
+		public final void readFromNBT(NBTTagCompound nbt) {
 			super.readFromNBT(nbt);
 			this.readNBT(nbt);
 		}
-		/**
-		 * Don't need super {@link #readFromNBT(NBTTagCompound)}.<p>
-		 * But you need super the extends class {@link #readNBT(NBTTagCompound)}.
-		 */
 		public abstract void readNBT(NBTTagCompound nbt);
 		
 		@Override
-		public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+		public final NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 			this.writeNBT(nbt);
 			return super.writeToNBT(nbt);
 		}
-		/**
-		 * Don't need super {@link #writeToNBT(NBTTagCompound)}.<p>
-		 * But you need super the extends class {@link #writeNBT(NBTTagCompound)}.
-		 */
 		public abstract void writeNBT(NBTTagCompound nbt);
 	}
 	
-	public static class FEEnergy extends Normal {
+	public static abstract class Energy extends Normal {
 		protected final JiuEnergyStorage storage;
 		public long energy = 0;
 		
-		public FEEnergy(JiuEnergyStorage storage) {
+		public Energy(JiuEnergyStorage storage) {
 			this.storage = storage;
 			this.energy = this.storage.getEnergyStoredWithLong();
 		}
 		
 		@Override
-		public void update() {
+		public final void tick(World world, BlockPos pos, IBlockState state) {
 			this.reloadEnergy();
+			this.updateTE(this.world, this.pos, this.world.getBlockState(this.pos));
 		}
+		
+		public abstract void updateTE(World world, BlockPos pos, IBlockState state);
 		
 		protected void reloadEnergy() {
 			this.energy = this.storage.getEnergyStoredWithLong();
 		}
 		
-		protected long getEnergy() {
+		public long getEnergy() {
 			return this.storage.getEnergyStoredWithLong();
 		}
 		
@@ -91,14 +92,18 @@ public class BaseTileEntity {
 		}
 		
 		@Override
-		public void readNBT(NBTTagCompound nbt) {
+		public final void readNBT(NBTTagCompound nbt) {
 			this.storage.readFromNBT(nbt);
 			this.energy = this.storage.getEnergyStoredWithLong();
+			this.readFromTeNBT(nbt);
 		}
+		public abstract void readFromTeNBT(NBTTagCompound nbt);
 		
 		@Override
-		public void writeNBT(NBTTagCompound nbt) {
+		public final void writeNBT(NBTTagCompound nbt) {
 			this.storage.writeToNBT(nbt);
+			this.writeToTeNBT(nbt);
 		}
+		public abstract void writeToTeNBT(NBTTagCompound nbt);
 	}
 }

@@ -14,6 +14,7 @@ public interface IFluidPlaceBlock extends IJiuEvent{
 	 * @param oldState
 	 * 
 	 * @author small_jiu
+	 * @return newState
 	 */
-	void onFluidPlaceBlock(World world, BlockPos pos, IBlockState newState, IBlockState oldState);
+	IBlockState onFluidPlaceBlock(World world, BlockPos pos, IBlockState newState, IBlockState oldState);
 }

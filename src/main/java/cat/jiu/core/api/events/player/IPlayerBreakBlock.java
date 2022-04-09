@@ -16,6 +16,7 @@ public interface IPlayerBreakBlock extends IJiuEvent{
 	 * @param exps Player pickup XP vaule, you can set vaule to change player get the xp vaule
 	 * 
 	 * @author small_jiu
+	 * @return 
 	 */
-	void onPlayerBreakBlock(EntityPlayer player, World world, BlockPos pos, IBlockState state, int exps);
+	int onPlayerBreakBlock(EntityPlayer player, World world, BlockPos pos, IBlockState state, int exps);
 }

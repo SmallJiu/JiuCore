@@ -16,6 +16,7 @@ import cat.jiu.core.energy.CapabilityJiuEnergy;
 import cat.jiu.core.proxy.ServerProxy;
 import cat.jiu.core.test.Init;
 import cat.jiu.core.util.JiuCoreEvents;
+import cat.jiu.core.trigger.JiuCoreTriggers;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseCreativeTab;
 import cat.jiu.core.util.crafting.AnvilRecipe;
@@ -45,7 +46,7 @@ public class JiuCore implements IInFluidCraftingEvent {
 	public static final String MODID = "jiucore";
 	public static final String NAME = "JiuCore";
 	public static final String OWNER = "small_jiu";
-	public static final String VERSION = "1.0.8-20220315202836";
+	public static final String VERSION = "1.0.9-20220407201518";
 	public static final boolean TEST_MODEL = false;
 	public static final CreativeTabs CORE = TEST_MODEL ? new BaseCreativeTab("core_test_tab", new ItemStack(Items.DIAMOND), false) : null;
 
@@ -78,6 +79,8 @@ public class JiuCore implements IInFluidCraftingEvent {
 		
 		Values.loadFromFile();
 		Values.addValue("coin");
+		Values.addValue("death");
+		JiuCoreTriggers.register();
 
 		if(TEST_MODEL) {
 			new Init();

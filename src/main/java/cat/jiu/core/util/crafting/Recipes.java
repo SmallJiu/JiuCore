@@ -11,7 +11,10 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
+import net.minecraft.item.crafting.ShapelessRecipes;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.CraftingHelper.ShapedPrimer;
@@ -163,7 +166,27 @@ public class Recipes {
 		);
 	}
 	
+	public void addShapedlessRecipe(ItemStack output, Object... inputs) {
+		ResourceLocation recipeName = getNameForRecipe(output);
+		NonNullList<Ingredient> inputIng = NonNullList.create();
+		for(Object input: inputs) {
+			if(input == null) {
+				return;
+			}
+		}
+		for(Object input: inputs) {
+			inputIng.add(CraftingHelper.getIngredient(input));
+		}
+		ShapelessRecipes recipe = new ShapelessRecipes(output.getItem().getRegistryName().toString(), output, inputIng);
+		GameData.register_impl(recipe.setRegistryName(recipeName));
+	}
+	
 	public void addShapedRecipe(ItemStack output, Object... input) {
+		for(Object object : input) {
+			if(object == null) {
+				return;
+			}
+		}
 		ResourceLocation recipeName = getNameForRecipe(output);
 		ShapedPrimer primer = CraftingHelper.parseShaped(input);
 		ShapedRecipes recipe = new ShapedRecipes(output.getItem().getRegistryName().toString(), primer.width, primer.height, primer.input, output);

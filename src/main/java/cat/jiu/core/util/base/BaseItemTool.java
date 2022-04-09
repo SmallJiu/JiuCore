@@ -64,6 +64,7 @@ public class BaseItemTool {
 			this.setUnlocalizedName(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
+			RegisterModel.NeedToRegistryModel.add(this);
 		}
 
 		protected Tool(String modid, String name, CreativeTabs tab, boolean hasSubtypes, ToolMaterial materialIn, Set<Block> effectiveBlocksIn) {
@@ -149,6 +150,7 @@ public class BaseItemTool {
 			this.setUnlocalizedName(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
+			RegisterModel.NeedToRegistryModel.add(this);
 		}
 
 		protected Sword(String modid, String name, CreativeTabs tab, ToolMaterial materialIn) {
@@ -351,6 +353,7 @@ public class BaseItemTool {
 				this.toolClass = "shovel";
 				this.effectiveBlocks.addAll(ItemSpade.EFFECTIVE_ON);
 			}
+			RegisterModel.NeedToRegistryModel.add(this);
 		}
 
 		public MetaTool(String modid, String name, CreativeTabs tab, ToolMaterial mainMaterial, IMetadataToolMaterial[] material) {

@@ -5,6 +5,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public interface IPlaceFluid extends IJiuEvent{
-	void onPlaceFluid(BlockPos pos, World world, IBlockState placedBlock);
+public interface IFluidCreateSourceFluid extends IJiuEvent{
+	void onFluidCreateSourceFluid(BlockPos pos, World world, IBlockState placedBlock);
 }

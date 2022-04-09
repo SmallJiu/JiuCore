@@ -12,6 +12,7 @@ public class BigIntegerUtils {
 		}
 		for(int i = 0; i < value.length(); i++) {
 			if(!JiuCore.CHAR_NUMBERS.contains(value.charAt(i))) {
+				JiuCore.instance.log.error(value + " -> " + value.charAt(i) + " is NOT Number!");
 				return BigInteger.ZERO;
 			}
 		}
@@ -146,51 +147,51 @@ public class BigIntegerUtils {
 	public String formatByte(BigInteger value, int length) {
 		String bi = BigInteger.ZERO.toString();
 		
-		if(value.max(this.DoggaByte).equals(value)) {
-			bi = value.divide(this.DoggaByte).toString();
-			return bi + "." + subString(value.remainder(this.DoggaByte).toString(), length) + "DB";
+		if(value.max(this.Dogga).equals(value)) {
+			bi = value.divide(this.Dogga).toString();
+			return bi + "." + subString(value.remainder(this.Dogga).toString(), length) + "DB";
 		}
-		if(value.max(this.NonaByte).equals(value)) {
-			bi = value.divide(this.NonaByte).toString();
-			return bi + "." + subString(value.remainder(this.NonaByte).toString(), length) + "NB";
+		if(value.max(this.Nona).equals(value)) {
+			bi = value.divide(this.Nona).toString();
+			return bi + "." + subString(value.remainder(this.Nona).toString(), length) + "NB";
 		}
-		if(value.max(this.BrontoByte).equals(value)) {
-			bi = value.divide(this.BrontoByte).toString();
-			return bi + "." + subString(value.remainder(this.BrontoByte).toString(), length) + "BB";
+		if(value.max(this.Bronto).equals(value)) {
+			bi = value.divide(this.Bronto).toString();
+			return bi + "." + subString(value.remainder(this.Bronto).toString(), length) + "BB";
 		}
-		if(value.max(this.YottaByte).equals(value)) {
-			bi = value.divide(this.YottaByte).toString();
-			return bi + "." + subString(value.remainder(this.YottaByte).toString(), length) + "YB";
+		if(value.max(this.Yotta).equals(value)) {
+			bi = value.divide(this.Yotta).toString();
+			return bi + "." + subString(value.remainder(this.Yotta).toString(), length) + "YB";
 		}
-		if(value.max(this.ZettaByte).equals(value)) {
-			bi = value.divide(this.ZettaByte).toString();
-			return bi + "." + subString(value.remainder(this.ZettaByte).toString(), length) + "ZB";
+		if(value.max(this.Zetta).equals(value)) {
+			bi = value.divide(this.Zetta).toString();
+			return bi + "." + subString(value.remainder(this.Zetta).toString(), length) + "ZB";
 		}
-		if(value.max(this.ExaByte).equals(value)) {
-			bi = value.divide(this.ExaByte).toString();
-			return bi + "." + subString(value.remainder(this.ExaByte).toString(), length) + "EB";
+		if(value.max(this.Exa).equals(value)) {
+			bi = value.divide(this.Exa).toString();
+			return bi + "." + subString(value.remainder(this.Exa).toString(), length) + "EB";
 		}
-		if(value.max(this.PetaByte).equals(value)) {
-			bi = value.divide(this.PetaByte).toString();
-			return bi + "." + subString(value.remainder(this.PetaByte).toString(), length) + "PB";
+		if(value.max(this.Peta).equals(value)) {
+			bi = value.divide(this.Peta).toString();
+			return bi + "." + subString(value.remainder(this.Peta).toString(), length) + "PB";
 		}
-		if(value.max(this.TrillionByte).equals(value)) {
-			bi = value.divide(this.TrillionByte).toString();
-			return bi + "." + subString(value.remainder(this.TrillionByte).toString(), length) + "TB";
+		if(value.max(this.Trillion).equals(value)) {
+			bi = value.divide(this.Trillion).toString();
+			return bi + "." + subString(value.remainder(this.Trillion).toString(), length) + "TB";
 		}
-		if(value.max(this.GigaByte).equals(value)) {
-			bi = value.divide(this.GigaByte).toString();
-			return bi + "." + subString(value.remainder(this.GigaByte).toString(), length) + "GB";
+		if(value.max(this.Giga).equals(value)) {
+			bi = value.divide(this.Giga).toString();
+			return bi + "." + subString(value.remainder(this.Giga).toString(), length) + "GB";
 		}
-		if(value.max(this.MegaByte).equals(value)) {
-			bi = value.divide(this.MegaByte).toString();
-			return bi + "." + subString(value.remainder(this.MegaByte).toString(), length) + "MB";
+		if(value.max(this.Mega).equals(value)) {
+			bi = value.divide(this.Mega).toString();
+			return bi + "." + subString(value.remainder(this.Mega).toString(), length) + "MB";
 		}
-		if(value.max(this.KiloByte).equals(value)) {
-			bi = value.divide(this.KiloByte).toString();
-			return bi + "." + subString(value.remainder(this.KiloByte).toString(), length) + "KB";
+		if(value.max(this.Kilo).equals(value)) {
+			bi = value.divide(this.Kilo).toString();
+			return bi + "." + subString(value.remainder(this.Kilo).toString(), length) + "KB";
 		}
-		if(value.min(this.KiloByte).equals(value)) {
+		if(value.min(this.Kilo).equals(value)) {
 			bi = value.toString();
 			return bi + "B";
 		}
@@ -257,30 +258,16 @@ public class BigIntegerUtils {
 	/** 10^3 */public final BigInteger K = BigInteger.TEN.pow(3*1);
 	
 	public final BigInteger TWO = BigInteger.valueOf(2);
-	/** 2^110 Byte : 1DB */public final BigInteger DoggaByte = this.TWO.pow(110);
-	/** 2^100 Byte : 1NB */public final BigInteger NonaByte = this.TWO.pow(100);
-	/** 2^90 Byte : 1BB */public final BigInteger BrontoByte = this.TWO.pow(90);
-	/** 2^80 Byte : 1YB */public final BigInteger YottaByte = this.TWO.pow(80);
-	/** 2^70 Byte : 1ZB */public final BigInteger ZettaByte = this.TWO.pow(70);
-	/** 2^60 Byte : 1EB */public final BigInteger ExaByte = this.TWO.pow(60);
-	/** 2^50 Byte : 1PB */public final BigInteger PetaByte = this.TWO.pow(50);
-	/** 2^40 Byte : 1TB */public final BigInteger TrillionByte = this.TWO.pow(40);
-	/** 2^30 Byte : 1GB */public final BigInteger GigaByte = this.TWO.pow(30);
-	/** 2^20 Byte : 1MB */public final BigInteger MegaByte = this.TWO.pow(20);
-	/** 2^10 Byte : 1KB */public final BigInteger KiloByte = this.TWO.pow(10);
+	/** 2^110 Byte : 1DB */public final BigInteger Dogga = this.TWO.pow(110);
+	/** 2^100 Byte : 1NB */public final BigInteger Nona = this.TWO.pow(100);
+	/** 2^90 Byte : 1BB */public final BigInteger Bronto = this.TWO.pow(90);
+	/** 2^80 Byte : 1YB */public final BigInteger Yotta = this.TWO.pow(80);
+	/** 2^70 Byte : 1ZB */public final BigInteger Zetta = this.TWO.pow(70);
+	/** 2^60 Byte : 1EB */public final BigInteger Exa = this.TWO.pow(60);
+	/** 2^50 Byte : 1PB */public final BigInteger Peta = this.TWO.pow(50);
+	/** 2^40 Byte : 1TB */public final BigInteger Trillion = this.TWO.pow(40);
+	/** 2^30 Byte : 1GB */public final BigInteger Giga = this.TWO.pow(30);
+	/** 2^20 Byte : 1MB */public final BigInteger Mega = this.TWO.pow(20);
+	/** 2^10 Byte : 1KB */public final BigInteger Kilo = this.TWO.pow(10);
 	/** 1 Byte : 1B */public final BigInteger BYTE = BigInteger.valueOf(1);
-	
-	public final BigInteger BI8 = BigInteger.valueOf(8);
-	/** (2^110)*8 Bit : 1Db */public final BigInteger DoggaBit = DoggaByte.multiply(BI8);
-	/** (2^100)*8 Bit : 1Nb */public final BigInteger NonaBit = NonaByte.multiply(BI8);
-	/** (2^90)*8 Bit : 1Bb */public final BigInteger BrontoBit = BrontoByte.multiply(BI8);
-	/** (2^80)*8 Bit : 1Yb */public final BigInteger YottaBit = YottaByte.multiply(BI8);
-	/** (2^70)*8 Bit : 1Zb */public final BigInteger ZettaBit = ZettaByte.multiply(BI8);
-	/** (2^60)*8 Bit : 1Eb */public final BigInteger ExaBit = ExaByte.multiply(BI8);
-	/** (2^50)*8 Bit : 1Pb */public final BigInteger PetaBit = PetaByte.multiply(BI8);
-	/** (2^40)*8 Bit : 1Tb */public final BigInteger TrillionBit = TrillionByte.multiply(BI8);
-	/** (2^30)*8 Bit : 1Gb */public final BigInteger GigaBit = GigaByte.multiply(BI8);
-	/** (2^20)*8 Bit : 1Mb */public final BigInteger MegaBit = MegaByte.multiply(BI8);
-	/** (2^10)*8 Bit : 1Kb */public final BigInteger KiloBit = KiloByte.multiply(BI8);
-	/** 1 Bit : 1b */public final BigInteger BIT = BigInteger.valueOf(1);
 }

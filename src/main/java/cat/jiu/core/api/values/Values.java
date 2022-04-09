@@ -31,6 +31,7 @@ public class Values {
 	static final HashMap<String, HashMap<String, String>> language = Maps.newHashMap();
 	static final HashMap<String, BigInteger> default_value = Maps.newHashMap();
 	static final ArrayList<String> value_list = Lists.newArrayList();
+	static final UUID Initialization = new UUID(0,0);
 	static int changeTime = 0;
 	
 	public static boolean hasValue(String valueID) {
@@ -97,11 +98,11 @@ public class Values {
 				}
 			}
 			
-			if(values.get(new UUID(0,0)) == null) {
-				values.put(new UUID(0,0), Maps.newHashMap());
+			if(!values.containsKey(Initialization)) {
+				values.put(Initialization, Maps.newHashMap());
 			}
-			if(!values.get(new UUID(0,0)).containsKey(valueID)) {
-				values.get(new UUID(0,0)).put(valueID, defaultValue);
+			if(!values.get(Initialization).containsKey(valueID)) {
+				values.get(Initialization).put(valueID, defaultValue);
 			}
 			
 			if(!writeToFile()) {
@@ -123,6 +124,9 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static ValueStateType set(String valueID, UUID uid, BigInteger value, int writeTime) {
+		if(uid.equals(Initialization)) {
+			return ValueStateType.Initialization;
+		}
 		if(!values.containsKey(uid)) {
 			values.put(uid, Maps.newHashMap());
 		}
@@ -140,6 +144,7 @@ public class Values {
 			
 			if(changeTime >= writeTime) {
 				if(!writeToFile()) {
+					changeTime = 0;
 					return ValueStateType.UNABLE_WRITE;
 				}
 				return ValueStateType.SUCCESS;
@@ -162,6 +167,9 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static ValueStateType add(String valueID, UUID uid, BigInteger value, int writeTime) {
+		if(uid.equals(Initialization)) {
+			return ValueStateType.Initialization;
+		}
 		if(!values.containsKey(uid)) {
 			values.put(uid, Maps.newHashMap());
 		}
@@ -177,6 +185,7 @@ public class Values {
 			
 			if(changeTime >= writeTime) {
 				if(!writeToFile()) {
+					changeTime = 0;
 					return ValueStateType.UNABLE_WRITE;
 				}
 				return ValueStateType.SUCCESS;
@@ -198,6 +207,9 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static ValueStateType subtract(String valueID, UUID uid, BigInteger value, int writeTime) {
+		if(uid.equals(Initialization)) {
+			return ValueStateType.Initialization;
+		}
 		if(uid == null || valueID == null || value == null) {
 			return ValueStateType.NULL;
 		}
@@ -218,6 +230,7 @@ public class Values {
 				
 				if(changeTime >= writeTime) {
 					if(!writeToFile()) {
+						changeTime = 0;
 						return ValueStateType.UNABLE_WRITE;
 					}
 					return ValueStateType.SUCCESS;
@@ -255,6 +268,9 @@ public class Values {
 	 */
 	public static BigInteger get(String valueID, UUID uid) {
 		if(uid == null) {
+			return BigInteger.ZERO;
+		}
+		if(uid.equals(Initialization)) {
 			return BigInteger.ZERO;
 		}
 		if(!values.containsKey(uid)) {
@@ -399,7 +415,9 @@ public class Values {
 	 * FILE_NOT_FOUND: Not found value's storage file<p>
 	 * FAIL: unknown Error<p>
 	 * IOError: IOException<p>
-	 * NOT_ARRIVAL_TIME: The number of changes did not reach the specified number
+	 * NOT_ARRIVAL_TIME: The number of changes did not reach the specified number<p>
+	 * Initialization name can NOT be Initialization
+	 * 
 	 * 
 	 * @author small_jiu
 	 */
@@ -412,7 +430,8 @@ public class Values {
 		/** Not found value's storage file */ FILE_NOT_FOUND,
 		/** unknown Error */ FAIL,
 		/** The number of changes did not reach the specified number */NOT_ARRIVAL_TIME,
-		/** IOException */ IOError;
+		/** IOException */ IOError,
+		/** name can NOT be Initialization*/ Initialization;
 	}
 	
 	/** {@link #remove(String, UUID, int)} */

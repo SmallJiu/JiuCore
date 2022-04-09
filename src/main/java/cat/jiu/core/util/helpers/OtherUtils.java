@@ -1,10 +1,14 @@
 package cat.jiu.core.util.helpers;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.Validate;
 
 import com.google.common.collect.Lists;
 
@@ -18,6 +22,13 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public final class OtherUtils {
+	public <T> ArrayList<T> createArrayListWithSize(int size, T fill){
+		Validate.notNull(fill);
+		Object[] fillObj = new Object[size];
+		Arrays.fill(fillObj, fill);
+		return new ArrayList<T>(Arrays.asList(fill));
+	}
+	
 	public ITextComponent createTextComponent(String arg, Object... objs) {
 		return new TextComponentTranslation(arg, objs);
 	}

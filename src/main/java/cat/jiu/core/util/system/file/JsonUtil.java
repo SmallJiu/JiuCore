@@ -111,7 +111,7 @@ public class JsonUtil {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public<K, V> JsonObject toJsonObject(Map<K, V> map) {
+	public <K, V> JsonObject toJsonObject(Map<K, V> map) {
 		JsonObject obj = new JsonObject();
 		
 		for(Entry<K, V> mapEntry : map.entrySet()) {
@@ -188,7 +188,7 @@ public class JsonUtil {
 		return null;
 	}
 	
-	private String formatJson(String json) {
+	public String formatJson(String json) {
         StringBuffer result = new StringBuffer();
         int length = json.length();
         int number = 0;

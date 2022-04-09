@@ -435,7 +435,7 @@ public class JsonWriter {
 		}
 	}
 	
-	public static class I18n {
+	public static class JWI18n {
 		public static String getLangName() {
 			return lang.getType().name().toLowerCase();
 		}
@@ -500,12 +500,12 @@ public class JsonWriter {
 			
 			JPanel south = new JPanel();
 			
-			JButton add = new JButton(I18n.format("button.add.name"));
-			JButton change = new JButton(I18n.format("button.change.name"));
-			JButton rename = new JButton(I18n.format("button.rename.name"));
-			JButton remove = new JButton(I18n.format("button.remove.name"));
-			JButton plus = new JButton(I18n.format("button.plus.name"));
-			JButton subtract = new JButton(I18n.format("button.subtract.name"));
+			JButton add = new JButton(JWI18n.format("button.add.name"));
+			JButton change = new JButton(JWI18n.format("button.change.name"));
+			JButton rename = new JButton(JWI18n.format("button.rename.name"));
+			JButton remove = new JButton(JWI18n.format("button.remove.name"));
+			JButton plus = new JButton(JWI18n.format("button.plus.name"));
+			JButton subtract = new JButton(JWI18n.format("button.subtract.name"));
 			add.setBounds(0, 0, 10, 10);
 			this.saveFile(this, south, path);
 			
@@ -544,9 +544,9 @@ public class JsonWriter {
 			
 			JPanel north = new JPanel();
 			JTextField objname = new JTextField(5);
-			JButton addObject = new JButton(I18n.format("button.add.object.name"));
-			JButton addArray = new JButton(I18n.format("button.add.array.name"));
-			JButton reload = new JButton(I18n.format("button.reload.name"));
+			JButton addObject = new JButton(JWI18n.format("button.add.object.name"));
+			JButton addArray = new JButton(JWI18n.format("button.add.array.name"));
+			JButton reload = new JButton(JWI18n.format("button.reload.name"));
 			
 			objname.addKeyListener(new KeyAdapter() {
 				public void keyPressed(KeyEvent e) {
@@ -562,7 +562,7 @@ public class JsonWriter {
 				System.gc();
 				main(new String[] {"-path", path, "-log", Boolean.toString(log.canWriteLog())});// 写入启动参数
 			});
-			JButton restart = new JButton(I18n.format("button.restart.name"));
+			JButton restart = new JButton(JWI18n.format("button.restart.name"));
 			restart.addActionListener(event -> {
 				this.dispose();//关闭窗口
 				isClose = true;// 设置已关闭
@@ -699,7 +699,7 @@ public class JsonWriter {
 			});
 			
 			array.addActionListener(event -> {
-				this.errorDialog(I18n.format("button.array.error"));
+				this.errorDialog(JWI18n.format("button.array.error"));
 				/*
 				DefaultMutableTreeNode node = new DefaultMutableTreeNode(objName.getText());// 创建欲添加节点
 				TreePath selectionPath = tree.getSelectionPath();// 获得选中的父节点路径
@@ -735,7 +735,7 @@ public class JsonWriter {
 						this.onObjectChange();
 					}
 				}else {
-					this.errorDialog(I18n.format("info.error.empty"));
+					this.errorDialog(JWI18n.format("info.error.empty"));
 				}
 			});
 			change.addActionListener(event -> {
@@ -744,7 +744,7 @@ public class JsonWriter {
 					Tools.changeJsonValue(this, this.mainObject, objName.getText(), objValue.getText());
 					this.onObjectChange();
 				}else {
-					this.errorDialog(I18n.format("info.error.empty"));
+					this.errorDialog(JWI18n.format("info.error.empty"));
 				}
 			});
 			rename.addActionListener(event -> {
@@ -760,7 +760,7 @@ public class JsonWriter {
 						this.onObjectChange();
 					}
 				}else {
-					this.errorDialog(I18n.format("info.error.empty"));
+					this.errorDialog(JWI18n.format("info.error.empty"));
 				}
 			});
 			remove.addActionListener(event -> {
@@ -791,10 +791,10 @@ public class JsonWriter {
 						this.onObjectChange();
 						objValue.setText(Integer.toString(value+1));
 					} catch (Exception e) {
-						Tools.createErrorDialog(this, I18n.format("info.error.number"));
+						Tools.createErrorDialog(this, JWI18n.format("info.error.number"));
 					}
 				}else {
-					this.errorDialog(I18n.format("info.error.empty"));
+					this.errorDialog(JWI18n.format("info.error.empty"));
 				}
 			});
 			subtract.addActionListener(event -> {
@@ -809,10 +809,10 @@ public class JsonWriter {
 						this.onObjectChange();
 						objValue.setText(Integer.toString(value-1));
 					} catch (Exception e) {
-						Tools.createErrorDialog(this, I18n.format("info.error.number"));
+						Tools.createErrorDialog(this, JWI18n.format("info.error.number"));
 					}
 				}else {
-					this.errorDialog(I18n.format("info.error.empty"));
+					this.errorDialog(JWI18n.format("info.error.empty"));
 				}
 			});
 		}
@@ -1056,8 +1056,7 @@ public class JsonWriter {
 				addObject(f, element, path, pathName, name, new JsonPrimitive(i));
 			} catch (Exception e) {
 				if(value.equals("true") || value.equals("false")) {
-					boolean b =  Boolean.parseBoolean(value);
-					addObject(f, element, path, pathName, name, new JsonPrimitive(b));
+					addObject(f, element, path, pathName, name, new JsonPrimitive(Boolean.parseBoolean(value)));
 				}else {
 					addObject(f, element, path, pathName, name, new JsonPrimitive(value));
 				}
@@ -1188,10 +1187,10 @@ public class JsonWriter {
 		public static boolean toJsonFile(String path, JsonObject obj) {
 			try {
 				File file = new File(path);
-		        if (!file.getParentFile().exists()) { // 如果父目录不存在，创建父目录
+		        if (!file.getParentFile().exists()) {
 		            file.getParentFile().mkdirs();
 		        }
-		        if (file.exists()) { // 如果已存在,删除旧文件
+		        if (file.exists()) {
 		            file.delete();
 		        }
 		        
@@ -1211,23 +1210,17 @@ public class JsonWriter {
 	        char key = 0;
 	        
 	        for (int i = 0; i < length; i++) {
-	            // 1、获取当前字符。
 	            key = json.charAt(i);
 	            
-	            // 2、如果当前字符是前方括号/前花括号做如下处理：
 	            if ((key == '[') || (key == '{')) {
-	                // （1）如果前面还有字符，并且字符为“：”，打印：换行和缩进字符字符串。
 	                if ((i - 1 > 0) && (json.charAt(i - 1) == ':')) {
 	                    result.append(" ");
 	                }
 	                
-	                //增加str
 	                result.append(key);
 	                
-	                // （3）前方括号/前花括号，的后面必须换行。打印：换行。
 	                result.append('\n');
 	                
-	                // （4）每出现一次前方括号、前花括号；缩进次数增加一次。打印：新行缩进。
 	                number++;
 	                result.append(indent(number));
 	                
@@ -1240,21 +1233,16 @@ public class JsonWriter {
 	            	continue;
 	            }
 	            
-	            // 3、如果当前字符是后方括号、后花括号做如下处理：
 	            if ((key == ']') || (key == '}')) {
-	                // （1）后方括号、后花括号，的前面必须换行。打印：换行。
 	                result.append('\n');
 	                
-	                // （2）每出现一次后方括号、后花括号；缩进次数减少一次。打印：缩进。
 	                number--;
 	                result.append(indent(number));
 	                
-	                //增加str
 	                result.append(key);
 	                continue;
 	            }
 	            
-	            //如果是","，则换行并缩进，并且不改变缩进次数
 	            if ((key == ',')) {
 	                result.append(key);
 	                result.append('\n');
@@ -1277,14 +1265,10 @@ public class JsonWriter {
 	    }
 		
 		public static String downLoadFile(String url, String fileName, String fileDir, String exName) {
-//			String filePathDir = "c:/";
-			String method = "GET";// 以Post方式提交表单，默认get方式
-//			File file = new File(fileName);// 创建不同的文件夹目录
+			String method = "GET";
 			File saveFilePath = new File(fileDir);
 			
-			// 判断文件夹是否存在
 			if (!saveFilePath.exists()) {
-				// 如果文件夹不存在，则创建新的的文件夹
 				saveFilePath.mkdirs();
 			}
 			
@@ -1294,34 +1278,28 @@ public class JsonWriter {
 			String savePath = null;
 			
 			try {
-				// 建立链接
 				URL httpUrl = new URL(url);
 				conn = (HttpURLConnection) httpUrl.openConnection();
 				
 				conn.setRequestMethod(method);
 				conn.setDoInput(true);
 				conn.setDoOutput(true);
-				// post方式不能使用缓存
 				conn.setUseCaches(false);
-				// 连接指定的资源
 				conn.connect();
-				// 获取网络输入流
 				inputStream = conn.getInputStream();
 				BufferedInputStream bis = new BufferedInputStream(inputStream);
 				
-				// 判断文件的保存路径后面是否以/结尾
 				if (!fileDir.endsWith("/")) {
 					fileDir += "/";
 				}
 				
-				// 写入到文件（注意文件保存路径的后面一定要加上文件的名称）
 				savePath = fileDir + fileName + "." + exName;
 				fileOut = new FileOutputStream(savePath);
 				BufferedOutputStream bos = new BufferedOutputStream(fileOut);
 				
 				byte[] buf = new byte[8192];
 				int length = bis.read(buf);
-				// 保存文件
+				
 				while (length != -1) {
 					bos.write(buf, 0, length);
 					length = bis.read(buf);

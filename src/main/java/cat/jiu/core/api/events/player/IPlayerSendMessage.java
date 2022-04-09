@@ -11,6 +11,7 @@ public interface IPlayerSendMessage {
 	 * @param message 
 	 * 
 	 * @author small_jiu
+	 * @return 
 	 */
-	void onSendMessage(String originalMessage, String message);
+	String onSendMessage(String originalMessage, String message);
 }
