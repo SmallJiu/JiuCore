@@ -14,7 +14,7 @@ import cat.jiu.core.util.base.exmp.TestTrigger;
 
 import net.minecraft.advancements.ICriterionTrigger;
 import net.minecraft.advancements.PlayerAdvancements;
-import net.minecraft.advancements.critereon.AbstractCriterionInstance;
+import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -26,13 +26,19 @@ public class BaseAdvancement {
 	 * 
 	 * @author small_jiu
 	 */
-	public static class BaseCriterionTrigger<I extends BaseCriterionTrigger<I>> extends AbstractCriterionInstance implements ICriterionTrigger<I> {
+	public static class BaseCriterionTrigger<I extends BaseCriterionTrigger<I>> implements ICriterionTrigger<I>, ICriterionInstance {
+		protected final ResourceLocation ID;
 		protected final ICriterionTriggerFactory<I> factory;
 		protected final Map<PlayerAdvancements, BaseCriterionTrigger.Listeners<I>> listeners = Maps.newHashMap();
 
 		protected BaseCriterionTrigger(ResourceLocation id, ICriterionTriggerFactory<I> factory) {
-			super(id);
+			this.ID = id;
 			this.factory = factory;
+		}
+		
+		@Override
+		public ResourceLocation getId() {
+			return this.ID;
 		}
 
 		@Override
