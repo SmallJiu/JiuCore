@@ -3,8 +3,6 @@ package cat.jiu.core.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import cat.jiu.core.JiuCore;
-import cat.jiu.core.api.IJiuEvent;
 import cat.jiu.core.api.events.game.IInFluidCraftingEvent;
 import cat.jiu.core.util.JiuCoreEvents;
 import cat.jiu.core.util.JiuUtils;
@@ -25,16 +23,16 @@ import net.minecraft.util.text.TextFormatting;
 
 public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 	public CommandInFluidCrafting() {
-		super(new ICommand[] { new Add(), new Remove(), new RemoveAll(), new Reload() }, "influid", "jc", false, true, 2);
+		super(new ICommand[] { new Add(), new Remove(), new RemoveAll(), new Reload() }, "influid", "jc", false, 2);
 	}
 	
 	private static class Add extends BaseCommand.CommandTree{
 		public Add() {
-			super(new ICommand[] { new CacheAdd(),new ForeverAdd() }, "add", "jc", false, true, 2);
+			super(new ICommand[] { new CacheAdd(),new ForeverAdd() }, "add", "jc", false, 2);
 		}
 		
 		private static class CacheAdd extends BaseCommand.CommandNormal {
-			public CacheAdd() {super("c", "jc", true, 2);}
+			public CacheAdd() {super("c", "jc", 2);}
 			@SuppressWarnings("deprecation")
 			@Override
 			public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
@@ -144,7 +142,7 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 		}
 		
 		private static class ForeverAdd extends BaseCommand.CommandNormal {
-			public ForeverAdd() {super("f", "jc", true, 2);}
+			public ForeverAdd() {super("f", "jc", 2);}
 			
 			@Override
 			public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
@@ -163,8 +161,8 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 		}
 	}
 	
-	private static class Reload extends BaseCommand.CommandNormal{
-		public Reload() {super("reload", "jc", true, 2);}
+	private static class Reload extends BaseCommand.CommandNormal {
+		public Reload() {super("reload", "jc", 2);}
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			InFluidCrafting.removeAllRecipes();
@@ -172,10 +170,9 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 			
 			long time = System.currentTimeMillis();
 			
-			for(IJiuEvent event : JiuCoreEvents.getEvents()) {
-				if(event instanceof IInFluidCraftingEvent) {
-					((IInFluidCraftingEvent) event).onAddInFluidCrafting(new Recipes(JiuCore.MODID));
-				}
+			List<IInFluidCraftingEvent> list = JiuCoreEvents.getEvents(IInFluidCraftingEvent.class);
+			if(list != null) {
+				list.stream().forEach(e -> e.onAddInFluidCrafting(new Recipes(this.modid)));
 			}
 			
 			JiuUtils.entity.sendI18nMessage(sender, "command.jc.craft.influid.reload.1.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time)+"ms )");
@@ -187,8 +184,8 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 		}
 	}
 	
-	private static class Remove extends BaseCommand.CommandNormal{
-		public Remove() {super("remove", "jc", true, 2);}
+	private static class Remove extends BaseCommand.CommandNormal {
+		public Remove() {super("remove", "jc", 2);}
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if(args.length == 1) {
@@ -218,8 +215,8 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 		}
 	}
 	
-	private static class RemoveAll extends BaseCommand.CommandNormal{
-		public RemoveAll() {super("removeall", "jc", true, 2);}
+	private static class RemoveAll extends BaseCommand.CommandNormal {
+		public RemoveAll() {super("removeall", "jc", 2);}
 		@Override
 		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 			if(InFluidCrafting.getRecipes().isEmpty()) {

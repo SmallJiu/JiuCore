@@ -11,9 +11,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.server.command.CommandTreeBase;
 
 public class BaseCommand {
-	public static abstract class CommandNormal extends CommandBase {
+	public static class CommandNormal extends CommandBase {
 		protected final String name;
-		protected final boolean checkPermission;
 		protected final int level;
 		protected final String modid;
 		
@@ -22,13 +21,8 @@ public class BaseCommand {
 		}
 		
 		public CommandNormal(String name, String modid, int level) {
-			this(name, modid, true, level);
-		}
-		
-		public CommandNormal(String name, String modid, boolean checkPermission, int level) {
 			this.name = name;
 			this.modid = modid;
-			this.checkPermission = checkPermission;
 			this.level = level;
 		}
 		
@@ -48,32 +42,25 @@ public class BaseCommand {
 		}
 		
 		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return super.checkPermission(server, sender);
-		}
-		
-		@Override
-		public abstract void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException;
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {}
 	}
 	
 	public static class CommandTree extends CommandTreeBase {
 		protected final String name;
 		protected final String modid;
 		protected final boolean canAddCommand;
-		protected final boolean checkPermission;
 		protected final int level;
 		protected final ICommand[] commands;
 		
-		public CommandTree(List<ICommand> commands, String name, String modid, boolean canAddComman, boolean checkPermission, int level) {
-			this(commands.toArray(new ICommand[commands.size()]), name, modid, checkPermission, checkPermission, level);
+		public CommandTree(List<ICommand> commands, String name, String modid, boolean canAddComman, int level) {
+			this(commands.toArray(new ICommand[commands.size()]), name, modid, canAddComman, level);
 		}
 		
-		public CommandTree(ICommand[] commands, String name, String modid, boolean canAddComman, boolean checkPermission, int level) {
+		public CommandTree(ICommand[] commands, String name, String modid, boolean canAddComman, int level) {
 			this.commands = commands;
 			this.name = name;
 			this.modid = modid;
 			this.canAddCommand = canAddComman;
-			this.checkPermission = checkPermission;
 			this.level = level;
 			
 			for(ICommand cmd : commands){
@@ -111,11 +98,6 @@ public class BaseCommand {
 		@Override
 		public int getRequiredPermissionLevel() {
 			return this.level;
-		}
-		
-		@Override
-		public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-			return super.checkPermission(server, sender);
 		}
 	}
 }

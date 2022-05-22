@@ -1,4 +1,4 @@
-package cat.jiu.core.energy;
+package cat.jiu.core.capability;
 
 import java.math.BigInteger;
 
@@ -174,32 +174,10 @@ public class JiuEnergyStorage implements IJiuEnergyStorage, ICapabilityProvider 
 		return nbt;
 	}
 	
-	public static ItemStack setEnergy(ItemStack stack, int energy) {
-		NBTTagCompound nbt = stack.getTagCompound() != null ? stack.getTagCompound() : new NBTTagCompound();
-		nbt.setInteger("Energy", energy);
-		stack.setTagCompound(nbt);
-		return stack;
-	}
-	
-	public static ItemStack addEnergy(ItemStack stack, int energy) {
-		NBTTagCompound nbt = stack.getTagCompound() != null ? stack.getTagCompound() : new NBTTagCompound();
-		nbt.setInteger("Energy", (getEnergy(stack) + energy));
-		stack.setTagCompound(nbt);
-		return stack;
-	}
-	
-	public static int getEnergy(ItemStack stack) {
-		NBTTagCompound nbt = stack.getTagCompound() != null ? stack.getTagCompound() : new NBTTagCompound();
-		
-		return nbt.getInteger("Energy");
-	}
-	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		if(capability == CapabilityEnergy.ENERGY) {
-			return true;
-		}
-		if(capability == CapabilityJiuEnergy.ENERGY) {
+		if(capability == CapabilityEnergy.ENERGY
+		|| capability == CapabilityJiuEnergy.ENERGY) {
 			return true;
 		}
 		return false;

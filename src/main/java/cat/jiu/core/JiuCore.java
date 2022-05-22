@@ -1,5 +1,6 @@
 package cat.jiu.core;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
@@ -8,13 +9,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Lists;
 
-import cat.jiu.core.api.IJiuEvent;
 import cat.jiu.core.api.events.game.IInFluidCraftingEvent;
 import cat.jiu.core.api.values.Values;
+import cat.jiu.core.capability.CapabilityJiuEnergy;
 import cat.jiu.core.commands.CommandJiuCore;
-import cat.jiu.core.energy.CapabilityJiuEnergy;
 import cat.jiu.core.proxy.ServerProxy;
 import cat.jiu.core.test.Init;
+import cat.jiu.core.util.EntityDeathDrops;
 import cat.jiu.core.util.JiuCoreEvents;
 import cat.jiu.core.trigger.JiuCoreTriggers;
 import cat.jiu.core.util.JiuUtils;
@@ -27,6 +28,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -46,9 +48,17 @@ public class JiuCore implements IInFluidCraftingEvent {
 	public static final String MODID = "jiucore";
 	public static final String NAME = "JiuCore";
 	public static final String OWNER = "small_jiu";
-	public static final String VERSION = "1.0.9-20220407201518";
-	public static final boolean TEST_MODEL = false;
-	public static final CreativeTabs CORE = TEST_MODEL ? new BaseCreativeTab("core_test_tab", new ItemStack(Items.DIAMOND), false) : null;
+	public static final String VERSION = "1.0.10-20220522225957";
+	
+	private static byte isTest = -1; // if is IDE, you can set to '1' to enable some test stuff
+	public static final boolean test() {
+		if(isTest == -1) {
+			isTest = (byte) (new File("./config/jiu/core_debug.jiu").exists() ? 1 : 0);
+		}
+		return isTest == 1;
+	}
+	
+	public static final CreativeTabs CORE = test() ? new BaseCreativeTab("core_test_tab", new ItemStack(Items.DIAMOND), false) : null;
 
 	public static final List<Character> CHAR_LETTERS = Lists.newArrayList('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
 	public static final List<String> STRING_LETTERS = Lists.newArrayList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
@@ -73,7 +83,8 @@ public class JiuCore implements IInFluidCraftingEvent {
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		JiuCoreEvents.addEvent(this, new InFluidCrafting());
+		proxy.preInit(event);
+		JiuCoreEvents.addEvent(this, new InFluidCrafting(), new EntityDeathDrops());
 		CapabilityJiuEnergy.register();
 		JiuUtils.entity.initNameAndUUID(null);
 		
@@ -82,7 +93,7 @@ public class JiuCore implements IInFluidCraftingEvent {
 		Values.addValue("death");
 		JiuCoreTriggers.register();
 
-		if(TEST_MODEL) {
+		if(test()) {
 			new Init();
 			AnvilRecipe.addAnvilRecipe(new ItemStack(Items.APPLE, 5), new ItemStack(Blocks.GOLD_BLOCK), new ItemStack(Blocks.DIAMOND_BLOCK, 5), 5);
 			JiuCoreEvents.addEvent(Init.BUBBLE);
@@ -91,16 +102,15 @@ public class JiuCore implements IInFluidCraftingEvent {
 
 	@Mod.EventHandler
 	public void loadComplete(FMLLoadCompleteEvent event) {
-		for(IJiuEvent events : JiuCoreEvents.getEvents()) {
-			if(events instanceof IInFluidCraftingEvent) {
-				((IInFluidCraftingEvent) events).onAddInFluidCrafting(new Recipes(JiuCore.MODID));
-			}
+		List<IInFluidCraftingEvent> list = JiuCoreEvents.getEvents(IInFluidCraftingEvent.class);
+		if(list != null) {
+			list.stream().forEach(e -> e.onAddInFluidCrafting(new Recipes(MODID)));
 		}
 	}
 
 	@Override
 	public void onAddInFluidCrafting(Recipes rec) {
-		if(TEST_MODEL) {
+		if(test()) {
 			rec.addInFluidCrafting(new ItemStack(Init.TestBlock), new ItemStack[]{new ItemStack(Items.PAPER, 1)});
 			rec.addInFluidCrafting(new ItemStack(Items.PAPER), new ItemStack[]{new ItemStack(Items.AIR, 1)});
 
@@ -111,7 +121,8 @@ public class JiuCore implements IInFluidCraftingEvent {
 	@Mod.EventHandler
 	public void onServerstartting(FMLServerStartingEvent event) {
 		JiuUtils.entity.initNameAndUUID(event.getServer());
-		event.registerServerCommand(new CommandJiuCore("jc", false, true, 0));
+		event.registerServerCommand(new CommandJiuCore("jc", false, 0));
+		EntityDeathDrops.initJsonDrops(event.getServer().getEntityWorld());
 	}
 
 	public static Logger getLogger() {
@@ -121,13 +132,16 @@ public class JiuCore implements IInFluidCraftingEvent {
 	// 原木操作系统(雾)
 	public static final class LogOS {
 		private final Logger logger;
-
 		private LogOS() {
 			this.logger = getLogger();
 		}
 
 		public LogOS(Logger logger) {
 			this.logger = logger;
+		}
+
+		public Logger logger() {
+			return this.logger;
 		}
 
 		public void log(Level level, String msg, Object... params) {

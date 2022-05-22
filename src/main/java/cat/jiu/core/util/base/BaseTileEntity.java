@@ -1,7 +1,7 @@
 package cat.jiu.core.util.base;
 
-import cat.jiu.core.energy.CapabilityJiuEnergy;
-import cat.jiu.core.energy.JiuEnergyStorage;
+import cat.jiu.core.capability.CapabilityJiuEnergy;
+import cat.jiu.core.capability.JiuEnergyStorage;
 import cat.jiu.core.util.JiuUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -30,14 +30,20 @@ public class BaseTileEntity {
 		
 		@Override
 		public final NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+			super.writeToNBT(nbt);
 			this.writeNBT(nbt);
-			return super.writeToNBT(nbt);
+			return nbt;
 		}
 		public abstract void writeNBT(NBTTagCompound nbt);
+		
+		@SuppressWarnings("unchecked")
+		protected <T extends TileEntity> T getInstance() {
+			return (T) this.blockType.createTileEntity(this.world, this.world.getBlockState(this.pos));
+		}
 	}
 	
 	public static abstract class Energy extends Normal {
-		protected final JiuEnergyStorage storage;
+		protected JiuEnergyStorage storage;
 		public long energy = 0;
 		
 		public Energy(JiuEnergyStorage storage) {
@@ -93,6 +99,7 @@ public class BaseTileEntity {
 		
 		@Override
 		public final void readNBT(NBTTagCompound nbt) {
+			if(this.storage == null) this.storage = new JiuEnergyStorage();
 			this.storage.readFromNBT(nbt);
 			this.energy = this.storage.getEnergyStoredWithLong();
 			this.readFromTeNBT(nbt);

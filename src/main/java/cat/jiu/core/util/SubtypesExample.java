@@ -4,23 +4,13 @@ import cat.jiu.core.api.ISubBlockSerializable;
 
 public class SubtypesExample {
 	public enum ModSubtypes implements ISubBlockSerializable {
-		LEVEL_1(0);
+		LEVEL_1;
 		
-		private final int meta;
 		private static final ModSubtypes[] METADATA_LOOKUP = new ModSubtypes[values().length];
 		
-		ModSubtypes(int meta) {
-			this.meta = meta;
-		}
-		
-		public int getMeta() {
-			return meta;
-		}
-		
+		public int getMeta() {return this.ordinal();}
 		@Override
-		public String getName() {
-			return "state_" + meta;
-		}
+		public String getName() {return "state_" + this.ordinal();}
 		
 		public static ModSubtypes byMetadata(int meta) {
 			return METADATA_LOOKUP[meta];
@@ -33,23 +23,12 @@ public class SubtypesExample {
 		}
 	}
 	public enum ModSubtypes00 implements ISubBlockSerializable {
-		LEVEL_1(0);
-		
-		private final int meta;
-		
-		ModSubtypes00(int meta) {
-			this.meta = meta;
-		}
+		LEVEL_1;
 		
 		@Override
-		public int getMeta() {
-			return this.meta;
-		}
-		
+		public int getMeta() {return this.ordinal();}
 		@Override
-		public String getName() {
-			return "state_" + this.meta;
-		}
+		public String getName() {return "state_" + this.ordinal();}
 	}
 }
 

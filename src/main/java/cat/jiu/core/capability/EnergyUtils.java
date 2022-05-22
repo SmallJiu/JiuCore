@@ -1,6 +1,7 @@
-package cat.jiu.core.energy;
+package cat.jiu.core.capability;
 
 import cat.jiu.core.JiuCore;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;

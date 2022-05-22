@@ -152,8 +152,8 @@ public final class EntityUtils {
         }
     }
 
-	public final HashMap<String, UUID> NameToUUID = Maps.newHashMap();
-	public final HashMap<UUID, String> UUIDToName = Maps.newHashMap();
+	private final HashMap<String, UUID> NameToUUID = Maps.newHashMap();
+	private final HashMap<UUID, String> UUIDToName = Maps.newHashMap();
 
 	public void initNameAndUUID(@Nullable MinecraftServer server) {
 		if(server != null) {
@@ -162,18 +162,18 @@ public final class EntityUtils {
 		}
 		File file = new File("./usernamecache.json");
 		if(file.exists()) {
-			NameToUUID.clear();
-			UUIDToName.clear();
+			this.NameToUUID.clear();
+			this.UUIDToName.clear();
 			try(FileInputStream in = new FileInputStream(file)) {
 				JsonObject obj = new JsonParser().parse(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
 				for(Entry<String, JsonElement> cache : obj.entrySet()) {
 					String name = cache.getValue().getAsString();
 					UUID uid = UUID.fromString(cache.getKey());
-					NameToUUID.put(name, uid);
-					UUIDToName.put(uid, name);
+					this.NameToUUID.put(name, uid);
+					this.UUIDToName.put(uid, name);
 				}
-				NameToUUID.put("Initialization", new UUID(0, 0));
-				UUIDToName.put(new UUID(0, 0), "Initialization");
+				this.NameToUUID.put("Initialization", new UUID(0, 0));
+				this.UUIDToName.put(new UUID(0, 0), "Initialization");
 			}catch(IOException e) {
 				e.printStackTrace();
 			}
@@ -181,27 +181,23 @@ public final class EntityUtils {
 	}
 
 	public boolean hasNameOrUUID(String name) {
-		return this.NameToUUID.containsKey(name) && this.UUIDToName.containsValue(name);
+		return (!this.NameToUUID.isEmpty() && !this.UUIDToName.isEmpty()) ? this.NameToUUID.containsKey(name) && this.UUIDToName.containsValue(name) : false;
 	}
 
 	public boolean hasNameOrUUID(UUID uid) {
-		return this.UUIDToName.containsKey(uid) && this.NameToUUID.containsValue(uid);
+		return (!this.NameToUUID.isEmpty() && !this.UUIDToName.isEmpty()) ? this.UUIDToName.containsKey(uid) && this.NameToUUID.containsValue(uid) : false;
 	}
 
 	public UUID getUUID(String name) {
-		if(!this.NameToUUID.isEmpty()) {
-			if(this.hasNameOrUUID(name)) {
-				return this.NameToUUID.get(name);
-			}
+		if(this.hasNameOrUUID(name)) {
+			return this.NameToUUID.get(name);
 		}
 		return null;
 	}
 
 	public String getName(UUID uid) {
-		if(!this.UUIDToName.isEmpty()) {
-			if(this.hasNameOrUUID(uid)) {
-				return this.UUIDToName.get(uid);
-			}
+		if(this.hasNameOrUUID(uid)) {
+			return this.UUIDToName.get(uid);
 		}
 		return null;
 	}

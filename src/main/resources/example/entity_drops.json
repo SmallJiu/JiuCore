@@ -1,0 +1,73 @@
+{
+	"minecraft:zombie": [
+		{
+			"item": {
+				"name": "minecraft:grass",
+				"count": 10,
+				"meta": 10,
+				"nbt": {
+					"boolean":{"thisIsBooleanTagYouCanSetAnyName-0":false},
+					"string":{"thisIsStringTagYouCanSetAnyName-0":"1331"},
+					"long":{"longNum-0":32132,"longNum-999":32132},
+					"int":{"intNum-0":32132},
+					"float":{"floatNum-0":32132},
+					"double":{"doubleNum-0":32132},
+					"byte":{"byteNum-0":12},
+					"short":{"shortNum-0":133},
+					"int_array":{
+						"int_array-0":[
+							123,
+							156158,
+							49198
+						],
+						"int_array-1":[
+							981198,
+							16581,
+							2354
+						]
+					},
+					"byte_array":{
+						"byte_array-0":[
+							64,
+							22,
+							11
+						],
+						"byte_array-1":[
+							66,
+							23,
+							86
+						]
+					},
+					"tags":{
+						"customTag-0":{
+							// some tags...
+						},
+						"132131":{
+							"customStringNbT":"this is custom string nbt"
+						}
+					}
+				}
+			},
+			"minCount": 0,// if not fount, wiil use '1' to set minCount
+			"maxCount": 20,// if not fount, wiil use item count to set maxCount
+			// range: 0.001 ~ 1
+			"dropChance": 0.339// if not fount, wiil 100% drop the item
+		}
+	],
+	"minecraft:ender_dragon": [
+		"minecraft:stone@2@10",
+		{
+			"item":{
+				"name": "minecraft:grass",
+				"count": 10,
+				"meta": 10,
+				"nbt":{
+					"boolean":{
+						"Hi_This_Is_Custom_Drop_Item":true
+					}
+				}
+			},
+			"minCount": 3
+		}
+	]
+}

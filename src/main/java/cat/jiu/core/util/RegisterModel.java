@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fluids.BlockFluidBase;
@@ -184,7 +183,7 @@ public class RegisterModel {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public static void onModelRegister(ModelRegistryEvent event) {
-		if(JiuCore.TEST_MODEL) {
+		if(JiuCore.test()) {
 			for (Item item : Init.ITEMS) {
 				if (item instanceof IHasModel) {
 					((IHasModel) item).getItemModel();;
@@ -197,8 +196,6 @@ public class RegisterModel {
 				}
 			}
 		}
-		for(IHasModel entry : NeedToRegistryModel) {
-			entry.getItemModel();
-		}
+		NeedToRegistryModel.stream().forEach(e -> {e.getItemModel();});
 	}
 }

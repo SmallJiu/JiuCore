@@ -14,7 +14,7 @@ import cat.jiu.core.util.base.exmp.TestTrigger;
 
 import net.minecraft.advancements.ICriterionTrigger;
 import net.minecraft.advancements.PlayerAdvancements;
-import net.minecraft.advancements.ICriterionInstance;
+import net.minecraft.advancements.critereon.AbstractCriterionInstance;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -26,14 +26,12 @@ public class BaseAdvancement {
 	 * 
 	 * @author small_jiu
 	 */
-	public static class BaseCriterionTrigger<I extends BaseCriterionTrigger<I>> implements ICriterionTrigger<I>, ICriterionInstance {
+	public static abstract class BaseCriterionTrigger<T extends BaseCriterionTrigger<T>> implements ICriterionTrigger<BaseCriterionTrigger.Instance<T>> {
 		protected final ResourceLocation ID;
-		protected final ICriterionTriggerFactory<I> factory;
-		protected final Map<PlayerAdvancements, BaseCriterionTrigger.Listeners<I>> listeners = Maps.newHashMap();
+		protected final Map<PlayerAdvancements, BaseCriterionTrigger.Listeners<T>> listeners = Maps.newHashMap();
 
-		protected BaseCriterionTrigger(ResourceLocation id, ICriterionTriggerFactory<I> factory) {
+		protected BaseCriterionTrigger(ResourceLocation id) {
 			this.ID = id;
-			this.factory = factory;
 		}
 		
 		@Override
@@ -42,18 +40,18 @@ public class BaseAdvancement {
 		}
 
 		@Override
-		public void addListener(PlayerAdvancements playerAdvancementsIn, Listener<I> listener) {
-			BaseCriterionTrigger.Listeners<I> listeners = this.listeners.get(playerAdvancementsIn);
+		public void addListener(PlayerAdvancements playerAdvancementsIn, Listener<Instance<T>> listener) {
+			BaseCriterionTrigger.Listeners<T> listeners = this.listeners.get(playerAdvancementsIn);
 			if(listeners == null) {
-				listeners = new BaseCriterionTrigger.Listeners<I>(playerAdvancementsIn);
+				listeners = new BaseCriterionTrigger.Listeners<T>(playerAdvancementsIn);
 				this.listeners.put(playerAdvancementsIn, listeners);
 			}
 			listeners.add(listener);
 		}
 
 		@Override
-		public void removeListener(PlayerAdvancements playerAdvancementsIn, Listener<I> listener) {
-			BaseCriterionTrigger.Listeners<I> listeners = this.listeners.get(playerAdvancementsIn);
+		public void removeListener(PlayerAdvancements playerAdvancementsIn, Listener<Instance<T>> listener) {
+			BaseCriterionTrigger.Listeners<T> listeners = this.listeners.get(playerAdvancementsIn);
 			if(listeners != null) {
 				listeners.remove(listener);
 				if(listeners.isEmpty()) {
@@ -78,7 +76,7 @@ public class BaseAdvancement {
 		 */
 		public void trigger(EntityPlayer player, Object... args) {
 			if(player instanceof EntityPlayerMP) {
-				BaseCriterionTrigger.Listeners<I> listeners = this.listeners.get(((EntityPlayerMP) player).getAdvancements());
+				BaseCriterionTrigger.Listeners<T> listeners = this.listeners.get(((EntityPlayerMP) player).getAdvancements());
 				if(listeners != null) {
 					listeners.trigger(args);
 				}
@@ -88,18 +86,55 @@ public class BaseAdvancement {
 			if(sender instanceof EntityPlayer) this.trigger((EntityPlayer)sender, args);
 		}
 
-		public ICriterionTriggerFactory<I> getFactory() {
-			return this.factory;
-		}
-
+		/**
+		 * deserialize form json
+		 * 
+		 * @param json
+		 *            Advancement 'conditions' JsonObject
+		 * @return Trigger instance form Advancement
+		 * @author small_jiu
+		 */
 		@Override
-		public I deserializeInstance(JsonObject json, JsonDeserializationContext context) {
-			return this.factory.deserializeInstance(json, context);
+		public Instance<T> deserializeInstance(JsonObject json, JsonDeserializationContext context) {
+			return new Instance<T>(this.getInstance(json, context));
+		};
+		
+		/**
+		 * Use this to check player can be get Advancement<p>
+		 * For compatibility, check {@code args.length} can be '>=', 
+		 * 
+		 * @param args
+		 *            the value of {@link BaseCriterionTrigger#trigger(EntityPlayerMP, Object...)}
+		 * @return if player can get Advancement, return true
+		 * @author small_jiu
+		 */
+		public abstract boolean check(Object... args);
+		
+		/**
+		 * deserialize form json
+		 * 
+		 * @param json
+		 *            Advancement 'conditions' JsonObject
+		 * @param context TODO
+		 * @return Trigger instance form Advancement
+		 * @author small_jiu
+		 */
+		public abstract T getInstance(JsonObject json, JsonDeserializationContext context);
+		
+		protected static class Instance<I extends BaseCriterionTrigger<I>> extends AbstractCriterionInstance {
+			private final BaseCriterionTrigger<I> instance;
+			public Instance(BaseCriterionTrigger<I> instance) {
+				super(instance.getId());
+				this.instance = instance;
+			}
+			private final boolean check(Object... args) {
+				return this.instance.check(args);
+			}
 		}
 
 		protected static class Listeners<I extends BaseCriterionTrigger<I>> {
 			private final PlayerAdvancements playerAdvancements;
-			private final Set<ICriterionTrigger.Listener<I>> listeners = Sets.newHashSet();
+			private final Set<ICriterionTrigger.Listener<Instance<I>>> listeners = Sets.newHashSet();
 
 			public Listeners(PlayerAdvancements playerAdvancementsIn) {
 				this.playerAdvancements = playerAdvancementsIn;
@@ -109,18 +144,18 @@ public class BaseAdvancement {
 				return this.listeners.isEmpty();
 			}
 
-			public void add(ICriterionTrigger.Listener<I> listener) {
+			public void add(ICriterionTrigger.Listener<Instance<I>> listener) {
 				this.listeners.add(listener);
 			}
 
-			public void remove(ICriterionTrigger.Listener<I> listener) {
+			public void remove(ICriterionTrigger.Listener<Instance<I>> listener) {
 				this.listeners.remove(listener);
 			}
 
 			public void trigger(Object... args) {
-				List<ICriterionTrigger.Listener<I>> list = null;
-				for(ICriterionTrigger.Listener<I> listener : this.listeners) {
-					if(((BaseCriterionTrigger<I>) listener.getCriterionInstance()).getFactory().check(args)) {
+				List<ICriterionTrigger.Listener<Instance<I>>> list = null;
+				for(ICriterionTrigger.Listener<Instance<I>> listener : this.listeners) {
+					if(((Instance<I>) listener.getCriterionInstance()).check(args)) {
 						if(list == null) {
 							list = Lists.newArrayList();
 						}
@@ -128,34 +163,11 @@ public class BaseAdvancement {
 					}
 				}
 				if(list != null) {
-					for(ICriterionTrigger.Listener<I> listener1 : list) {
+					for(ICriterionTrigger.Listener<Instance<I>> listener1 : list) {
 						listener1.grantCriterion(this.playerAdvancements);
 					}
 				}
 			}
-		}
-
-		public interface ICriterionTriggerFactory<T extends BaseCriterionTrigger<T>> {
-			/**
-			 * Use this to check player can be get Advancement<p>
-			 * For compatibility, check {@code args.length} can be '>=', 
-			 * 
-			 * @param args
-			 *            the value of {@link BaseCriterionTrigger#trigger(EntityPlayerMP, Object...)}
-			 * @return if player can get Advancement, return true
-			 * @author small_jiu
-			 */
-			public boolean check(Object... args);
-
-			/**
-			 * deserialize form json
-			 * 
-			 * @param json
-			 *            Advancement 'conditions' JsonObject
-			 * @return Trigger instance form Advancement
-			 * @author small_jiu
-			 */
-			public T deserializeInstance(JsonObject json, JsonDeserializationContext context);
 		}
 	}
 }

@@ -3,11 +3,10 @@ package cat.jiu.core.proxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
+
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.relauncher.Side;;
 
 public class ClientProxy extends ServerProxy {
 	@Override
@@ -27,7 +26,7 @@ public class ClientProxy extends ServerProxy {
 	
 	@Override
 	public boolean isClient() {
-		return FMLCommonHandler.instance().getSide() == Side.CLIENT;
+		return true;
 	}
 	
 	public EntityPlayer getClientPlayer() {

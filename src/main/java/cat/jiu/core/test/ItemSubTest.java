@@ -7,10 +7,13 @@ import cat.jiu.core.JiuCore;
 import cat.jiu.core.api.events.item.IItemInPlayerHandTick;
 import cat.jiu.core.api.events.item.IItemInPlayerInventoryTick;
 import cat.jiu.core.api.events.item.IItemInWorldTickEvent;
-import cat.jiu.core.energy.EnergyUtils;
+import cat.jiu.core.capability.CapabilityJiuEnergy;
+import cat.jiu.core.capability.EnergyUtils;
+import cat.jiu.core.capability.JiuEnergyStorage;
 import cat.jiu.core.util.JiuCoreEvents;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseItem;
+
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,6 +27,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -50,13 +55,14 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 	public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		ItemStack stack = player.getHeldItemMainhand();
 		NBTTagCompound nbt = stack.getTagCompound() != null ? stack.getTagCompound() : new NBTTagCompound();
-//		nbt.setBoolean("TestEnergy", !nbt.getBoolean("TestEnergy"));
+		nbt.setBoolean("TestEnergy", !nbt.getBoolean("TestEnergy"));
 		stack.setTagCompound(nbt);
 		
 		String[] i = new String[] {"St", "ri", "ng"};
 		JiuUtils.nbt.setItemNBT(stack, "TestStringArray", i);
 		
 		JiuUtils.nbt.setItemNBT(stack, "TestBigInt", new BigInteger("1"));
+		
 		return EnumActionResult.SUCCESS;
 	}
 	
@@ -71,13 +77,15 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 		for(String i : JiuUtils.nbt.getItemNBTStringArray(stack, "TestStringArray")) {
 			tooltip.add(i);
 		}
-		tooltip.add("========");
-		for(int i : JiuUtils.nbt.getItemNBTIntArray(stack, "TestIntArray")) {
-			tooltip.add(i+"");
-		}
-		tooltip.add("========");
+//		tooltip.add("========");
+//		for(int i : JiuUtils.nbt.getItemNBTIntArray(stack, "TestIntArray")) {
+//			tooltip.add(i+"");
+//		}
 //		JiuUtils.nbt.addItemNBT(stack, "TestBigInt", JiuUtils.nbt.getItemNBTBigInteger(stack, "TestBigInt"));
-		tooltip.add(JiuUtils.nbt.getItemNBTBigInteger(stack, "TestBigInt").toString());
+		tooltip.add("========");
+		if(stack.hasCapability(CapabilityJiuEnergy.ENERGY, null)) {
+			tooltip.add(stack.getCapability(CapabilityJiuEnergy.ENERGY, null).toStringInfo());
+		}
 	}
 	
 	private void addEnergy(EnergyUtils util, ItemStack stack) {
@@ -89,12 +97,9 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 		if(JiuUtils.item.equalsStack(invStack, new ItemStack(this), false, false)) {
 			NBTTagCompound nbt = invStack.getTagCompound() != null ? invStack.getTagCompound() : new NBTTagCompound();
 			if(nbt.getBoolean("TestEnergy")) {
-				if(!JiuUtils.item.equalsStack(player.getHeldItemMainhand(), invStack)) {
-					EnergyUtils util = new EnergyUtils();
-					this.addEnergy(util, invStack);
+				this.addEnergy(JiuUtils.energy, invStack);
 					
-					JiuUtils.entity.sendI18nMessage(player, util.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
-				}
+				JiuUtils.entity.sendI18nMessage(player, JiuUtils.energy.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
 			}
 		}
 	}
@@ -105,15 +110,12 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			NBTTagCompound mainnbt = mainHand.getTagCompound() != null ? mainHand.getTagCompound() : new NBTTagCompound();
 			NBTTagCompound offnbt = offHand.getTagCompound() != null ? offHand.getTagCompound() : new NBTTagCompound();
 			if(mainnbt.getBoolean("TestEnergy") || offnbt.getBoolean("TestEnergy")) {
-				EnergyUtils mainutil = new EnergyUtils();
-				EnergyUtils offutil = new EnergyUtils();
-				
 				if(mainHand.getItem() == this) {
-					this.addEnergy(mainutil, mainHand);
-					JiuUtils.entity.sendI18nMessage(player, mainutil.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
+					this.addEnergy(JiuUtils.energy, mainHand);
+					JiuUtils.entity.sendI18nMessage(player, JiuUtils.energy.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
 				}else if(offHand.getItem() == this) {
-					this.addEnergy(offutil, offHand);
-					JiuUtils.entity.sendI18nMessage(player, offutil.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
+					this.addEnergy(JiuUtils.energy, offHand);
+					JiuUtils.entity.sendI18nMessage(player, JiuUtils.energy.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
 				}
 			}
 		}
@@ -125,9 +127,8 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			NBTTagCompound nbt = item.getItem().getTagCompound() != null ? item.getItem().getTagCompound() : new NBTTagCompound();
 			if(nbt.getBoolean("TestEnergy")) {
 				if(JiuUtils.item.equalsStack(item.getItem(), new ItemStack(this), false, false)) {
-					EnergyUtils util = new EnergyUtils();
-					this.addEnergy(util, item.getItem());
-					JiuUtils.entity.sendI18nMessageToAllPlayer(world, util.getFEEnergy(item.getItem())+": World", TextFormatting.GREEN);
+					this.addEnergy(JiuUtils.energy, item.getItem());
+					JiuUtils.entity.sendI18nMessageToAllPlayer(world, JiuUtils.energy.getFEEnergy(item.getItem())+": World", TextFormatting.GREEN);
 				}
 			}else {
 				if(item.getItem().getItem() == this || item.getItem().getItem() == Item.getItemFromBlock(Init.TestBlock)) {
@@ -176,4 +177,10 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 		}
 	}
 	
+	@Override
+	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+		String energy = JiuUtils.nbt.getItemNBTString(stack, "Energy");
+		if(energy.isEmpty()) energy = "0";
+		return new JiuEnergyStorage(BigInteger.valueOf(Long.MAX_VALUE), BigInteger.valueOf(10), BigInteger.valueOf(10), new BigInteger(energy));
+	}
 }

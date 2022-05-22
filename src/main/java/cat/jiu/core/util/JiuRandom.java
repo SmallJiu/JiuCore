@@ -2,10 +2,9 @@ package cat.jiu.core.util;
 
 import java.util.Random;
 
-public class JiuRandom extends Random {
-	private static final long serialVersionUID = -8330324278894190587L;
-	
+public class JiuRandom {
 	private Random rand;
+	public Random getRandom() {return rand;}
 	
 	public JiuRandom() {
 		this.rand = new Random();
@@ -20,7 +19,7 @@ public class JiuRandom extends Random {
 	}
 	
 	public void setSeed(long seed) {
-		this.rand = new Random(seed);
+		this.rand.setSeed(seed);
 	}
 	
 	public void setSeed(Random rand) {
@@ -37,30 +36,29 @@ public class JiuRandom extends Random {
 	}
 
 	public String nextMAC(boolean toUpperCase) {
-		String x = "";
+		StringBuilder x = new StringBuilder();
 		for(int i = 0; i < 12; ++i) {
-			x += this.nextNumberOrLetter(toUpperCase, 25, 9);
+			x.append(this.nextNumberOrLetter(toUpperCase, 25, 9));
 		}
-		return x;
+		return x.toString();
 	}
 	
 	public String nextHexadecima(int size, boolean has0x, boolean toUpperCase) {
 		String x = has0x ? "0x" : "";
-		String hex = "";
+		StringBuilder hex = new StringBuilder();
 		
 		if(size < 1 || size > 7) {
 			return this.nextHexadecima(this.nextIntNoZero(7), has0x, toUpperCase);
 		}
 		for(int i = 0; i < size; ++i) {
-			hex += this.nextNumberOrLetter(toUpperCase, 5, 9);
+			hex.append(this.nextNumberOrLetter(toUpperCase, 5, 9));
 		}
 		
-		return x + hex;
+		return x + hex.toString();
 	}
 
 	public String nextNumberOrLetter(boolean toUpperCase) {
 		boolean i = this.nextBoolean();
-
 		if(i){
 			return this.nextLetter(25, toUpperCase);
 		}else {
@@ -71,12 +69,9 @@ public class JiuRandom extends Random {
 	public String nextNumberOrLetter(boolean toUpperCase, int letterSeed, int numberseed) {
 		boolean i = this.nextBoolean();
 		int letterSeed0 = letterSeed;
-		if(letterSeed < 1) {
-			letterSeed0 = 1;
-		}
-		if(letterSeed > 25) {
-			letterSeed0 = 25;
-		}
+		
+		if(letterSeed < 1) letterSeed0 = 1;
+		if(letterSeed > 25) letterSeed0 = 25;
 
 		if(i){
 			return this.nextLetter(letterSeed0, toUpperCase);
@@ -98,7 +93,7 @@ public class JiuRandom extends Random {
 	}
 
 	private String letter(int seed) {
-		int i = this.nextInt(seed > 25 ? 25 : seed);
+		int i = this.nextInt(seed > 25 ? 25 : seed <= 0 ? 3 : seed);
 
 		switch(i){
 			case 0:return "A";
@@ -131,42 +126,29 @@ public class JiuRandom extends Random {
 	}
 	
 	public int nextIntFromRange(int min, int max) {
-		int i = 0;
-		
+		if(min == max) return max; 
 		if(min > max) {
-			i = this.nextInt(min);
-		}else {
-			i = this.nextInt(max);
+			int temp_0 = min;
+			int temp_1 = max;
+			min = temp_1;
+			max = temp_0; 
 		}
+		int i = this.nextInt(max);
 		
-		if((i <= max && i >= min) || (i <= min && i >= max)) {
-			if(min > max) {
-				if(i <= min && i >= max){
-					return i;
-				}else{
-					return this.nextIntFromRange(min, max);
-				}
-			}else{
-				if(i <= max && i >= min){
-					return i;
-				}else{
-					return this.nextIntFromRange(min, max);
-				}
-			}
-		}else {
+		if(i <= max && i >= min){
+			return i;
+		}else{
 			return this.nextIntFromRange(min, max);
 		}
 	}
 	
 	public int nextIntNoZero() {
 		int i = rand.nextInt();
-		
 		return i != 0 ? i : this.nextIntNoZero();
 	}
 	
 	public int nextIntNoZero(int seed) {
 		int i = rand.nextInt(seed);
-		
 		return i != 0 ? i : this.nextIntNoZero(seed);
 	}
 
@@ -197,7 +179,6 @@ public class JiuRandom extends Random {
 	
 	public double nextDoubleNoZero() {
 		double i = rand.nextDouble();
-		
 		return i != 0 ? i : this.nextDoubleNoZero();
 	}
 
@@ -207,7 +188,6 @@ public class JiuRandom extends Random {
 	
 	public float nextFloatNoZero() {
 		float i = rand.nextFloat();
-		
 		return i != 0 ? i : this.nextFloatNoZero();
 	}
 
@@ -221,7 +201,6 @@ public class JiuRandom extends Random {
 	
 	public long nextLongNoZero() {
 		long i = rand.nextLong();
-		
 		return i != 0 ? i : this.nextLongNoZero();
 	}
 

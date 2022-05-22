@@ -1,40 +1,34 @@
 package cat.jiu.core;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.StringJoiner;
 
 import cat.jiu.core.util.helpers.DayUtils;
 
 public class CoreMain {
 	public static void main(String[] args) {
-		System.out.println("Value name must be ALL Letter");
-		CoreMain m = new CoreMain();
+//		System.out.println("Value name must be ALL Letter");
 		System.out.println(getDateWithVersion());
-		System.out.println(m.DoggaBit.toString());
-		System.out.println(m.DoggaByte.toString());
-		BigInteger meta = BigInteger.valueOf(1);
-		meta = meta.add(BigInteger.valueOf(3));
-		System.out.println("Amount: " + meta.toString());
-		System.out.println((long)Integer.MAX_VALUE * 4);
+//		CoreMain m = new CoreMain();
+//		System.out.println(m.DoggaBit.toString());
+//		System.out.println(m.DoggaByte.toString());
+//		BigInteger meta = BigInteger.valueOf(1);
+//		meta = meta.add(BigInteger.valueOf(3));
+//		System.out.println("Amount: " + meta.toString());
+//		System.out.println(Integer.MAX_VALUE * 4L);
+		String[] arg = {"1","2","3","4","5"};
+		System.out.println(toString(arg, true));
 	}
-	
-	public boolean runSystemCommand(String cmd) {
-		Runtime rt = Runtime.getRuntime();
-		Process ps = null;
-		
-		try {
-			ps = rt.exec(cmd);
-			ps.waitFor();
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
+	public static String toString(String[] args, boolean needStartAndEnd) {
+		if(args.length == 0) {
+			return "null";
 		}
-		
-		boolean lag = ps.exitValue() == 0;
-		ps.destroy();
-		ps = null;
-		
-		return lag;
+		StringJoiner j = needStartAndEnd ? new StringJoiner(",", "[", "]") : new StringJoiner(",");
+		for(int i = 0; i < args.length; ++i) {
+			j.add(args[i]);
+		}
+		return j.toString();
 	}
 	
 	/** 2^63-1 : Long max*/ public final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);

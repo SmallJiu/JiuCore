@@ -2,19 +2,17 @@ buildscript {
     repositories {
         jcenter()
 //        maven { url = "http://lss233.littleservice.cn/repositories/minecraft" }
-       maven { url = "https://repo.spongepowered.org/maven/" }
-//        maven { url = "https://files.minecraftforge.net/maven/" }
+//       maven { url = "https://repo.spongepowered.org/maven/" }
+        maven { url = "https://files.minecraftforge.net/maven/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-		classpath 'org.spongepowered:mixin:0.8.5'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
-//apply plugin: 'org.spongepowered.mixingradle:0.8.5'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-version = "1.12.2-1.0.8-20220315202836"
+version = "1.12.2-1.0.10-20220522225957"
 group = "cat.jiu.core" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "JiuCore"
 
@@ -58,17 +56,20 @@ repositories {
         name "CoFH Maven"
         url "https://maven.covers1624.net"
     }
+	maven {
+        url "https://maven.cleanroommc.com"
+    }
 }
 
 dependencies {
 	deobfCompile 'cofh:RedstoneFlux:1.12-2.1.0.7:universal'
-	//deobfCompile 'org.spongepowered:mixin:0.8.5'
-	
+	deobfCompile ("zone.rong:mixinbooter:4.2")
+
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
     //compile "some.group:artifact:version"
-      
+
     // real examples
     //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
     //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env

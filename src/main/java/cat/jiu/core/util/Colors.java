@@ -25,5 +25,4 @@ public class Colors {
 			return 0;
 		}, (Item)null);
 	}
-
 }

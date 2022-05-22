@@ -1,6 +1,8 @@
 package cat.jiu.core.test;
 
 import cat.jiu.core.JiuCore;
+import cat.jiu.core.api.IJiuEvent;
+import cat.jiu.core.api.events.player.IPlayerJump;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseItem;
 
@@ -19,7 +21,12 @@ public class ItemDebug extends BaseItem.Normal{
 	
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
-		JiuCore.instance.log.info(JiuUtils.item.getTexture(playerIn.getHeldItemMainhand()).toString());
+		for(Class<?> clazz : IPlayerJump.class.getInterfaces()) {
+			JiuUtils.entity.sendMessage(playerIn, clazz.toString());
+		}
+		
+		JiuUtils.entity.sendMessage(playerIn, (IPlayerJump.class.getInterfaces()[0] == IJiuEvent.class) + "");
+//		JiuCore.instance.log.info(JiuUtils.item.getTexture(playerIn.getHeldItemMainhand()).toString());
 //		JsonParser parser = new JsonParser();
 //		
 //		try {

@@ -1,0 +1,83 @@
+
+	// name@count@meta
+	"minecraft:stone@2@10"
+	
+	// name@count
+	// = name@count@0
+	"minecraft:stone@2"
+	
+	// name
+	// = name@1@0
+	"minecraft:stone"
+	
+	// name@count@meta@nbt
+	// NBT's '"' need use \",
+	// looks like \"str\": \"this is string nbt\",
+	// and dont not use line feed
+	"minecraft:stone@2@10@{\"str\":\"Hi_This_Is_Custom_Drop_Item\"}"
+
+// use JsonObject to add more
+{
+	"name": "minecraft:grass",
+	"count": 10,// if not fount, wiil use 1 to set item count
+	"meta": 10,// if not fount, wiil use 0 to set item meta
+	"nbt": {
+		"boolean":{ // use 'boolean' key to add boolean nbt values
+			"boolean-0":false
+		},
+		"string":{ // use 'string' key to add string nbt values, boolean with change to byte,
+			"str-0":"21asdg"
+		},
+		"long":{ // use 'long' key to add long nbt values
+			"longNum-0":32132,
+			"longNum-999":32132
+		},
+		"int":{ // use 'int' key to add int nbt values
+			"intNum-0":32132
+		},
+		"float":{ // use 'float' key to add float nbt values
+			"floatNum-0":32132
+		},
+		"double":{ // use 'double' key to add double nbt values
+			"doubleNum-0":32132
+		},
+		"byte":{ // use 'byte' key to add byte nbt values
+			"byteNum-0":12
+		},
+		"short":{ // use 'short' key to add short nbt values
+			"shortNum-0":133
+		},
+		"int_array":{ // use 'int_array' key to add int array nbt values
+			"int_array-0":[
+				123,
+				156158,
+				49198
+			],
+			"int_array-1":[
+				981198,
+				16581,
+				2354
+			]
+		},
+		"byte_array":{// use 'byte_array' key to add byte array nbt values
+			"byte_array-0":[
+				64,
+				22,
+				11
+			],
+			"byte_array-1":[
+				66,
+				23,
+				86
+			]
+		},
+		"tags":{// use 'tags' key to add sub nbt
+			"customTag-0":{
+				// some tags...
+			},
+			"132131":{
+				"string":{"customStringNbT":"this is custom string nbt"}
+			}
+		}
+	}
+}

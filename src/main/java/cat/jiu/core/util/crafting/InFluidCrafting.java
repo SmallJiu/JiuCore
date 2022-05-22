@@ -138,7 +138,7 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 					// check input stack
 					if(JiuUtils.item.equalsStack(input, stack)) {
 						// check EntityItemStack amout
-						if(stack.getCount() >= inputAmout) {
+						if(stack.getCount() >= inputAmout && !JiuUtils.nbt.hasNBT(stack, "influidcraft")) {
 							if(stack.getItem() == Items.PAPER) {
 								stack.shrink(inputAmout);
 							}
@@ -149,6 +149,7 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 							}
 							
 							// spawn item with the pos
+							output.stream().forEach(listStack -> JiuUtils.nbt.setItemNBT(listStack, "influidcraft", (byte)1));
 							JiuUtils.item.spawnAsEntity(world, item.getPosition(), output);
 							
 							// if fluid can be consume, set fluid to air

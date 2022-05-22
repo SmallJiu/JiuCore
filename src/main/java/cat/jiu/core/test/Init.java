@@ -25,30 +25,30 @@ public class Init {
 	public static final List<Item> ITEMS = new ArrayList<Item>();
 	public static final List<Fluid> FLUIDS = new ArrayList<Fluid>();
 
-	public static final BlockTest TestBlock = JiuCore.TEST_MODEL ? new BlockTest() : null;
-	public static final BlockTestNormal TestBlockNormal = JiuCore.TEST_MODEL ? new BlockTestNormal() : null;
-	public static final ItemFoodTest TestFood = JiuCore.TEST_MODEL ? new ItemFoodTest() : null;
-	public static final ItemSubTest TestItem = JiuCore.TEST_MODEL ? new ItemSubTest() : null;
-	public static final Bubble BUBBLE = JiuCore.TEST_MODEL ? new Bubble() : null;
-	public static final ItemDebug DEBUG = JiuCore.TEST_MODEL ? new ItemDebug() : null;
-	public static final TestGas GAS = JiuCore.TEST_MODEL ? new TestGas() : null;
-	public static final ItemMetadataTool NBT_TOOL = JiuCore.TEST_MODEL ? new ItemMetadataTool() : null;
-	public static final ItemMetadataSword NBT_SWORD = JiuCore.TEST_MODEL ? new ItemMetadataSword() : null;
-	public static final ItemMetadataPickaxe NBT_PICKAXE = JiuCore.TEST_MODEL ? new ItemMetadataPickaxe() : null;
-	public static final ItemMetadataAxe NBT_AXE = JiuCore.TEST_MODEL ? new ItemMetadataAxe() : null;
-	public static final ItemMetadataShovel NBT_SHOVEL = JiuCore.TEST_MODEL ? new ItemMetadataShovel() : null;
-	public static final ItemMetadataHoe NBT_HOE = JiuCore.TEST_MODEL ? new ItemMetadataHoe() : null;
+	public static final BlockTest TestBlock = JiuCore.test() ? new BlockTest() : null;
+	public static final BlockTestNormal TestBlockNormal = JiuCore.test() ? new BlockTestNormal() : null;
+	public static final ItemFoodTest TestFood = JiuCore.test() ? new ItemFoodTest() : null;
+	public static final ItemSubTest TestItem = JiuCore.test() ? new ItemSubTest() : null;
+	public static final Bubble BUBBLE = JiuCore.test() ? new Bubble() : null;
+	public static final ItemDebug DEBUG = JiuCore.test() ? new ItemDebug() : null;
+	public static final TestGas GAS = JiuCore.test() ? new TestGas() : null;
+	public static final ItemMetadataTool NBT_TOOL = JiuCore.test() ? new ItemMetadataTool() : null;
+	public static final ItemMetadataSword NBT_SWORD = JiuCore.test() ? new ItemMetadataSword() : null;
+	public static final ItemMetadataPickaxe NBT_PICKAXE = JiuCore.test() ? new ItemMetadataPickaxe() : null;
+	public static final ItemMetadataAxe NBT_AXE = JiuCore.test() ? new ItemMetadataAxe() : null;
+	public static final ItemMetadataShovel NBT_SHOVEL = JiuCore.test() ? new ItemMetadataShovel() : null;
+	public static final ItemMetadataHoe NBT_HOE = JiuCore.test() ? new ItemMetadataHoe() : null;
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void onBlockRegister(RegistryEvent.Register<Block> event) {
-		if(JiuCore.TEST_MODEL) {
+		if(JiuCore.test()) {
 			event.getRegistry().registerAll(BLOCKS.toArray(new Block[0]));
 		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void onItemRegister(RegistryEvent.Register<Item> event) {
-		if(JiuCore.TEST_MODEL) {
+		if(JiuCore.test()) {
 			event.getRegistry().registerAll(ITEMS.toArray(new Item[0]));
 		}
 	}

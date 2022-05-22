@@ -21,6 +21,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import scala.collection.mutable.StringBuilder;
+
 public class JsonUtil {
 	public boolean toJsonFile(String path, Object src) {
 		String json = new GsonBuilder().create().toJson(src);
@@ -43,6 +45,10 @@ public class JsonUtil {
 		} catch (Exception e) {e.printStackTrace();return false;}
 	}
 	
+	/**
+	 * This method only deserializes Number, Boolean, and String.<p> 
+	 * If it looks like {@code ItemStack} or other, please write your own method
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Map toMap(JsonObject obj) {
 		Map map = Maps.newHashMap();
@@ -66,6 +72,10 @@ public class JsonUtil {
 		return map;
 	}
 	
+	/**
+	 * This method only deserializes Number, Boolean, and String.<p> 
+	 * If it looks like {@code ItemStack} or other, please write your own method
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List toList(JsonArray array) {
 		List list = Lists.newArrayList();
@@ -87,6 +97,10 @@ public class JsonUtil {
 		return list;
 	}
 	
+	/**
+	 * This method only deserializes Number, Boolean, and String.<p> 
+	 * If it looks like {@code ItemStack} or other, please write your own method
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public <V> JsonArray toJsonArray(List<V> list) {
 		JsonArray array = new JsonArray();
@@ -110,6 +124,10 @@ public class JsonUtil {
 		return array;
 	}
 	
+	/**
+	 * This method only deserializes Number, Boolean, and String.<p> 
+	 * If it looks like {@code ItemStack} or other, please write your own method
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <K, V> JsonObject toJsonObject(Map<K, V> map) {
 		JsonObject obj = new JsonObject();
@@ -249,7 +267,7 @@ public class JsonUtil {
     }
 	
 	private String indent(int number) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < number; i++) {
             result.append("	");
         }

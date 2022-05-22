@@ -1,4 +1,4 @@
-package cat.jiu.core.energy;
+package cat.jiu.core.capability;
 
 import java.math.BigInteger;
 

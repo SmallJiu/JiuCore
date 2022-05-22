@@ -8,8 +8,8 @@ import cat.jiu.core.util.base.BaseCommand;
 import net.minecraft.command.ICommand;
 
 public class CommandValue extends BaseCommand.CommandTree{
-	public CommandValue(String name, String modid, String valueName, boolean canAddComman, boolean checkPermission, int level) {
-		super(getCMDs(modid, valueName), name, modid, canAddComman, checkPermission, level);
+	public CommandValue(String name, String modid, String valueName, boolean canAddComman, int level) {
+		super(getCMDs(modid, valueName), name, modid, canAddComman, level);
 	}
 	
 	static List<ICommand> getCMDs(String modid, String valueName){

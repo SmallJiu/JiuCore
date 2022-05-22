@@ -5,28 +5,44 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
+import java.util.StringJoiner;
 
 import org.apache.commons.lang3.Validate;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
-import cat.jiu.core.JiuCore;
 import cat.jiu.core.util.JiuUtils;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public final class OtherUtils {
-	public <T> ArrayList<T> createArrayListWithSize(int size, T fill){
+	public <T> boolean isEmpty(T[] arg) {
+		return arg == null || arg.length == 0;
+	}
+	public <T> boolean isEmpty(List<T> arg) {
+		return arg == null || arg.size() == 0;
+	}
+	public boolean isEmpty(JsonObject arg) {
+		return arg == null || arg.size() == 0;
+	}
+	public boolean isEmpty(JsonArray arg) {
+		return arg == null || arg.size() == 0;
+	}
+	public boolean isEmpty(ItemStack arg) {
+		return arg == null || arg.isEmpty();
+	}
+	
+	public <T> ArrayList<T> createArrayListWithSize(int size, T fill) {
 		Validate.notNull(fill);
-		Object[] fillObj = new Object[size];
+		@SuppressWarnings("unchecked")
+		T[] fillObj = (T[]) new Object[size];
 		Arrays.fill(fillObj, fill);
-		return new ArrayList<T>(Arrays.asList(fill));
+		return new ArrayList<T>(Arrays.asList(fillObj));
 	}
 	
 	public ITextComponent createTextComponent(String arg, Object... objs) {
@@ -77,11 +93,6 @@ public final class OtherUtils {
 		return lag;
 	}
 	
-	@Deprecated
-	public String formatNumber(long value) {
-		return JiuUtils.big_integer.format(value, 3);
-	}
-	
 	public Integer[] toArray(int[] args) {
 		Integer[] arg = new Integer[args.length];
 		for (int i = 0; i < arg.length; i++) {
@@ -114,46 +125,37 @@ public final class OtherUtils {
 		return arg;
 	}
 	
-	public String numberToHexadecimal(Integer seed) {
-		return Integer.toHexString(seed);
-	}
-	
-	public Integer hexadecimalToNumber(String seed, boolean checkTheMCWorldSize) {
+	public Integer hexadecimalToNumber(String seed) {
 		Integer x = null;
-		try {
-			if(seed.indexOf("0x") == 0) {
-				x = Integer.parseInt(seed.substring(2), 16);
-			}else {
-				x = Integer.parseInt(seed,16);
-			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-			JiuCore.instance.log.error(e.getMessage() + " is not Hexadecimal!");
+		if(seed.startsWith("0x")) {
+			x = Integer.parseInt(seed.substring(2), 16);
+		}else {
+			x = Integer.parseInt(seed,16);
 		}
-		
-		if(checkTheMCWorldSize && x > 30000000) {
-			x = 25000000;
-		}
-		
 		return x;
 	}
 	
 	public String toString(String[] args) {
-		if(args.length == 0) {
+		return this.toString(args, null, null, null);
+	}
+	
+	public String toString(String[] args, CharSequence delimiter) {
+		return this.toString(args, delimiter, "", "");
+	}
+	
+	public String toString(String[] args, CharSequence start, CharSequence end) {
+		return this.toString(args, ",", start, end);
+	}
+	
+	public String toString(String[] args, CharSequence delimiter, CharSequence start, CharSequence end) {
+		if(args == null || args.length == 0) {
 			return "null";
 		}
-		StringBuilder v = new StringBuilder();
-		for(int i = 0; i < args.length; ++i) {
-			if(i == args.length - 1) {
-				v.append(args[i]);
-			}else {
-				StringBuilder v1 = new StringBuilder();
-				v1.append(args[i]);
-				v1.append(",");
-				v.append(v1);
-			}
+		StringJoiner j = start != null && delimiter != null && end != null ? new StringJoiner(delimiter, start, end) : new StringJoiner(",");
+		for(String arg : args) {
+			j.add(arg);
 		}
-		return v.toString();
+		return j.toString();
 	}
 	
 	public <T> String toString(List<T> args) {
@@ -249,21 +251,6 @@ public final class OtherUtils {
 		return false;
 	}
 	
-	@Deprecated
-	public <K, V> boolean containKey(Map<K, V> strs, K str) {
-		if(strs.isEmpty()) {
-			return false;
-		}
-		return strs.containsKey(str);
-	}
-	@Deprecated
-	public <K, V> boolean containValue(Map<K, V> strs, V str) {
-		if(strs.isEmpty()) {
-			return false;
-		}
-		return strs.containsValue(str);
-	}
-	
 	/**
 	 * 
 	 * @param strs original list
@@ -316,14 +303,6 @@ public final class OtherUtils {
 		return false;
 	}
 	
-	@Deprecated
-	public boolean containKey(List<Integer> strs, int str) {
-		if(strs.isEmpty()) {
-			return false;
-		}
-		return strs.contains(str);
-	}
-	
 	public boolean containKey(long[] strs, long str) {
 		if(strs.length == 0) {
 			return false;
@@ -334,22 +313,6 @@ public final class OtherUtils {
 			}
 		}
 		return false;
-	}
-
-	@Deprecated
-	public boolean containKey(List<Long> strs, long str) {
-		if(strs.isEmpty()) {
-			return false;
-		}
-		return strs.contains(str);
-	}
-	
-	@Deprecated
-	public boolean containKey(List<String> strs, String str) {
-		if(strs.isEmpty()) {
-			return false;
-		}
-		return strs.contains(str);
 	}
 	
 	/**
@@ -407,29 +370,8 @@ public final class OtherUtils {
 		return arg.split("\\" + separator);
 	}
 	
-	@Deprecated
-	public <T> List<T> copyArrayToList(T[] args){
-		return Lists.newArrayList(args);
-	}
-	@Deprecated
-	public <E> List<E> copyList(List<E> args){
-		return Lists.newArrayList(args);
-	}
-	
 	public String upperCaseToFirstLetter(String arg) {
 		return arg.substring(0, 1).toUpperCase() + arg.substring(1);
-	}
-	
-	/**
-	 * 
-	 * @param array original array
-	 * @return copy
-	 * 
-	 * @author small_jiu
-	 */
-	@Deprecated
-	public <T> T[][] copyArray(T[][] array){
-		return array.clone();
 	}
 	
 	/*
@@ -482,9 +424,4 @@ public final class OtherUtils {
 		return temp;
 	}
 	*/
-	@Deprecated
-	@Nullable
-    public Potion getRegisteredMobEffect(String id) {
-        return JiuUtils.entity.getRegisteredMobEffect(id);
-    }
 }

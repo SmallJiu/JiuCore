@@ -1,9 +1,14 @@
 package cat.jiu.core.util.base;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import cat.jiu.core.api.IHasModel;
 import cat.jiu.core.util.RegisterModel;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -46,8 +51,25 @@ public class BaseItem {
 			this(modid, name, false);
 		}
 		
-		protected int meta = 1;
+		List<String> I18nInfo = Lists.newArrayList();
+
+		public Normal addI18nInfo(String... keys) {
+			for(String key : keys) {
+				this.I18nInfo.add(key);
+			}
+			return this;
+		}
+
+		@SideOnly(Side.CLIENT)
+		public void addInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flagIn) {
+			if(!I18nInfo.isEmpty()) {
+				for(String key : I18nInfo) {
+					tooltip.add(I18n.format(key));
+				}
+			}
+		}
 		
+		protected int meta = 1;
 		public Normal setMaxMetadata(int maxMeta) {
 			if(this.getHasSubtypes()) {
 				this.meta = maxMeta > 1 ? maxMeta : 1;
@@ -66,7 +88,12 @@ public class BaseItem {
 			}else {
 				super.getSubItems(tab, items);
 			}
-			
+		}
+		
+		String[] modelRes = null;
+		public Normal setModelResourceLocation(String dir, String fileName) {
+			this.modelRes = new String[] {dir, fileName.equals("this.name") ? this.name : fileName};
+			return this;
 		}
 		
 		@Override
@@ -74,10 +101,19 @@ public class BaseItem {
 		public void getItemModel() {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
-					this.model.registerItemModel(this, i, "normal/" + this.name, this.name + "." + i);
+					if(this.modelRes != null) {
+						this.model.registerItemModel(this, i, this.modelRes[0], this.modelRes[1]);
+					}else {
+						this.model.registerItemModel(this, i, "normal/" + this.name, this.name);
+					}
 				}
 			}else {
-				this.model.registerItemModel(this, "normal", this.name);
+				if(this.modelRes != null) {
+					this.model.registerItemModel(this, this.modelRes[0], this.modelRes[1]);
+				}else {
+					this.model.registerItemModel(this, "normal", this.name);
+				}
+				
 			}
 		}
 		
@@ -128,8 +164,25 @@ public class BaseItem {
 			super.onFoodEaten(stack, worldIn, player);
 		}
 		
-		private int meta = 1;
+		List<String> I18nInfo = Lists.newArrayList();
+
+		public Food addI18nInfo(String... keys) {
+			for(String key : keys) {
+				this.I18nInfo.add(key);
+			}
+			return this;
+		}
+
+		@SideOnly(Side.CLIENT)
+		public void addInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flagIn) {
+			if(!I18nInfo.isEmpty()) {
+				for(String key : I18nInfo) {
+					tooltip.add(I18n.format(key));
+				}
+			}
+		}
 		
+		private int meta = 1;
 		public Food setMaxMetadata(int maxMeta) {
 			if(this.getHasSubtypes()) {
 				this.meta = maxMeta > 1 ? maxMeta : 1;

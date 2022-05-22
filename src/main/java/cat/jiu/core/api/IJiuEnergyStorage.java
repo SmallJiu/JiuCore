@@ -42,6 +42,10 @@ public interface IJiuEnergyStorage  {
 	    default BigInteger outputEnergyWithBigInteger(BigInteger maxExtract, boolean simulate) {
 	    	return this.extractEnergyWithBigInteger(maxExtract, simulate);
 	    }
+	    default String toStringInfo() {
+	    	return "MaxEnergy:" + this.getMaxEnergyStoredWithBigInteger()
+	    		 + ", Energy:" + this.getEnergyStoredWithBigInteger();
+	    }
 	    
 	    default cofh.redstoneflux.api.IEnergyStorage toRFStorage() {
 	    	final IJiuEnergyStorage storage = this;
