@@ -50,6 +50,7 @@ import cat.jiu.core.api.events.item.client.IItemInfoTooltip;
 import cat.jiu.core.api.events.player.IPlayerBreakBlock;
 import cat.jiu.core.api.events.player.IPlayerBreakBlockDropItems;
 import cat.jiu.core.api.events.player.IPlayerCraftedItemEvent;
+import cat.jiu.core.api.events.player.IPlayerDeathDropItems;
 import cat.jiu.core.api.events.player.IPlayerDeathEvent;
 import cat.jiu.core.api.events.player.IPlayerEatFoodFinish;
 import cat.jiu.core.api.events.player.IPlayerEatFoodStart;
@@ -370,7 +371,6 @@ public final class JiuCoreEvents {
 			{
 				List<IItemInPlayerHandTick> list = getEvents(IItemInPlayerHandTick.class);
 				if(list != null) list.stream().forEach(e -> e.onItemInPlayerHandTick(player, mainHand, offHand));
-				
 				if(itemE != null) itemE.stream().forEach(e -> e.onItemInPlayerHandTick(player, mainHand, offHand));
 			}
 			
@@ -381,7 +381,6 @@ public final class JiuCoreEvents {
 						EntityEquipmentSlot slot = JiuUtils.item.getArmorSlotForID(getSlotFor(armorInventory, invStack));
 						List<IItemInPlayerArmorTick> list = getEvents(IItemInPlayerArmorTick.class);
 						if(list != null) list.stream().forEach(e -> e.onItemInPlayerArmorTick(player, invStack, slot));
-						
 						if(itemE != null) itemE.stream().forEach(e -> e.onItemInPlayerArmorTick(player, invStack, slot));
 					}
 				}
@@ -471,8 +470,13 @@ public final class JiuCoreEvents {
 		
 		drops.stream().forEach(eitem -> items.add(eitem.getItem()));
 		
-		List<IEntityDeathDropItems> list = getEvents(IEntityDeathDropItems.class);
-		if(list != null) list.stream().forEach(e -> e.onEntityDeathDropItems(entity, source, drops, items, lootingLevel, recentlyHit));
+		if(entity instanceof EntityPlayer) {
+			List<IPlayerDeathDropItems> list = getEvents(IPlayerDeathDropItems.class);
+			if(list != null) list.stream().forEach(e -> e.onPlayerDeathDropItems((EntityPlayer)entity, source, drops, items, lootingLevel, recentlyHit));
+		}else {
+			List<IEntityDeathDropItems> list = getEvents(IEntityDeathDropItems.class);
+			if(list != null) list.stream().forEach(e -> e.onEntityDeathDropItems(entity, source, drops, items, lootingLevel, recentlyHit));
+		}
 		
 		items.clear();
 	}

@@ -47,7 +47,7 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static void addDrops(ResourceLocation name, DropType drop) {
 		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
-		if(entity == null) throw new RuntimeException("Can not find entity: " + name);
+		if(entity == null) unknowEntity(name);
 		
 		String s = entity.getName();
 		if(!Drop.containsKey(s)) {
@@ -58,12 +58,12 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static void addDrops(EntityLivingBase entity, DropType drop) {
 		if(entity instanceof EntityPlayer) {
-			JiuCore.instance.log.error("Can not add drops to: " + entity.getClass().getSimpleName());
+			JiuCore.instance.log.error("Can not add drops to Player!");
 			return;
 		}
 		
 		String s = EntityList.getEntityString(entity);
-		if(s == null) throw new RuntimeException("Can not find entity: " + entity.getName());
+		if(s == null) unknowEntity(entity);
 		
 		if(!Drop.containsKey(s)) {
 			Drop.put(s, Lists.newArrayList());
@@ -73,16 +73,23 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static List<DropType> getDrops(EntityLivingBase entity) {
 		String s = EntityList.getEntityString(entity);
-		if(s == null) throw new RuntimeException("Can not find entity: " + entity.getEntityId());
-//		System.out.println("EntityName: " + entity.getName() + ", EntityID: " + entity.getEntityId() + ", Size: " + drops.size() + ", Name: " + EntityList.getEntityString(entity));
-		
+		if(s == null) unknowEntity(entity);
+
 		if(!Drop.containsKey(s)) return null;
 		return Drop.get(s);
 	}
 	
+	private static void unknowEntity(ResourceLocation name) {
+		throw new RuntimeException("Can not find entity: " + name);
+	}
+	
+	private static void unknowEntity(EntityLivingBase entity) {
+		throw new RuntimeException("Can not find entity: EntityID: " + entity.getEntityId() + ", EntityName: " + entity.getName());
+	}
+	
 	public static List<DropType> getDrops(ResourceLocation name) {
 		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
-		if(entity == null) throw new RuntimeException("Can not find entity: " + name);
+		if(entity == null) unknowEntity(name);
 		
 		String s = entity.getName();
 		if(!Drop.containsKey(s)) return null;

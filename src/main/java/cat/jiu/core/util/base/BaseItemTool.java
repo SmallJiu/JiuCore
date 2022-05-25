@@ -419,7 +419,13 @@ public class BaseItemTool {
 
 		@Override
 		public int getHarvestLevel(ItemStack stack, String toolClass, EntityPlayer player, IBlockState blockState) {
-			int level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
+			int level = 0;
+			if(stack.getMetadata() >= this.material.length) {
+				level = this.material[this.material.length-1].getHarvestLevel(toolClass, blockState);
+			}else {
+				level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
+			}
+			
 			if(level < 0 && toolClass.equals(this.toolClass)) {
 				level = super.getHarvestLevel(stack, toolClass, player, blockState);
 			}
@@ -430,10 +436,13 @@ public class BaseItemTool {
 		}
 
 		public int getHarvestLevel(ItemStack stack, String toolClass, IBlockState blockState) {
-			int level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
-			if(level < 0 && toolClass.equals(this.toolClass)) {
-				level = this.toolMaterial.getHarvestLevel();
+			int level = 0;
+			if(stack.getMetadata() >= this.material.length) {
+				level = this.material[this.material.length-1].getHarvestLevel(toolClass, blockState);
+			}else {
+				level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
 			}
+			
 			if(!this.canHarvestBlock(blockState, stack)) {
 				level = -1;
 			}
@@ -499,7 +508,13 @@ public class BaseItemTool {
 
 		@Override
 		public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-			ItemStack mat = this.material[repair.getMetadata()].getRepairItemStack();
+			
+			ItemStack mat = ItemStack.EMPTY;
+			if(toRepair.getMetadata() >= this.material.length) {
+				mat = this.material[this.material.length-1].getRepairItemStack();
+			}else {
+				mat = this.material[repair.getMetadata()].getRepairItemStack();
+			}
 			if(!mat.isEmpty() && OreDictionary.itemMatches(mat, repair, false))
 				return true;
 			return super.getIsRepairable(toRepair, repair);
@@ -507,6 +522,9 @@ public class BaseItemTool {
 
 		@Override
 		public int getMaxDamage(ItemStack stack) {
+			if(stack.getMetadata() >= this.material.length) {
+				return this.material[this.material.length-1].getMaxDamage();
+			}
 			return this.material[stack.getMetadata()].getMaxDamage();
 		}
 
@@ -531,6 +549,9 @@ public class BaseItemTool {
 
 		@Override
 		public int getItemEnchantability(ItemStack stack) {
+			if(stack.getMetadata() >= this.material.length) {
+				return this.material[this.material.length-1].getEnchantability();
+			}
 			return this.material[stack.getMetadata()].getEnchantability();
 		}
 	}
