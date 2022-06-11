@@ -167,13 +167,11 @@ public class Recipes {
 	}
 	
 	public void addShapedlessRecipe(ItemStack output, Object... inputs) {
+		for(Object input: inputs) 
+			if(input == null) return;
 		ResourceLocation recipeName = getNameForRecipe(output);
 		NonNullList<Ingredient> inputIng = NonNullList.create();
-		for(Object input: inputs) {
-			if(input == null) {
-				return;
-			}
-		}
+		
 		for(Object input: inputs) {
 			inputIng.add(CraftingHelper.getIngredient(input));
 		}
@@ -182,11 +180,8 @@ public class Recipes {
 	}
 	
 	public void addShapedRecipe(ItemStack output, Object... input) {
-		for(Object object : input) {
-			if(object == null) {
-				return;
-			}
-		}
+		for(Object object : input) 
+			if(object == null) return;
 		ResourceLocation recipeName = getNameForRecipe(output);
 		ShapedPrimer primer = CraftingHelper.parseShaped(input);
 		ShapedRecipes recipe = new ShapedRecipes(output.getItem().getRegistryName().toString(), primer.width, primer.height, primer.input, output);

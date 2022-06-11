@@ -39,16 +39,18 @@ public class Values {
 	}
 	
 	public static String getValueName(String valueID) {
-		String s = JiuUtils.other.upperCaseToFirstLetter(valueID);
-		try {
+		String s = JiuUtils.other.upperFirst(valueID);
+		boolean lag = false;
+		try { Class.forName("net.minecraft.client.Minecraft"); lag = true; }catch(Throwable e) {e.fillInStackTrace();}
+		
+		if(lag) {
 			String langCode = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
 			if(language.containsKey(langCode)) {
 				if(language.get(langCode).containsKey(valueID)) {
 					s = language.get(langCode).get(valueID);
 				}
 			}
-		} catch (Throwable e) {
-			e.fillInStackTrace();
+		}else {
 			if(language.containsKey("en_us")) {
 				if(language.get("en_us").containsKey(valueID)) {
 					s = language.get("en_us").get(valueID);
@@ -80,10 +82,11 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static void addValue(String valueID, BigInteger defaultValue) {
+		if("name".equals(valueID)) return;
 		String s = valueID.toUpperCase();
 		for(int i = 0; i < s.length(); i++) {
 			char letter = s.charAt(i);
-			if(!JiuCore.CHAR_LETTERS.contains(letter)) {
+			if(!JiuCore.CHAR_LETTERS.contains(letter) && letter != '_') {
 				throw new RuntimeException("Value name must be ALL Letter: " + valueID + " -> " + letter);
 			}
 		}
@@ -105,11 +108,9 @@ public class Values {
 				values.get(Initialization).put(valueID, defaultValue);
 			}
 			
-			if(!writeToFile()) {
-				JiuCore.instance.log.error("Unable write to file!");
-			}
+			saveValue();
 		}else {
-			JiuCore.instance.log.error(valueID + " is Already added.");
+			JiuCore.getLogOS().error(valueID + " is Already added.");
 		}
 	}
 	
@@ -124,12 +125,10 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static ValueStateType set(String valueID, UUID uid, BigInteger value, int writeTime) {
-		if(uid.equals(Initialization)) {
-			return ValueStateType.Initialization;
-		}
-		if(!values.containsKey(uid)) {
-			values.put(uid, Maps.newHashMap());
-		}
+		if(!value_list.contains(valueID)) return ValueStateType.NOT_FOUND_VALUE;
+		if(uid.equals(Initialization)) return ValueStateType.Initialization;
+		if(!values.containsKey(uid)) values.put(uid, Maps.newHashMap());
+		
 		Map<String, BigInteger> map = values.get(uid);
 		
 		if(!map.containsKey(valueID)) {
@@ -143,10 +142,8 @@ public class Values {
 			changeTime += 1;
 			
 			if(changeTime >= writeTime) {
-				if(!writeToFile()) {
-					changeTime = 0;
-					return ValueStateType.UNABLE_WRITE;
-				}
+				changeTime = 0;
+				saveValue();
 				return ValueStateType.SUCCESS;
 			}
 			
@@ -167,33 +164,42 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static ValueStateType add(String valueID, UUID uid, BigInteger value, int writeTime) {
-		if(uid.equals(Initialization)) {
-			return ValueStateType.Initialization;
-		}
-		if(!values.containsKey(uid)) {
-			values.put(uid, Maps.newHashMap());
-		}
+		if(!value_list.contains(valueID)) return ValueStateType.NOT_FOUND_VALUE;
+		if(uid.equals(Initialization)) return ValueStateType.Initialization;
+		if(!values.containsKey(uid)) values.put(uid, Maps.newHashMap());
+		
 		Map<String, BigInteger> map = values.get(uid);
-		if(!map.containsKey(valueID)) {
+		if(!map.containsKey(valueID) || map.get(valueID) == null) {
 			if(value_list.contains(valueID)) {
 				map.put(valueID, default_value.get(valueID));
 			}
 		}
-		if(map.containsKey(valueID)) {
-			map.replace(valueID, map.get(valueID).add(value));
-			changeTime += 1;
-			
-			if(changeTime >= writeTime) {
-				if(!writeToFile()) {
-					changeTime = 0;
-					return ValueStateType.UNABLE_WRITE;
-				}
-				return ValueStateType.SUCCESS;
-			}
-			return ValueStateType.NOT_ARRIVAL_TIME;
-		}else {
-			return ValueStateType.NOT_FOUND_VALUE;
+		map.replace(valueID, map.get(valueID).add(value));
+		changeTime += 1;
+		if(changeTime >= writeTime) {
+			changeTime = 0;
+			saveValue();
+			return ValueStateType.SUCCESS;
 		}
+		return ValueStateType.NOT_ARRIVAL_TIME;
+	}
+	
+	/**
+	 * take player owner value not equal negative num
+	 * @param valueID The value name
+	 * @param uid The Player UUID
+	 * @param value Number of value
+	 * @return true if remainder >= zero
+	 * 
+	 * @author small_jiu
+	 */
+	public static boolean canSubtract(String valueID, UUID uid, BigInteger value) {
+		if(!uid.equals(Initialization)) {
+			if(values.containsKey(uid) && values.get(uid).containsKey(valueID)) {
+				return JiuUtils.big_integer.greaterOrEqual(get(valueID, uid).subtract(value), BigInteger.ZERO);
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -207,15 +213,10 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static ValueStateType subtract(String valueID, UUID uid, BigInteger value, int writeTime) {
-		if(uid.equals(Initialization)) {
-			return ValueStateType.Initialization;
-		}
-		if(uid == null || valueID == null || value == null) {
-			return ValueStateType.NULL;
-		}
-		if(!values.containsKey(uid)) {
-			values.put(uid, Maps.newHashMap());
-		}
+		if(!value_list.contains(valueID)) return ValueStateType.NOT_FOUND_VALUE;
+		if(uid.equals(Initialization)) return ValueStateType.Initialization;
+		if(uid == null || valueID == null || value == null) return ValueStateType.NULL;
+		if(!values.containsKey(uid)) values.put(uid, Maps.newHashMap());
 		
 		Map<String, BigInteger> map = values.get(uid);
 		if(!map.containsKey(valueID)) {
@@ -224,21 +225,14 @@ public class Values {
 			}
 		}
 		if(BigInteger.ZERO.max(map.get(valueID).subtract(value)).equals(map.get(valueID).subtract(value))) {
-			if(map.containsKey(valueID)) {
-				map.replace(valueID, map.get(valueID).subtract(value));
-				changeTime += 1;
-				
-				if(changeTime >= writeTime) {
-					if(!writeToFile()) {
-						changeTime = 0;
-						return ValueStateType.UNABLE_WRITE;
-					}
-					return ValueStateType.SUCCESS;
-				}
-				return ValueStateType.NOT_ARRIVAL_TIME;
-			}else {
-				return ValueStateType.NOT_FOUND_VALUE;
+			map.replace(valueID, map.get(valueID).subtract(value));
+			changeTime += 1;
+			if(changeTime >= writeTime) {
+				changeTime = 0;
+				saveValue();
+				return ValueStateType.SUCCESS;
 			}
+			return ValueStateType.NOT_ARRIVAL_TIME;
 		}else {
 			return ValueStateType.ZERO;
 		}
@@ -254,8 +248,8 @@ public class Values {
 	 * 
 	 * @author small_jiu
 	 */
-	public static ValueStateType remove(String valueID, UUID uid, int writeTime) {
-		return set(valueID, uid, default_value.get(valueID), writeTime);
+	public static ValueStateType remove(String valueID, UUID uid) {
+		return set(valueID, uid, default_value.get(valueID), 0);
 	}
 	
 	/**
@@ -267,10 +261,7 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static BigInteger get(String valueID, UUID uid) {
-		if(uid == null) {
-			return BigInteger.ZERO;
-		}
-		if(uid.equals(Initialization)) {
+		if(uid == null || uid.equals(Initialization) || !value_list.contains(valueID)) {
 			return BigInteger.ZERO;
 		}
 		if(!values.containsKey(uid)) {
@@ -282,12 +273,7 @@ public class Values {
 				map.put(valueID, default_value.get(valueID));
 			}
 		}
-		if(map.containsKey(valueID)) {
-			return map.get(valueID);
-		}else {
-			JiuCore.instance.log.error("Can not found value: " + valueID);
-			return default_value.get(valueID);
-		}
+		return map.get(valueID);
 	}
 	
 	/**
@@ -381,25 +367,22 @@ public class Values {
 		}
 	}
 	
-	private static boolean writeToFile() {
+	public static void saveValue() {
+		for(int i = 0; i < 10; i++) {
+			if(Values.saveValues()) {
+				JiuCore.getLogOS().info("Save values to file success, retry count: {}", i);
+				return;
+			}
+		}
+		JiuCore.getLogOS().error("Can't save values to File!");
+	}
+	
+	private static boolean saveValues() {
 		if(!values.isEmpty()) {
 			JsonObject obj = JiuUtils.json.toJsonObject(values);
 			for(Entry<String, JsonElement> objValue : obj.entrySet()) {
 				objValue.getValue().getAsJsonObject().addProperty("name", JiuUtils.entity.getName(UUID.fromString(objValue.getKey())));
 			}
-		/*
-			JsonObject obj = new JsonObject();
-			for (Entry<UUID, HashMap<String, BigInteger>> valuesMap : values.entrySet()) {
-				UUID id = valuesMap.getKey();
-				obj.add(id.toString(), new JsonObject());
-				JsonObject valueObj = obj.get(id.toString()).getAsJsonObject();
-				valueObj.addProperty("name", JiuCore.UUIDToName.get(id));
-				
-				for(Entry<String, BigInteger> values : valuesMap.getValue().entrySet()) {
-					valueObj.addProperty(values.getKey(), values.getValue());
-				}
-			}
-		*/
 			return JiuUtils.json.toJsonFile("./values/value.json", obj);
 		}else {
 			return false;
@@ -412,7 +395,7 @@ public class Values {
 	 * NULL: UUID is null<p>
 	 * ZERO: After subtract it will be negative number<p>
 	 * NOT_FOUND_VALUE: Not found of value name<p>
-	 * FILE_NOT_FOUND: Not found value's storage file<p>
+	 * FILE_NOT_FOUND: Not found values storage file<p>
 	 * FAIL: unknown Error<p>
 	 * IOError: IOException<p>
 	 * NOT_ARRIVAL_TIME: The number of changes did not reach the specified number<p>
@@ -435,7 +418,7 @@ public class Values {
 	}
 	
 	/** {@link #remove(String, UUID, int)} */
-	public static ValueStateType remove(String valueID, String name, int writeTime) { return remove(valueID, JiuUtils.entity.getUUID(name), writeTime); }
+	public static ValueStateType remove(String valueID, String name) { return remove(valueID, JiuUtils.entity.getUUID(name)); }
 	/** {@link #get(String, UUID)} */
 	public static BigInteger get(String valueID, String name) { return get(valueID, JiuUtils.entity.getUUID(name)); }
 	/** {@link #add(String, UUID, BigInteger, int)} */
@@ -459,10 +442,16 @@ public class Values {
 	/** {@link #set(String, UUID, BigInteger, int)} */
 	public static ValueStateType set(String valueID, String name, long value, int writeTime) { return set(valueID, name, BigInteger.valueOf(value), writeTime); }
 	
+	/** {@link #canSubtract(String, UUID, BigInteger)}} */
+	public static boolean canSubtract(String valueID, UUID uid, long value) {return canSubtract(valueID, uid, BigInteger.valueOf(value));};
+	/** {@link #canSubtract(String, UUID, BigInteger)}} */
+	public static boolean canSubtract(String valueID, String name, BigInteger value) {return canSubtract(valueID, JiuUtils.entity.getUUID(name), value);};
+	/** {@link #canSubtract(String, UUID, BigInteger)}} */
+	public static boolean canSubtract(String valueID, String name, long value) {return canSubtract(valueID, JiuUtils.entity.getUUID(name), BigInteger.valueOf(value));};
+	
 	/*	
 	 * Aliases method
 	*/
-	
 	/** {@link #add(String, UUID, BigInteger, int)} */
 	public static ValueStateType give(String valueID, String name, long value, int writeTime) { return add(valueID, name, BigInteger.valueOf(value), writeTime); }
 	/** {@link #add(String, UUID, BigInteger, int)} */
@@ -477,14 +466,21 @@ public class Values {
 	/** {@link #subtract(String, UUID, BigInteger, int)} */
 	public static ValueStateType take(String valueID, String name, BigInteger value, int writeTime) { return subtract(valueID, JiuUtils.entity.getUUID(name), value, writeTime); }
 	
+	/** {@link #canSubtract(String, UUID, BigInteger)}} */
+	public static boolean canTake(String valueID, UUID uid, long value) {return canSubtract(valueID, uid, BigInteger.valueOf(value));};
+	/** {@link #canSubtract(String, UUID, BigInteger)}} */
+	public static boolean canTake(String valueID, String name, BigInteger value) {return canSubtract(valueID, JiuUtils.entity.getUUID(name), value);};
+	/** {@link #canSubtract(String, UUID, BigInteger)}} */
+	public static boolean canTake(String valueID, String name, long value) {return canSubtract(valueID, JiuUtils.entity.getUUID(name), BigInteger.valueOf(value));};
+	
 	/** {@link #remove(String, UUID, BigInteger)} */
-	public static ValueStateType reset(String valueID, String name, int writeTime) {return remove(valueID, name, writeTime);}
+	public static ValueStateType reset(String valueID, String name) {return remove(valueID, name);}
 	/** {@link #remove(String, UUID, BigInteger)} */
-	public static ValueStateType reset(String valueID, UUID uid, int writeTime) {return remove(valueID, uid, writeTime);}
+	public static ValueStateType reset(String valueID, UUID uid) {return remove(valueID, uid);}
 	/** {@link #remove(String, UUID, BigInteger)} */
-	public static ValueStateType purge(String valueID, String name, int writeTime) {return remove(valueID, name, writeTime);}
+	public static ValueStateType purge(String valueID, String name) {return remove(valueID, name);}
 	/** {@link #remove(String, UUID, BigInteger, int)} */
-	public static ValueStateType purge(String valueID, UUID uid, int writeTime) {return remove(valueID, uid, writeTime);}
+	public static ValueStateType purge(String valueID, UUID uid) {return remove(valueID, uid);}
 	
 	/** {@link #get(String, UUID)} */
 	public static BigInteger look(String valueID, String name) {return get(valueID, name);}

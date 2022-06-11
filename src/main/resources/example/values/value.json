@@ -1,17 +1,38 @@
 {
 	"00000000-0000-0000-0000-000000000000": {
-		"san": 1000000000000,
+		"death": 0,
+		"san_Jiu": 1000000000000,
 		"coin": 0,
 		"name": "Initialization"
 	},
+	"e7f0f282-ec78-3bba-aaaf-9edc548f540d": {
+		"death": 0,
+		"san_Jiu": 1000000000000,
+		"coin": 5,
+		"name": "Player689"
+	},
 	"494e218c-ed3e-3c18-87a9-972128e58cab": {
-		"san": 1000000000000,
+		"death": 0,
+		"san_Jiu": 1000000000000,
 		"coin": 10,
-		"name": "Player972"
+		"name": "player972"
+	},
+	"4296a45d-fd1d-3a8b-9f25-0f078d10cc6b": {
+		"death": 4,
+		"san_Jiu": 1000000000000,
+		"coin": 0,
+		"name": "Player512"
 	},
 	"5bd62aa7-8886-32aa-953e-97bdbc2a6931": {
-		"san": 1000000000000,
+		"death": 0,
+		"san_Jiu": 1000000000000,
 		"coin": 20,
-		"name": "Player998"
+		"name": "player998"
+	},
+	"945b4d90-8964-318c-b289-be6438caa78f": {
+		"death": 5,
+		"san_Jiu": 1000000000000,
+		"coin": 0,
+		"name": "Player347"
 	}
 }

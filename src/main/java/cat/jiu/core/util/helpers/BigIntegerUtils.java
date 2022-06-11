@@ -12,11 +12,69 @@ public class BigIntegerUtils {
 		}
 		for(int i = 0; i < value.length(); i++) {
 			if(!JiuCore.CHAR_NUMBERS.contains(value.charAt(i))) {
-				JiuCore.instance.log.error(value + " -> " + value.charAt(i) + " is NOT Number!");
+				JiuCore.getLogOS().error(value + " -> " + value.charAt(i) + " is NOT Number!");
 				return BigInteger.ZERO;
 			}
 		}
 		return new BigInteger(value);
+	}
+	
+	public BigInteger copy(BigInteger other) {
+		return new BigInteger(other.toString());
+	}
+	
+	/**
+	 * @return true if '{@code less}' < '{@code to}'
+	 * @author small_jiu
+	 */
+	public boolean less(BigInteger less, BigInteger to) {
+		if(less == null || to == null) return false;
+		return !to.equals(to.min(less));
+	}
+	
+	/**
+	 * @return true if '{@code less}' <= '{@code equ}'
+	 * @author small_jiu
+	 */
+	public boolean lessOrEqual(BigInteger less, BigInteger equ) {
+		if(less == null || equ == null) return false;
+		return equ.equals(less) || this.less(less, equ);
+	}
+	
+	/**
+	 * @return true if '{@code greater}' > '{@code to}'
+	 * @author small_jiu
+	 */
+	public boolean greater(BigInteger greater, BigInteger to) {
+		if(greater == null || to == null) return false;
+		return !to.equals(to.max(greater));
+	}
+	
+	/**
+	 * @return true if '{@code greater}' >= '{@code equ}'
+	 * @author small_jiu
+	 */
+	public boolean greaterOrEqual(BigInteger greater, BigInteger equ) {
+		if(greater == null || equ == null) return false;
+		return equ.equals(greater) || this.greater(greater, equ);
+	}
+	
+	public String format(long value) {
+		return this.format(BigInteger.valueOf(value));
+	}
+	public String format(BigInteger value) {
+		StringBuilder s = new StringBuilder(value.toString());
+		
+		int l = 0;
+		for(int i = s.length()-1; i > 0; i--) {
+			l+=1;
+			if(l >= 3) {
+				s.insert(i,",");
+				l=0;
+			}
+		}
+		
+		return s.toString();
 	}
 	
 	public String format(long value, int length) {
@@ -24,118 +82,118 @@ public class BigIntegerUtils {
 	}
 	public String format(BigInteger value, int length) {
 		String bi = BigInteger.ZERO.toString();
-		if(value.max(this.LONG_MAX).equals(value)) {
-			if(value.max(this.PDD).equals(value)) {
+		if(this.greaterOrEqual(value, this.LONG_MAX)) {
+			if(this.greaterOrEqual(value, this.PDD)) {
 				bi = value.divide(this.PDD).toString();
-				return bi + "." + subString(value.remainder(this.PDD).toString(), length) + "PDD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "PDD";
 			}
-			if(value.max(this.TDD).equals(value)) {
+			if(this.greaterOrEqual(value, this.TDD)) {
 				bi = value.divide(this.TDD).toString();
-				return bi + "." + subString(value.remainder(this.TDD).toString(), length) + "TDD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "TDD";
 			}
-			if(value.max(this.GDD).equals(value)) {
+			if(this.greaterOrEqual(value, this.GDD)) {
 				bi = value.divide(this.GDD).toString();
-				return bi + "." + subString(value.remainder(this.GDD).toString(), length) + "GDD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "GDD";
 			}
-			if(value.max(this.MDD).equals(value)) {
+			if(this.greaterOrEqual(value, this.MDD)) {
 				bi = value.divide(this.MDD).toString();
-				return bi + "." + subString(value.remainder(this.MDD).toString(), length) + "MDD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "MDD";
 			}
-			if(value.max(this.KDD).equals(value)) {
+			if(this.greaterOrEqual(value, this.KDD)) {
 				bi = value.divide(this.KDD).toString();
-				return bi + "." + subString(value.remainder(this.KDD).toString(), length) + "KDD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "KDD";
 			}
-			if(value.max(this.DD).equals(value)) {
+			if(this.greaterOrEqual(value, this.DD)) {
 				bi = value.divide(this.DD).toString();
-				return bi + "." + subString(value.remainder(this.DD).toString(), length) + "DD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "DD";
 			}
-			if(value.max(this.ND).equals(value)) {
+			if(this.greaterOrEqual(value, this.ND)) {
 				bi = value.divide(this.ND).toString();
-				return bi + "." + subString(value.remainder(this.ND).toString(), length) + "ND";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "ND";
 			}
-			if(value.max(this.BD).equals(value)) {
+			if(this.greaterOrEqual(value, this.BD)) {
 				bi = value.divide(this.BD).toString();
-				return bi + "." + subString(value.remainder(this.BD).toString(), length) + "BD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "BD";
 			}
-			if(value.max(this.YD).equals(value)) {
+			if(this.greaterOrEqual(value, this.YD)) {
 				bi = value.divide(this.YD).toString();
-				return bi + "." + subString(value.remainder(this.YD).toString(), length) + "YD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "YD";
 			}
-			if(value.max(this.ZD).equals(value)) {
+			if(this.greaterOrEqual(value, this.ZD)) {
 				bi = value.divide(this.ZD).toString();
-				return bi + "." + subString(value.remainder(this.ZD).toString(), length) + "ZD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "ZD";
 			}
-			if(value.max(this.ED).equals(value)) {
+			if(this.greaterOrEqual(value, this.ED)) {
 				bi = value.divide(this.ED).toString();
-				return bi + "." + subString(value.remainder(this.ED).toString(), length) + "ED";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "ED";
 			}
-			if(value.max(this.PD).equals(value)) {
+			if(this.greaterOrEqual(value, this.PD)) {
 				bi = value.divide(this.PD).toString();
-				return bi + "." + subString(value.remainder(this.PD).toString(), length) + "PD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "PD";
 			}
-			if(value.max(this.TD).equals(value)) {
+			if(this.greaterOrEqual(value, this.TD)) {
 				bi = value.divide(this.TD).toString();
-				return bi + "." + subString(value.remainder(this.TD).toString(), length) + "TD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "TD";
 			}
-			if(value.max(this.GD).equals(value)) {
+			if(this.greaterOrEqual(value, this.GD)) {
 				bi = value.divide(this.GD).toString();
-				return bi + "." + subString(value.remainder(this.GD).toString(), length) + "GD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "GD";
 			}
-			if(value.max(this.MD).equals(value)) {
+			if(this.greaterOrEqual(value, this.MD)) {
 				bi = value.divide(this.MD).toString();
-				return bi + "." + subString(value.remainder(this.MD).toString(), length) + "MD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "MD";
 			}
-			if(value.max(this.KD).equals(value)) {
+			if(this.greaterOrEqual(value, this.KD)) {
 				bi = value.divide(this.KD).toString();
-				return bi + "." + subString(value.remainder(this.KD).toString(), length) + "KD";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "KD";
 			}
-			if(value.max(this.D).equals(value)) {
+			if(this.greaterOrEqual(value, this.D)) {
 				bi = value.divide(this.D).toString();
-				return bi + "." + subString(value.remainder(this.D).toString(), length) + "D";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "D";
 			}
-			if(value.max(this.N).equals(value)) {
+			if(this.greaterOrEqual(value, this.N)) {
 				bi = value.divide(this.N).toString();
-				return bi + "." + subString(value.remainder(this.N).toString(), length) + "N";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "N";
 			}
-			if(value.max(this.B).equals(value)) {
+			if(this.greaterOrEqual(value, this.B)) {
 				bi = value.divide(this.B).toString();
-				return bi + "." + subString(value.remainder(this.B).toString(), length) + "B";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "B";
 			}
-			if(value.max(this.Y).equals(value)) {
+			if(this.greaterOrEqual(value, this.Y)) {
 				bi = value.divide(this.Y).toString();
-				return bi + "." + subString(value.remainder(this.Y).toString(), length) + "Y";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "Y";
 			}
-			if(value.max(this.Z).equals(value)) {
+			if(this.greaterOrEqual(value, this.Z)) {
 				bi = value.divide(this.Z).toString();
-				return bi + "." + subString(value.remainder(this.Z).toString(), length) + "Z";
+				return bi + "." + subString(value.toString().substring(bi.length()), length) + "Z";
 			}
 		}
 		
-		if(value.max(this.E).equals(value)) {
+		if(this.greaterOrEqual(value, this.E)) {
 			bi = value.divide(this.E).toString();
-			return bi + "." + subString(value.remainder(this.E).toString(), length) + "E";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "E";
 		}
-		if(value.max(this.P).equals(value)) {
+		if(this.greaterOrEqual(value, this.P)) {
 			bi = value.divide(this.P).toString();
-			return bi + "." + subString(value.remainder(this.P).toString(), length) + "P";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "P";
 		}
-		if(value.max(this.T).equals(value)) {
+		if(this.greaterOrEqual(value, this.T)) {
 			bi = value.divide(this.T).toString();
-			return bi + "." + subString(value.remainder(this.T).toString(), length) + "T";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "T";
 		}
-		if(value.max(this.G).equals(value)) {
+		if(this.greaterOrEqual(value, this.G)) {
 			bi = value.divide(this.G).toString();
-			return bi + "." + subString(value.remainder(this.G).toString(), length) + "G";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "G";
 		}
-		if(value.max(this.M).equals(value)) {
+		if(this.greaterOrEqual(value, this.M)) {
 			bi = value.divide(this.M).toString();
-			return bi + "." + subString(value.remainder(this.M).toString(), length) + "M";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "M";
 		}
-		if(value.max(this.K).equals(value)) {
+		if(this.greaterOrEqual(value, this.K)) {
 			bi = value.divide(this.K).toString();
-			return bi + "." + subString(value.remainder(this.K).toString(), length) + "K";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "K";
 		}
-		if(value.min(this.K).equals(value)) {
+		if(this.less(value, this.K)) {
 			return value.toString();
 		}
 		return bi;
@@ -147,51 +205,51 @@ public class BigIntegerUtils {
 	public String formatByte(BigInteger value, int length) {
 		String bi = BigInteger.ZERO.toString();
 		
-		if(value.max(this.Dogga).equals(value)) {
+		if(this.greaterOrEqual(value, this.Dogga)) {
 			bi = value.divide(this.Dogga).toString();
-			return bi + "." + subString(value.remainder(this.Dogga).toString(), length) + "DB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "DB";
 		}
-		if(value.max(this.Nona).equals(value)) {
+		if(this.greaterOrEqual(value, this.Nona)) {
 			bi = value.divide(this.Nona).toString();
-			return bi + "." + subString(value.remainder(this.Nona).toString(), length) + "NB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "NB";
 		}
-		if(value.max(this.Bronto).equals(value)) {
+		if(this.greaterOrEqual(value, this.Bronto)) {
 			bi = value.divide(this.Bronto).toString();
-			return bi + "." + subString(value.remainder(this.Bronto).toString(), length) + "BB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "BB";
 		}
-		if(value.max(this.Yotta).equals(value)) {
+		if(this.greaterOrEqual(value, this.Yotta)) {
 			bi = value.divide(this.Yotta).toString();
-			return bi + "." + subString(value.remainder(this.Yotta).toString(), length) + "YB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "YB";
 		}
-		if(value.max(this.Zetta).equals(value)) {
+		if(this.greaterOrEqual(value, this.Zetta)) {
 			bi = value.divide(this.Zetta).toString();
-			return bi + "." + subString(value.remainder(this.Zetta).toString(), length) + "ZB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "ZB";
 		}
-		if(value.max(this.Exa).equals(value)) {
+		if(this.greaterOrEqual(value, this.Exa)) {
 			bi = value.divide(this.Exa).toString();
-			return bi + "." + subString(value.remainder(this.Exa).toString(), length) + "EB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "EB";
 		}
-		if(value.max(this.Peta).equals(value)) {
+		if(this.greaterOrEqual(value, this.Peta)) {
 			bi = value.divide(this.Peta).toString();
-			return bi + "." + subString(value.remainder(this.Peta).toString(), length) + "PB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "PB";
 		}
-		if(value.max(this.Trillion).equals(value)) {
+		if(this.greaterOrEqual(value, this.Trillion)) {
 			bi = value.divide(this.Trillion).toString();
-			return bi + "." + subString(value.remainder(this.Trillion).toString(), length) + "TB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "TB";
 		}
-		if(value.max(this.Giga).equals(value)) {
+		if(this.greaterOrEqual(value, this.Giga)) {
 			bi = value.divide(this.Giga).toString();
-			return bi + "." + subString(value.remainder(this.Giga).toString(), length) + "GB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "GB";
 		}
-		if(value.max(this.Mega).equals(value)) {
+		if(this.greaterOrEqual(value, this.Mega)) {
 			bi = value.divide(this.Mega).toString();
-			return bi + "." + subString(value.remainder(this.Mega).toString(), length) + "MB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "MB";
 		}
-		if(value.max(this.Kilo).equals(value)) {
+		if(this.greaterOrEqual(value, this.Kilo)) {
 			bi = value.divide(this.Kilo).toString();
-			return bi + "." + subString(value.remainder(this.Kilo).toString(), length) + "KB";
+			return bi + "." + subString(value.toString().substring(bi.length()), length) + "KB";
 		}
-		if(value.min(this.Kilo).equals(value)) {
+		if(this.less(value, this.Kilo)) {
 			bi = value.toString();
 			return bi + "B";
 		}
@@ -199,9 +257,6 @@ public class BigIntegerUtils {
 	}
 	
 	private String subString(String str, int endlength) {
-		if(str.length() <= endlength) {
-			return str.substring(0, str.length());
-		}
 		if(str.length() > endlength) {
 			return str.substring(0, endlength);
 		}else {
@@ -209,7 +264,7 @@ public class BigIntegerUtils {
 		}
 	}
 	
-//	/** 2^5000000000 : BigInteger max*/ public final BigInteger BIGINTEGER_MAX = BigInteger.valueOf(2).pow(Integer.MAX_VALUE-1);
+//	/** 2^5000000000 : BigInteger max*/ public final BigInteger BIGINTEGER_MAX = this.TWO.pow(1666666667).add(this.TWO.pow(1666666666)).add(this.TWO.pow(1666666667));
 	
 	/** 2^63-1 : Long max*/ public final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
 	/** -2^63 : Long min*/ public final BigInteger LONG_MIN = BigInteger.valueOf(Long.MIN_VALUE);

@@ -30,7 +30,7 @@ public class CommandValueSubtract extends BaseCommand.CommandNormal {
 		super("subtract", modid, 2);
 		this.valueID = valueID;
 		this.valueName = Values.getValueName(valueID);
-		this.log = LogManager.getLogger(JiuUtils.other.upperCaseToFirstLetter(valueID));
+		this.log = LogManager.getLogger(JiuUtils.other.upperFirst(valueID));
 	}
 
 	@Override

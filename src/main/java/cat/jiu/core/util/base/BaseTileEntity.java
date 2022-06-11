@@ -1,5 +1,7 @@
 package cat.jiu.core.util.base;
 
+import java.math.BigInteger;
+
 import cat.jiu.core.capability.CapabilityJiuEnergy;
 import cat.jiu.core.capability.JiuEnergyStorage;
 import cat.jiu.core.util.JiuUtils;
@@ -53,18 +55,14 @@ public class BaseTileEntity {
 		
 		@Override
 		public final void tick(World world, BlockPos pos, IBlockState state) {
-			this.reloadEnergy();
+			this.energy = this.storage.getEnergyStoredWithLong();
 			this.updateTE(this.world, this.pos, this.world.getBlockState(this.pos));
 		}
 		
 		public abstract void updateTE(World world, BlockPos pos, IBlockState state);
 		
-		protected void reloadEnergy() {
-			this.energy = this.storage.getEnergyStoredWithLong();
-		}
-		
-		public long getEnergy() {
-			return this.storage.getEnergyStoredWithLong();
+		public BigInteger getEnergy() {
+			return this.storage.getEnergyStoredWithBigInteger();
 		}
 		
 		public int sendEnergyTo(int energy, EnumFacing side, boolean simulate) {
@@ -77,10 +75,8 @@ public class BaseTileEntity {
 		
 		@Override
 		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-			if(capability == CapabilityEnergy.ENERGY) {
-				return true;
-			}
-			if(capability == CapabilityJiuEnergy.ENERGY) {
+			if(capability == CapabilityEnergy.ENERGY
+			|| capability == CapabilityJiuEnergy.ENERGY) {
 				return true;
 			}
 			return super.hasCapability(capability, facing);
@@ -99,8 +95,8 @@ public class BaseTileEntity {
 		
 		@Override
 		public final void readNBT(NBTTagCompound nbt) {
-			if(this.storage == null) this.storage = new JiuEnergyStorage();
-			this.storage.readFromNBT(nbt);
+			if(this.storage == null) this.storage = JiuEnergyStorage.empty();
+			this.storage.readFromNBT(nbt.getCompoundTag("energy"), false);
 			this.energy = this.storage.getEnergyStoredWithLong();
 			this.readFromTeNBT(nbt);
 		}
@@ -108,7 +104,7 @@ public class BaseTileEntity {
 		
 		@Override
 		public final void writeNBT(NBTTagCompound nbt) {
-			this.storage.writeToNBT(nbt);
+			nbt.setTag("energy", this.storage.writeToNBT(null, false));
 			this.writeToTeNBT(nbt);
 		}
 		public abstract void writeToTeNBT(NBTTagCompound nbt);

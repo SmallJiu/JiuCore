@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -16,16 +15,67 @@ import org.apache.commons.io.IOUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
-import scala.collection.mutable.StringBuilder;
-
-public class JsonUtil {
+public final class JsonUtil {
+	final Gson gson = new GsonBuilder().create();
+	
+	@SuppressWarnings({"unchecked"})
+	public <T extends JsonElement> T getElement(Class<T> type, JsonObject obj, String... keys) {
+		JsonType jsonType = JsonType.getType(type);
+		T result = null;
+		
+		lable: for(String key : keys) {
+			if(obj.has(key)) {
+				JsonElement e = obj.get(key);
+				if(e != null) {
+					switch(jsonType) {
+						case Object:
+							if(e.isJsonObject()) {
+								result = (T) e.getAsJsonObject();
+								break lable;
+							}
+						case Array:
+							if(e.isJsonArray()) {
+								result = (T) e.getAsJsonArray();
+								break lable;
+							}
+						case Primitive:
+							if(e.isJsonPrimitive()) {
+								result = (T) e.getAsJsonPrimitive();
+								break lable;
+							}
+						case Element:
+								result = (T) e;
+								break lable;
+					}
+				}
+			}
+		}
+		return result;
+	}
+	
+	enum JsonType {
+		Object, Array, Primitive, Element;
+		static <T extends JsonElement> JsonType getType(Class<T> type) {
+			if(type == JsonObject.class) {
+				return JsonType.Object;
+			}else if(type == JsonArray.class) {
+				return JsonType.Array;
+			}else if(type == JsonPrimitive.class) {
+				return JsonType.Primitive;
+			}
+			return JsonType.Element;
+		}
+	}
+	
 	public boolean toJsonFile(String path, Object src) {
-		String json = new GsonBuilder().create().toJson(src);
+		String json = gson.toJson(src);
 		
 		try {
 			File file = new File(path);
@@ -37,7 +87,7 @@ public class JsonUtil {
 	        }
 	        
 	        file.createNewFile();
-	        Writer write = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+	        OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
             write.write(this.formatJson(json));
             write.flush();
             write.close();
@@ -199,7 +249,7 @@ public class JsonUtil {
 		}catch (IOException e) {
             e.printStackTrace();
         }
-		return new GsonBuilder().create().fromJson(result, clazz);
+		return gson.fromJson(result, clazz);
 	}
 	
 	public <T> T[] readArray(String path, Class<T> clazz) {
@@ -207,7 +257,7 @@ public class JsonUtil {
 	}
 	
 	public String formatJson(String json) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         int length = json.length();
         int number = 0;
         char key = 0;

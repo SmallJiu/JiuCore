@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import cat.jiu.core.api.IJiuFluidStorage;
+import cat.jiu.core.api.annotation.Unfinish;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
@@ -22,6 +23,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.FluidTankProperties;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
+@Unfinish
 @Deprecated
 public class JiuFluidStorage implements IJiuFluidStorage, ICapabilityProvider {
 	private final Map<String, FluidType> fluids = Maps.newHashMap();

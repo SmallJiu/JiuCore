@@ -2,13 +2,8 @@ package cat.jiu.core.api;
 
 import java.math.BigInteger;
 
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fml.common.Optional.Interface;
-import net.minecraftforge.fml.common.Optional.InterfaceList;
+import net.minecraftforge.fml.common.Optional;
 
-@InterfaceList({
-	@Interface(iface = "cofh.redstoneflux.api.IEnergyStorage", modid = "redstoneflux") 
-})
 public interface IJiuEnergyStorage  {
 	BigInteger receiveEnergyWithBigInteger(BigInteger maxReceive, boolean simulate);
     BigInteger extractEnergyWithBigInteger(BigInteger maxExtract, boolean simulate);
@@ -16,6 +11,7 @@ public interface IJiuEnergyStorage  {
     BigInteger getMaxEnergyStoredWithBigInteger();
     boolean canExtract();
     boolean canReceive();
+    IJiuEnergyStorage copy();
 	    
 	    default long receiveEnergyWithLong(long maxReceive, boolean simulate) {
 	    	return this.receiveEnergyWithBigInteger(BigInteger.valueOf(maxReceive), simulate).longValue();
@@ -47,6 +43,7 @@ public interface IJiuEnergyStorage  {
 	    		 + ", Energy:" + this.getEnergyStoredWithBigInteger();
 	    }
 	    
+	    @Optional.Method(modid = "redstoneflux")
 	    default cofh.redstoneflux.api.IEnergyStorage toRFStorage() {
 	    	final IJiuEnergyStorage storage = this;
 	    	return new cofh.redstoneflux.api.IEnergyStorage() {
@@ -57,9 +54,9 @@ public interface IJiuEnergyStorage  {
 	    	};
 	    }
 	    
-	    default IEnergyStorage toFEStorage() {
+	    default net.minecraftforge.energy.IEnergyStorage toFEStorage() {
 	    	final IJiuEnergyStorage storage = this;
-	    	return new IEnergyStorage() {
+	    	return new net.minecraftforge.energy.IEnergyStorage() {
 				public int receiveEnergy(int maxReceive, boolean simulate) {return storage.receiveEnergyWithBigInteger(BigInteger.valueOf(maxReceive), simulate).intValue();}
 				public int extractEnergy(int maxExtract, boolean simulate) {return storage.extractEnergyWithBigInteger(BigInteger.valueOf(maxExtract), simulate).intValue();}
 				public int getEnergyStored() {return storage.getEnergyStoredWithBigInteger().intValue();}

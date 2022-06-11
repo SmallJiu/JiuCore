@@ -1,27 +1,25 @@
 // use UTF-8
 {
-	// value name, use string, can't lose
-	// 数值默认名称，使用字符串定义，不可无
+	// value name, use string, can't lose，on updated 1.1.0, can't have any not letter or not '_' character
+	// 数值默认名称，使用字符串定义，不可无，1.1.0之后不可以有非任何字母或下划线(_)的任何字符
 	"custom": [
-		"san"
+		"san_Jiu"
 	],
-	
 	// value display name, can lose
 	// 数值显示的名称，可无
 	"language": {
 		// the language name, can lose other language
 		// 对应的语言文件名称，可没有具体的某个语言
 		"zh_cn": {
-			"san": "理智"
+			"san_Jiu": "理智"
 		},
 		"en_us": {
-			"san": "Sanity"
+			"san_Jiu": "Sanity"
 		}
 	},
-	
 	// Initial value on add custom value, use number, can lose
 	// 数值初始值，使用数字定义，可无
 	"default": {
-		"san": 1000000000000
+		"san_Jiu": 1000000000000
 	}
 }

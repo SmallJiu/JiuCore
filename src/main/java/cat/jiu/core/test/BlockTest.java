@@ -43,7 +43,7 @@ public class BlockTest extends BaseBlock.Sub<BlockTest.TestModSubtypes> {
 	
 	@Override
 	public ItemBlock getRegisterItemBlock() {
-		return (ItemBlock) new BaseBlockItem(this, this.getHasSubtypes());
+		return new BaseBlockItem(this, this.getHasSubtypes());
 	}
 	
 	@Override
@@ -60,7 +60,7 @@ public class BlockTest extends BaseBlock.Sub<BlockTest.TestModSubtypes> {
 	
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		JiuCore.instance.log.info(JiuUtils.item.getTexture(JiuUtils.item.getStackFromBlockState(world.getBlockState(pos))).toString());
+		JiuCore.getLogOS().info(JiuUtils.item.getTexture(JiuUtils.item.getStackFromBlockState(world.getBlockState(pos))).toString());
 		return Blocks.TNT.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
 	}
 	

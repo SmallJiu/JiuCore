@@ -23,60 +23,64 @@
 	"meta": 10,// if not fount, wiil use 0 to set item meta
 	"nbt": {
 		"boolean":{ // use 'boolean' key to add boolean nbt values
-			"boolean-0":false
+			"key":false
 		},
 		"string":{ // use 'string' key to add string nbt values, boolean with change to byte,
-			"str-0":"21asdg"
+			"key":"21asdg"
 		},
 		"long":{ // use 'long' key to add long nbt values
-			"longNum-0":32132,
-			"longNum-999":32132
+			"key":32132,
+			"key":32132
 		},
 		"int":{ // use 'int' key to add int nbt values
-			"intNum-0":32132
+			"key":32132
 		},
 		"float":{ // use 'float' key to add float nbt values
-			"floatNum-0":32132
+			"key":32132
 		},
 		"double":{ // use 'double' key to add double nbt values
-			"doubleNum-0":32132
+			"key":32132
 		},
 		"byte":{ // use 'byte' key to add byte nbt values
-			"byteNum-0":12
+			"key":12
 		},
 		"short":{ // use 'short' key to add short nbt values
-			"shortNum-0":133
+			"key":133
 		},
 		"int_array":{ // use 'int_array' key to add int array nbt values
-			"int_array-0":[
-				123,
-				156158,
-				49198
-			],
-			"int_array-1":[
-				981198,
-				16581,
-				2354
-			]
+			"key":[123, 156158, 49198]
 		},
 		"byte_array":{// use 'byte_array' key to add byte array nbt values
-			"byte_array-0":[
-				64,
-				22,
-				11
-			],
-			"byte_array-1":[
-				66,
-				23,
-				86
-			]
+			"key":[64, 22, 11],
+			"key":[66, 23, 86]
+		},
+		"float_array":{// use 'float_array' to add float arrays
+			"key": [123.0123, 1646.8831, 1534.1238]
+		},
+		"double_array":{// use 'double_array' to add double arrays
+			"key": [321.000000001, 16156.55913, 1843.81315464]
+		},
+		"long_array":{// use 'long_array' to add long arrays
+			"key": [-9223372036854775808, 0, 9223372036854775807]
+		},
+		"short_array":{// use 'short_array' to add short arrays
+			"key": [-32768,0,32767]
+		},
+		"string_array":{// use 'string_array' to add string arrays
+			"key": ["111","jiujiujiu", "999"]
+		},
+		"boolean_array":{// use 'boolean_array' to add boolean arrays
+			"key": [false, true, false]
 		},
 		"tags":{// use 'tags' key to add sub nbt
-			"customTag-0":{
+			"key":{// the sub nbt will use normal nbt method to set
 				// some tags...
+				"tags":{}// the sub nbt can add more and more sub nbt, use 'tags' to add it
 			},
-			"132131":{
-				"string":{"customStringNbT":"this is custom string nbt"}
+			"key":{
+				"string":{
+					"key":"this is custom string nbt"
+				}
 			}
 		}
 	}

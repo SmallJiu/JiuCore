@@ -3,8 +3,10 @@ package cat.jiu.core.api.events.client.unfinsh;
 import org.lwjgl.input.Keyboard;
 
 import cat.jiu.core.api.IJiuEvent;
+import cat.jiu.core.api.annotation.Unfinish;
 import net.minecraft.client.gui.GuiScreen;
 
+@Unfinish
 public interface IPlayerKeepUseKeyboardInGuiEvent extends IJiuEvent{
 	/**
 	 * 

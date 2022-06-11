@@ -24,22 +24,25 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class BaseUI {
 	@SideOnly(Side.CLIENT)
-	public static abstract class BaseGui extends GuiContainer{
+	public static class BaseGui<CON extends Container, TE extends TileEntity> extends GuiContainer{
 		public final ResourceLocation background;
 		protected final EntityPlayer player;
 		protected final World world;
 		protected final BlockPos pos;
-		protected TileEntity te = null;
+		protected final CON container;
+		protected final TE te;
 		
-		public BaseGui(Container container, EntityPlayer player, TileEntity te, ResourceLocation background, int xSize, int ySize) {
+		public BaseGui(CON container, EntityPlayer player, TE te, ResourceLocation background, int xSize, int ySize) {
 			this(container, player, te.getWorld(), te.getPos(), background, ySize, ySize);
 		}
 		
-		public BaseGui(Container container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
+		@SuppressWarnings("unchecked")
+		public BaseGui(CON container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
 			super(container);
 			this.background = background;
 			this.xSize = xSize;
@@ -47,15 +50,16 @@ public class BaseUI {
 			this.player = player;
 			this.world = world;
 			this.pos = pos;
-			this.te = this.world.getTileEntity(pos);
+			this.te = (TE) this.world.getTileEntity(pos);
+			this.container = container;
 		}
 		
 		@Override
-		public void initGui() {
+		public final void initGui() {
 			super.initGui();
 			this.init();
 		}
-		protected abstract void init();
+		protected void init() {}
 		
 		@Override
 		protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
@@ -65,6 +69,28 @@ public class BaseUI {
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			this.mc.getTextureManager().bindTexture(this.background);
 			this.drawTexturedModalRect(x, y, 0, 0, this.xSize, this.ySize);
+		}
+		
+		@Override
+		public final void drawScreen(int mouseX, int mouseY, float partialTicks) {
+			super.drawDefaultBackground();
+			super.drawScreen(mouseX, mouseY, partialTicks);
+			super.renderHoveredToolTip(mouseX, mouseY);
+			this.drawGuiScreen(mouseX, mouseY, partialTicks);
+		}
+		
+		protected void drawGuiScreen(int mouseX, int mouseY, float partialTicks) {}
+		
+		protected boolean isInRange(int mouseX, int mouseY, int minX, int minY, int maxX, int maxY) {
+			int x = (this.width - this.xSize) / 2;
+			int y = (this.height - this.ySize) / 2;
+			
+			minX += x;
+			minY += y;
+			maxX += x;
+			maxY += y;
+			
+			return (mouseX >= minX && mouseY >= minY) && (mouseX <= maxX && mouseY <= maxY);
 		}
 	}
 	
@@ -156,145 +182,37 @@ public class BaseUI {
 			}
 		}
 	}
-	
-	public static class UndefinedIndexSlot extends SlotItemHandler {
-		private int index;
-		
-		public UndefinedIndexSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
-			super(itemHandler, index, xPosition, yPosition);
-			this.index = index;
-		}
-		
-		@Override
-		public boolean isItemValid(@Nonnull ItemStack stack) {
-			if(stack.isEmpty()
-			|| !getItemHandler().isItemValid(index, stack)
-			|| index >= this.getItemHandler().getSlots()) {
-				return false;
-			}
 
-			IItemHandler handler = this.getItemHandler();
-			ItemStack remainder;
-			if(handler instanceof IItemHandlerModifiable) {
-				IItemHandlerModifiable handlerModifiable = (IItemHandlerModifiable) handler;
-				ItemStack currentStack = handlerModifiable.getStackInSlot(index);
-
-				handlerModifiable.setStackInSlot(index, ItemStack.EMPTY);
-
-				remainder = handlerModifiable.insertItem(index, stack, true);
-
-				handlerModifiable.setStackInSlot(index, currentStack);
-			}else {
-				remainder = handler.insertItem(index, stack, true);
-			}
-			return remainder.getCount() < stack.getCount();
-		}
-
-		@Override
-		public int getItemStackLimit(@Nonnull ItemStack stack) {
-			if(index >= this.getItemHandler().getSlots()) {
-				return 0;
-			}
-			ItemStack maxAdd = stack.copy();
-			int maxInput = stack.getMaxStackSize();
-			maxAdd.setCount(maxInput);
-
-			IItemHandler handler = this.getItemHandler();
-			ItemStack currentStack = handler.getStackInSlot(index);
-			if(handler instanceof IItemHandlerModifiable) {
-				IItemHandlerModifiable handlerModifiable = (IItemHandlerModifiable) handler;
-
-				handlerModifiable.setStackInSlot(index, ItemStack.EMPTY);
-
-				ItemStack remainder = handlerModifiable.insertItem(index, maxAdd, true);
-
-				handlerModifiable.setStackInSlot(index, currentStack);
-
-				return maxInput - remainder.getCount();
-			}else {
-				ItemStack remainder = handler.insertItem(index, maxAdd, true);
-
-				int current = currentStack.getCount();
-				int added = maxInput - remainder.getCount();
-				return current + added;
-			}
-		}
-
-		@Override
-		@Nonnull
-		public ItemStack decrStackSize(int amount) {
-			if(index >= this.getItemHandler().getSlots()) {
-				return ItemStack.EMPTY;
-			}
-			return this.getItemHandler().extractItem(index, amount, false);
-		}
-
-		@Override
-		public boolean canTakeStack(EntityPlayer playerIn) {
-			if(index >= this.getItemHandler().getSlots()) {
-				return false;
-			}
-			return !this.getItemHandler().extractItem(index, 1, true).isEmpty();
-		}
-
-		@Override
-		public int getSlotStackLimit() {
-			if(index >= this.getItemHandler().getSlots()) {
-				return 0;
-			}
-			return this.getItemHandler().getSlotLimit(this.index);
-		}
-
-		@Override
-		public void putStack(@Nonnull ItemStack stack) {
-			if(index < this.getItemHandler().getSlots()) {
-				((IItemHandlerModifiable) this.getItemHandler()).setStackInSlot(index, stack);
-				this.onSlotChanged();
-			}
-		}
-
-		@Override
-		@Nonnull
-		public ItemStack getStack() {
-			if(index >= this.getItemHandler().getSlots()) {
-				return ItemStack.EMPTY;
-			}
-			return this.getItemHandler().getStackInSlot(index);
-		}
-		
-		@Override
-		public int getSlotIndex() {
-			return index;
-		}
-
-		public void setIndex(int index) {
-			this.index = index;
-		}
-	}
-	
-	public static abstract class BaseContainer extends Container {
-		protected final BlockPos blockPos;
+	@SuppressWarnings("unchecked")
+	public static class BaseContainer<TE extends TileEntity> extends Container {
+		protected final BlockPos pos;
 		protected final EntityPlayer player;
 		protected final InventoryPlayer inventory;
 		protected final World world;
+		protected TE te = null;
 		
 		public BaseContainer(EntityPlayer player, World world, BlockPos pos) {
+			this((TE) world.getTileEntity(pos), player, world, pos);
+		}
+		public BaseContainer(TE te, EntityPlayer player, World world, BlockPos pos) {
 			this.player = player;
 			this.inventory = player.inventory;
 			this.world = world;
-			this.blockPos = pos;
+			this.pos = pos;
+			this.te = te;
 		}
 		
-		public abstract void sendChanges();
+		public void sendChanges() {}
 		
 		@Override
 		public final void detectAndSendChanges() {
 			super.detectAndSendChanges();
+			this.te = (TE) this.world.getTileEntity(this.pos);
 			this.sendChanges();
 		}
 		
 		@SideOnly(Side.CLIENT)
-		protected abstract void updateChanges(int id, int data);
+		protected void updateChanges(int id, int data) {}
 		
 		@SideOnly(Side.CLIENT)
 		@Override
@@ -304,8 +222,19 @@ public class BaseUI {
 		
 		@Override
 		public final boolean canInteractWith(EntityPlayer player) {
-			boolean haveBlock = player.world.getBlockState(this.blockPos).getBlock() != Blocks.AIR;
-			return player.world.equals(player.getEntityWorld()) && player.getDistanceSq(this.blockPos) <= 32.0 && haveBlock;
+			boolean haveBlock = player.world.getBlockState(this.pos).getBlock() != Blocks.AIR;
+			return player.world.equals(player.getEntityWorld()) && player.getDistanceSq(this.pos) <= 32.0 && haveBlock;
+		}
+		
+		protected void addHandlerSlot(ItemStackHandler handler, int x, int y, int slotWidth, int slotHeight) {
+			int slotIndex = 0;
+			for(int slotY = 0; slotY < slotHeight; slotY++) {
+				for(int slotX = 0; slotX < slotWidth; slotX++) {
+					if(slotIndex >= handler.getSlots()) return;
+					this.addSlotToContainer(new SlotItemHandler(handler, slotIndex, x + 18 * slotX, y + (18 * slotY)));
+					slotIndex += 1;
+				}	
+			}
 		}
 		
 		protected void addPlayerInventorySlot(int x, int y) {
@@ -321,6 +250,10 @@ public class BaseUI {
 					slotIndex += 1;
 				}
 			}
+		}
+		
+		public TE getTileEntity() {
+			return this.te;
 		}
 		
 		protected boolean mergeItemStack(IItemHandlerModifiable handler, ItemStack stack, int startIndex, int endIndex, boolean reverseDirection) {
@@ -404,6 +337,121 @@ public class BaseUI {
 			}
 
 			return flag;
+		}
+	}
+	
+	public static class UndefinedIndexSlot extends SlotItemHandler {
+		protected int index;
+		
+		public UndefinedIndexSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+			super(itemHandler, index, xPosition, yPosition);
+			this.index = index;
+		}
+		
+		@Override
+		public boolean isItemValid(@Nonnull ItemStack stack) {
+			if(stack.isEmpty()
+			|| !getItemHandler().isItemValid(this.index, stack)
+			|| this.index >= this.getItemHandler().getSlots()) {
+				return false;
+			}
+
+			IItemHandler handler = this.getItemHandler();
+			ItemStack remainder;
+			if(handler instanceof IItemHandlerModifiable) {
+				IItemHandlerModifiable handlerModifiable = (IItemHandlerModifiable) handler;
+				ItemStack currentStack = handlerModifiable.getStackInSlot(this.index);
+
+				handlerModifiable.setStackInSlot(this.index, ItemStack.EMPTY);
+
+				remainder = handlerModifiable.insertItem(this.index, stack, true);
+
+				handlerModifiable.setStackInSlot(this.index, currentStack);
+			}else {
+				remainder = handler.insertItem(this.index, stack, true);
+			}
+			return remainder.getCount() < stack.getCount();
+		}
+
+		@Override
+		public int getItemStackLimit(@Nonnull ItemStack stack) {
+			if(this.index >= this.getItemHandler().getSlots()) {
+				return 0;
+			}
+			ItemStack maxAdd = stack.copy();
+			int maxInput = stack.getMaxStackSize();
+			maxAdd.setCount(maxInput);
+
+			IItemHandler handler = this.getItemHandler();
+			ItemStack currentStack = handler.getStackInSlot(this.index);
+			if(handler instanceof IItemHandlerModifiable) {
+				IItemHandlerModifiable handlerModifiable = (IItemHandlerModifiable) handler;
+
+				handlerModifiable.setStackInSlot(this.index, ItemStack.EMPTY);
+
+				ItemStack remainder = handlerModifiable.insertItem(this.index, maxAdd, true);
+
+				handlerModifiable.setStackInSlot(this.index, currentStack);
+
+				return maxInput - remainder.getCount();
+			}else {
+				ItemStack remainder = handler.insertItem(this.index, maxAdd, true);
+
+				int current = currentStack.getCount();
+				int added = maxInput - remainder.getCount();
+				return current + added;
+			}
+		}
+
+		@Override
+		@Nonnull
+		public ItemStack decrStackSize(int amount) {
+			if(this.index >= this.getItemHandler().getSlots()) {
+				return ItemStack.EMPTY;
+			}
+			return this.getItemHandler().extractItem(this.index, amount, false);
+		}
+
+		@Override
+		public boolean canTakeStack(EntityPlayer playerIn) {
+			if(this.index >= this.getItemHandler().getSlots()) {
+				return false;
+			}
+			return !this.getItemHandler().extractItem(this.index, 1, true).isEmpty();
+		}
+
+		@Override
+		public int getSlotStackLimit() {
+			if(this.index >= this.getItemHandler().getSlots()) {
+				return 0;
+			}
+			return this.getItemHandler().getSlotLimit(this.index);
+		}
+
+		@Override
+		public void putStack(@Nonnull ItemStack stack) {
+			if(this.index < this.getItemHandler().getSlots()) {
+				((IItemHandlerModifiable) this.getItemHandler()).setStackInSlot(this.index, stack);
+				this.onSlotChanged();
+			}
+		}
+
+		@Override
+		@Nonnull
+		public ItemStack getStack() {
+			if(this.index >= this.getItemHandler().getSlots()) {
+				return ItemStack.EMPTY;
+			}
+			return this.getItemHandler().getStackInSlot(this.index);
+		}
+		
+		@Override
+		public int getSlotIndex() {
+			return this.index;
+		}
+
+		public void setIndex(int index) {
+			this.index = index;
 		}
 	}
 }

@@ -419,9 +419,6 @@ public class BaseItemTool {
 
 		@Override
 		public int getHarvestLevel(ItemStack stack, String toolClass, EntityPlayer player, IBlockState blockState) {
-<<<<<<< Updated upstream
-			int level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
-=======
 			int level = 0;
 			if(stack.getMetadata() >= this.material.length) {
 				level = this.material[this.material.length-1].getHarvestLevel(toolClass, blockState);
@@ -429,7 +426,6 @@ public class BaseItemTool {
 				level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
 			}
 			
->>>>>>> Stashed changes
 			if(level < 0 && toolClass.equals(this.toolClass)) {
 				level = super.getHarvestLevel(stack, toolClass, player, blockState);
 			}
@@ -440,12 +436,6 @@ public class BaseItemTool {
 		}
 
 		public int getHarvestLevel(ItemStack stack, String toolClass, IBlockState blockState) {
-<<<<<<< Updated upstream
-			int level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
-			if(level < 0 && toolClass.equals(this.toolClass)) {
-				level = this.toolMaterial.getHarvestLevel();
-			}
-=======
 			int level = 0;
 			if(stack.getMetadata() >= this.material.length) {
 				level = this.material[this.material.length-1].getHarvestLevel(toolClass, blockState);
@@ -453,7 +443,6 @@ public class BaseItemTool {
 				level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
 			}
 			
->>>>>>> Stashed changes
 			if(!this.canHarvestBlock(blockState, stack)) {
 				level = -1;
 			}
@@ -519,9 +508,6 @@ public class BaseItemTool {
 
 		@Override
 		public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-<<<<<<< Updated upstream
-			ItemStack mat = this.material[repair.getMetadata()].getRepairItemStack();
-=======
 			
 			ItemStack mat = ItemStack.EMPTY;
 			if(toRepair.getMetadata() >= this.material.length) {
@@ -529,7 +515,6 @@ public class BaseItemTool {
 			}else {
 				mat = this.material[repair.getMetadata()].getRepairItemStack();
 			}
->>>>>>> Stashed changes
 			if(!mat.isEmpty() && OreDictionary.itemMatches(mat, repair, false))
 				return true;
 			return super.getIsRepairable(toRepair, repair);
@@ -537,12 +522,9 @@ public class BaseItemTool {
 
 		@Override
 		public int getMaxDamage(ItemStack stack) {
-<<<<<<< Updated upstream
-=======
 			if(stack.getMetadata() >= this.material.length) {
 				return this.material[this.material.length-1].getMaxDamage();
 			}
->>>>>>> Stashed changes
 			return this.material[stack.getMetadata()].getMaxDamage();
 		}
 
@@ -567,12 +549,9 @@ public class BaseItemTool {
 
 		@Override
 		public int getItemEnchantability(ItemStack stack) {
-<<<<<<< Updated upstream
-=======
 			if(stack.getMetadata() >= this.material.length) {
 				return this.material[this.material.length-1].getEnchantability();
 			}
->>>>>>> Stashed changes
 			return this.material[stack.getMetadata()].getEnchantability();
 		}
 	}

@@ -14,11 +14,11 @@ public class CommandValue extends BaseCommand.CommandTree{
 	
 	static List<ICommand> getCMDs(String modid, String valueName){
 		List<ICommand> list = Lists.newArrayList();
-			list.add(new CommandValueAdd(modid, valueName));
-			list.add(new CommandValueSubtract(modid, valueName));
-			list.add(new CommandValueGet(modid, valueName));
-			list.add(new CommandValueReload(modid, valueName));
-			list.add(new CommandValueRemove(modid, valueName));
+		list.add(new CommandValueAdd(modid, valueName));
+		list.add(new CommandValueSubtract(modid, valueName));
+		list.add(new CommandValueGet(modid, valueName));
+		list.add(new CommandValueReload(modid, valueName));
+		list.add(new CommandValueRemove(modid, valueName));
 			
 		return list;
 	}

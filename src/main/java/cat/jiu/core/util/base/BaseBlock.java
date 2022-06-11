@@ -66,7 +66,7 @@ public class BaseBlock {
 			}
 			
 			ForgeRegistries.BLOCKS.register(this);
-			ForgeRegistries.ITEMS.register(this.getRegisterItemBlock());
+			ForgeRegistries.ITEMS.register(this.getRegisterItemBlock().setRegistryName(this.getRegistryName()));
 		}
 		
 		public abstract ItemBlock getRegisterItemBlock();
@@ -319,11 +319,9 @@ public class BaseBlock {
 			ArrayList<IProperty<?>> pros = new ArrayList<IProperty<?>>();
 			
 			pros.add(this.getPropertyEnum());
-			if(this.addBlockOthersProperty() != null) {
-				if(this.addBlockOthersProperty().length != 0) {
-					for(IProperty<?> pro : this.addBlockOthersProperty()) {
-						pros.add(pro);
-					}
+			if(this.addBlockOthersProperty() != null && this.addBlockOthersProperty().length != 0) {
+				for(IProperty<?> pro : this.addBlockOthersProperty()) {
+					if(pro!=null) pros.add(pro);
 				}
 			}
 			return new BlockStateContainer(this, pros.toArray(new IProperty[0]));

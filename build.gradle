@@ -12,7 +12,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-version = "1.12.2-1.0.10-20220525233201"
+version = "1.12.2-1.1.0-20220608013004"
 group = "cat.jiu.core" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "JiuCore"
 
@@ -53,17 +53,26 @@ artifacts {
 repositories {
     mavenLocal()
 	maven {
+        name 'CurseMaven'
+        url 'https://www.cursemaven.com/'
+    }
+	maven {
         name "CoFH Maven"
         url "https://maven.covers1624.net"
     }
 	maven {
         url "https://maven.cleanroommc.com"
     }
+//	maven {
+//        url "https://repo.spongepowered.org/maven/"
+//    }
 }
 
 dependencies {
 	deobfCompile 'cofh:RedstoneFlux:1.12-2.1.0.7:universal'
 	deobfCompile ("zone.rong:mixinbooter:4.2")
+	deobfCompile "curse.maven:Hwyla-253449:2568751" // 1.8.26-B41
+//	deobfCompile 'org.spongepowered:mixin:0.8.4'
 
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..

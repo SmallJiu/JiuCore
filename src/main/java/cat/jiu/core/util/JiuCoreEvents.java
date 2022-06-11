@@ -50,10 +50,7 @@ import cat.jiu.core.api.events.item.client.IItemInfoTooltip;
 import cat.jiu.core.api.events.player.IPlayerBreakBlock;
 import cat.jiu.core.api.events.player.IPlayerBreakBlockDropItems;
 import cat.jiu.core.api.events.player.IPlayerCraftedItemEvent;
-<<<<<<< Updated upstream
-=======
 import cat.jiu.core.api.events.player.IPlayerDeathDropItems;
->>>>>>> Stashed changes
 import cat.jiu.core.api.events.player.IPlayerDeathEvent;
 import cat.jiu.core.api.events.player.IPlayerEatFoodFinish;
 import cat.jiu.core.api.events.player.IPlayerEatFoodStart;
@@ -374,10 +371,6 @@ public final class JiuCoreEvents {
 			{
 				List<IItemInPlayerHandTick> list = getEvents(IItemInPlayerHandTick.class);
 				if(list != null) list.stream().forEach(e -> e.onItemInPlayerHandTick(player, mainHand, offHand));
-<<<<<<< Updated upstream
-				
-=======
->>>>>>> Stashed changes
 				if(itemE != null) itemE.stream().forEach(e -> e.onItemInPlayerHandTick(player, mainHand, offHand));
 			}
 			
@@ -388,10 +381,6 @@ public final class JiuCoreEvents {
 						EntityEquipmentSlot slot = JiuUtils.item.getArmorSlotForID(getSlotFor(armorInventory, invStack));
 						List<IItemInPlayerArmorTick> list = getEvents(IItemInPlayerArmorTick.class);
 						if(list != null) list.stream().forEach(e -> e.onItemInPlayerArmorTick(player, invStack, slot));
-<<<<<<< Updated upstream
-						
-=======
->>>>>>> Stashed changes
 						if(itemE != null) itemE.stream().forEach(e -> e.onItemInPlayerArmorTick(player, invStack, slot));
 					}
 				}
@@ -455,13 +444,11 @@ public final class JiuCoreEvents {
 			EntityPlayer player = (EntityPlayer) entity;
 			Values.add("death", player.getUniqueID(), 1, 0);
 			JiuCoreTriggers.PLAYER_DEATH.trigger(player, player.dimension, Values.get("death", player.getUniqueID()));
-		}
-		
-		if(entity instanceof EntityPlayer) {
+			
 			List<IPlayerDeathEvent> list = getEvents(IPlayerDeathEvent.class);
-			if(list != null) list.stream().forEach(e -> e.onPlayerDeath((EntityPlayer) entity, world, pos));
+			if(list != null) list.stream().forEach(e -> e.onPlayerDeath(player, world, pos));
 			List<IPlayerEvent> list0 = getEvents(IPlayerEvent.class);
-			if(list0 != null) list0.stream().forEach(e -> e.onPlayerDeath((EntityPlayer) entity, world, pos));
+			if(list0 != null) list0.stream().forEach(e -> e.onPlayerDeath(player, world, pos));
 		}else {
 			List<IEntityDeathEvent> list = getEvents(IEntityDeathEvent.class);
 			if(list != null) list.stream().forEach(e -> e.onEntityDeath(entity, world, pos));
@@ -481,10 +468,6 @@ public final class JiuCoreEvents {
 		
 		drops.stream().forEach(eitem -> items.add(eitem.getItem()));
 		
-<<<<<<< Updated upstream
-		List<IEntityDeathDropItems> list = getEvents(IEntityDeathDropItems.class);
-		if(list != null) list.stream().forEach(e -> e.onEntityDeathDropItems(entity, source, drops, items, lootingLevel, recentlyHit));
-=======
 		if(entity instanceof EntityPlayer) {
 			List<IPlayerDeathDropItems> list = getEvents(IPlayerDeathDropItems.class);
 			if(list != null) list.stream().forEach(e -> e.onPlayerDeathDropItems((EntityPlayer)entity, source, drops, items, lootingLevel, recentlyHit));
@@ -492,7 +475,6 @@ public final class JiuCoreEvents {
 			List<IEntityDeathDropItems> list = getEvents(IEntityDeathDropItems.class);
 			if(list != null) list.stream().forEach(e -> e.onEntityDeathDropItems(entity, source, drops, items, lootingLevel, recentlyHit));
 		}
->>>>>>> Stashed changes
 		
 		items.clear();
 	}
@@ -775,7 +757,7 @@ public final class JiuCoreEvents {
 				}
         		
         		if(JiuCore.test() && pos.getY() >= -61 && pos.getY() <= 0) {
-    				JiuCore.instance.log.info("Y: " + pos.getY());
+    				JiuCore.getLogOS().info("Y: " + pos.getY());
     			}
         	}
     	}

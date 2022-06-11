@@ -41,7 +41,7 @@ public class BreakBlockTrigger extends BaseAdvancement.BaseCriterionTrigger<Brea
 		int meta = json.has("meta") ? json.get("meta").getAsInt() : 0;
 		IBlockState state = JiuUtils.item.getStateFromItemStack(new ItemStack(item, 1, meta));
 		if(state == null) {
-			JiuCore.instance.log.error(json.get("block").getAsString() + " is NOT Block!");
+			JiuCore.getLogOS().error(json.get("block").getAsString() + " is NOT Block!");
 			return new BreakBlockTrigger(null);
 		}
 		return new BreakBlockTrigger(state);

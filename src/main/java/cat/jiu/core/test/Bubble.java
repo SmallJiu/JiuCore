@@ -69,7 +69,7 @@ public class Bubble extends BaseItem.Normal implements IItemInFluidTickEvent{
 								poss.add(sidePos);
 							}
 						}
-						JiuCore.instance.log.info("Fluid: " + (i+1) + "@" + poss.size() + "#" + (poss.size()-i));
+						JiuCore.getLogOS().info("Fluid: " + (i+1) + "@" + poss.size() + "#" + (poss.size()-i));
 					}
 				}
 			}

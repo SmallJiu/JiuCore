@@ -15,6 +15,7 @@ import com.google.gson.JsonPrimitive;
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.test.BlockTest.TestModSubtypes;
 import cat.jiu.core.util.JiuUtils;
+import cat.jiu.core.util.Time;
 import cat.jiu.core.util.base.BaseBlock;
 
 import net.minecraft.block.Block;
@@ -38,8 +39,11 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
+import net.minecraft.nbt.NBTTagLongArray;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -70,6 +74,75 @@ public final class ItemUtils {
 		BLOCKS.add(block);
 		ForgeRegistries.BLOCKS.register(block.setRegistryName(modid, name));
 		ForgeRegistries.ITEMS.register(new BaseBlock.BaseBlockItem(block, hasSubType).setRegistryName(modid, name));
+	}
+	
+	public PotionEffect toEffect(String arg) {
+		if(arg.contains(":")) {
+			String[] effects = JiuUtils.other.custemSplitString("@", arg);
+			Potion potion = null;
+			int level = 0;
+			long ticks = 200;
+			boolean ambient = false;
+			boolean showParticles = true;
+			
+			switch(effects.length) {
+				case 5: showParticles = Boolean.parseBoolean(effects[4]);
+				case 4: ambient = Boolean.parseBoolean(effects[3]);
+				case 3:
+					String[] times = JiuUtils.other.custemSplitString(":", effects[2]);
+					ticks = Time.parseTick(Integer.parseInt(times[0]), Integer.parseInt(times[1]), Integer.parseInt(times[2]));
+				case 2: level = Integer.parseInt(effects[1]);
+				default: potion = Potion.getPotionFromResourceLocation(effects[0]);
+					break;
+			}
+			if(potion == null) return null;
+			return new PotionEffect(potion, level, (int) ticks, ambient, showParticles);
+		}else {
+			return new PotionEffect(Potion.getPotionFromResourceLocation(arg), 0, 200);
+		}
+	}
+	
+	public PotionEffect toEffect(JsonObject obj) {
+		Potion potion = Potion.getPotionFromResourceLocation(obj.get("name").getAsString());;
+		int level = 0;
+		long ticks = 200;
+		boolean ambient = false;
+		boolean showParticles = true;
+		
+		if(obj.has("ambient")) {
+			ambient = obj.get("ambient").getAsBoolean();
+		}
+		if(obj.has("showParticles")) {
+			showParticles = obj.get("showParticles").getAsBoolean();
+		}
+		if(obj.has("level")) {
+			level = obj.get("level").getAsInt();
+		}
+		if(obj.has("time")) {
+			Time t = Time.getTime(obj.get("time"));
+			ticks = t != null ? t.getTicks() : 0;
+		}
+		if(potion == null) return null;
+		return new PotionEffect(potion, level, (int) ticks, ambient, showParticles);
+	}
+	
+	public String toString(PotionEffect arg) {
+		if(arg == null) return null;
+		return JiuUtils.other.addJoins("@", arg.getEffectName(), arg.getAmplifier(), new Time(arg.getDuration()).toString(), arg.getIsAmbient(), arg.doesShowParticles());
+	}
+	
+	public JsonObject toJson(PotionEffect arg) {
+		if(arg == null) return null;
+		JsonObject obj = new JsonObject();
+		
+		obj.addProperty("name", arg.getEffectName());
+		obj.addProperty("level", arg.getAmplifier());
+		obj.add("time", new Time(arg.getDuration()).toJson(true));
+		
+		obj.addProperty("ambient", arg.getIsAmbient());
+		obj.addProperty("showParticles", arg.doesShowParticles());
+		
+		return obj;
 	}
 	
 	public String toString(ItemStack args) {
@@ -146,7 +219,7 @@ public final class ItemUtils {
 				}else if(e.isJsonObject()) {
 					if(!obj.has("tags")) obj.add("tags", new JsonObject()); 
 					obj.get("tags").getAsJsonObject().add(key, e);
-				}else {
+				}else if(e.isJsonArray()) {
 					obj.add(key, e);
 				}
 			}
@@ -171,6 +244,9 @@ public final class ItemUtils {
 				return new JsonPrimitive(pri.getShort());
 			}
 		}else if(base instanceof NBTTagString) {
+			JsonArray num_array = this.getNumberArray((NBTTagString) base);
+			if(num_array != null) return num_array;
+			
 			return new JsonPrimitive(((NBTTagString)base).getString());
 		}else if(base instanceof NBTTagCompound) {
 			return this.toJson((NBTTagCompound)base);
@@ -195,7 +271,37 @@ public final class ItemUtils {
 				array.add(i);
 			}
 			return array;
+		}else if(base instanceof NBTTagLongArray) {
+			JsonArray array = new JsonArray();
+			for(long i : ((NBTTagLongArray)base).data) {
+				array.add(i);
+			}
+			return array;
 		}
+		return null;
+	}
+	
+	private JsonArray getNumberArray(NBTTagString str) {
+		JsonArray num_array = null;
+		String s = str.getString();
+		if(s.contains("short_array") && s.contains("@") && s.contains(",")) {
+			num_array = new JsonArray();
+			for (Short num : JiuUtils.other.toNumberArray(Short.class, JiuUtils.other.custemSplitString(",", JiuUtils.other.custemSplitString("@", s)[1]))) {
+				num_array.add(num);
+			}
+		}else if(s.contains("double_array") && s.contains("@") && s.contains(",")) {
+			num_array = new JsonArray();
+			for (Double num : JiuUtils.other.toNumberArray(Double.class, JiuUtils.other.custemSplitString(",", JiuUtils.other.custemSplitString("@", s)[1]))) {
+				num_array.add(num);
+			}
+		}else if(s.contains("float_array") && s.contains("@") && s.contains(",")) {
+			num_array = new JsonArray();
+			for (Float num : JiuUtils.other.toNumberArray(Float.class, JiuUtils.other.custemSplitString(",", JiuUtils.other.custemSplitString("@", s)[1]))) {
+				num_array.add(num);
+			}
+		}
+		
+		if(num_array != null) return num_array;
 		return null;
 	}
 	
@@ -260,6 +366,16 @@ public final class ItemUtils {
 				nbt.setShort(nbts.getKey(), nbts.getValue().getAsShort());
 			}
 		}
+		if(obj.has("long_array")) {
+			for(Entry<String, JsonElement> nbts : obj.get("long_array").getAsJsonObject().entrySet()) {
+				JsonArray array = nbts.getValue().getAsJsonArray();
+				long[] num_array = new long[array.size()];
+				for(int i = 0; i < array.size(); i++) {
+					num_array[i] = array.get(i).getAsLong();
+				}
+				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+			}
+		}
 		if(obj.has("int_array")) {
 			for(Entry<String, JsonElement> nbts : obj.get("int_array").getAsJsonObject().entrySet()) {
 				JsonArray array = nbts.getValue().getAsJsonArray();
@@ -270,14 +386,44 @@ public final class ItemUtils {
 				nbt.setIntArray(nbts.getKey(), int_array);
 			}
 		}
+		if(obj.has("short_array")) {
+			for(Entry<String, JsonElement> nbts : obj.get("short_array").getAsJsonObject().entrySet()) {
+				JsonArray array = nbts.getValue().getAsJsonArray();
+				short[] num_array = new short[array.size()];
+				for(int i = 0; i < array.size(); i++) {
+					num_array[i] = array.get(i).getAsShort();
+				}
+				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+			}
+		}
 		if(obj.has("byte_array")) {
 			for(Entry<String, JsonElement> nbts : obj.get("byte_array").getAsJsonObject().entrySet()) {
 				JsonArray array = nbts.getValue().getAsJsonArray();
-				byte[] byte_array = new byte[array.size()];
+				byte[] num_array = new byte[array.size()];
 				for(int i = 0; i < array.size(); i++) {
-					byte_array[i] = array.get(i).getAsByte();
+					num_array[i] = array.get(i).getAsByte();
 				}
-				nbt.setByteArray(nbts.getKey(), byte_array);
+				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+			}
+		}
+		if(obj.has("double_array")) {
+			for(Entry<String, JsonElement> nbts : obj.get("double_array").getAsJsonObject().entrySet()) {
+				JsonArray array = nbts.getValue().getAsJsonArray();
+				double[] num_array = new double[array.size()];
+				for(int i = 0; i < array.size(); i++) {
+					num_array[i] = array.get(i).getAsDouble();
+				}
+				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+			}
+		}
+		if(obj.has("float_array")) {
+			for(Entry<String, JsonElement> nbts : obj.get("float_array").getAsJsonObject().entrySet()) {
+				JsonArray array = nbts.getValue().getAsJsonArray();
+				float[] num_array = new float[array.size()];
+				for(int i = 0; i < array.size(); i++) {
+					num_array[i] = array.get(i).getAsFloat();
+				}
+				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
 			}
 		}
 		if(obj.has("tags")) {
@@ -573,14 +719,14 @@ public final class ItemUtils {
 				if(!(jMeta > 15)) {
 					return new ItemStack(jItem, jAmout, jMeta);
 				}else {
-					JiuCore.instance.log.fatal("\"" + name +  "\": "+ "\"" + jMeta + "\"" + " It's too large! It must be >=15");
+					JiuCore.getLogOS().fatal("\"" + name +  "\": "+ "\"" + jMeta + "\"" + " It's too large! It must be >=15");
 					return new ItemStack(jItem, jAmout, 15);
 				}
 			}else {
 				return new ItemStack(jItem, jAmout, jMeta);
 			}
 		} catch (Exception e) {
-			JiuCore.instance.log.fatal(e.getMessage() + " is not Number!");
+			JiuCore.getLogOS().fatal(e.getMessage() + " is not Number!");
 			return ItemStack.EMPTY;
 		}
 	}

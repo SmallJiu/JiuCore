@@ -2,10 +2,13 @@ package cat.jiu.core.api;
 
 import java.math.BigInteger;
 
+import cat.jiu.core.api.annotation.Unfinish;
+
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
+@Unfinish
 @Deprecated
 public interface IJiuFluidStorage {
 	default BigInteger receiveFluidWithBigInteger(FluidStack fluids, boolean simulate) {

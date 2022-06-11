@@ -5,9 +5,12 @@ import java.math.BigInteger;
 import cat.jiu.core.util.JiuUtils;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagLongArray;
 
-public class NBTTagCompoundUtils {
+class NBTTagCompoundUtils {
+	protected final OtherUtils other = JiuUtils.other;
 	public boolean hasNBT(ItemStack stack, String nbtName) {
 		return this.getItemNBT(stack).hasKey(nbtName);
 	}
@@ -171,7 +174,7 @@ public class NBTTagCompoundUtils {
 	}
 	//=================================================================================================//
 	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, String[] value) {
-		nbt.setString(nbtName, JiuUtils.other.toString(value));
+		nbt.setString(nbtName, other.toString(value));
 		return nbt;
 	}
 	
@@ -193,7 +196,7 @@ public class NBTTagCompoundUtils {
 		if(s.equals("")) {
 			return new String[] {"null"};
 		}
-		return JiuUtils.other.custemSplitString(s, ",");
+		return other.custemSplitString(s, ",");
 	}
 	//=================================================================================================//
 	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, boolean value) {
@@ -207,5 +210,75 @@ public class NBTTagCompoundUtils {
 	
 	public boolean getItemNBTBoolean(NBTTagCompound nbt, String nbtName) {
 		return nbt.getBoolean(nbtName);
+	}
+	//==============================================================
+	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, long[] value) {
+		nbt.setTag(nbtName, new NBTTagLongArray(value));
+		return nbt;
+	}
+	
+	public long[] getNBTLongArray(NBTTagCompound nbt, String nbtName) {
+		NBTBase b = nbt.getTag(nbtName);
+		if(b instanceof NBTTagLongArray) {
+			return ((NBTTagLongArray) b).data;
+		}
+		return new long[0];
+	}
+	//==============================================================
+	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, byte[] value) {
+		nbt.setByteArray(nbtName, value);
+		return nbt;
+	}
+	
+	public byte[] getNBTByteArray(NBTTagCompound nbt, String nbtName) {
+		return nbt.getByteArray(nbtName);
+	}
+	//==============================================================
+	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, short[] value) {
+		nbt.setString(nbtName, "short_array@" + other.toString(other.toArray(value)));
+		return nbt;
+	}
+	
+	public short[] getNBTShortArray(NBTTagCompound nbt, String nbtName) {
+		String short_arrays = nbt.getString(nbtName);
+		if(short_arrays.contains("@")) {
+			String[] arrays = other.custemSplitString("@", short_arrays);
+			if(arrays[0].equals("short_array")) {
+				return other.toArray(other.toNumberArray(Short.class, other.custemSplitString(",", arrays[1])));
+			}
+		}
+		return new short[0];
+	}
+	//==============================================================
+	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, double[] value) {
+		nbt.setString(nbtName, "double_array@" + other.toString(other.toArray(value)));
+		return nbt;
+	}
+	
+	public double[] getNBTDoubleArray(NBTTagCompound nbt, String nbtName) {
+		String short_arrays = nbt.getString(nbtName);
+		if(short_arrays.contains("@")) {
+			String[] arrays = other.custemSplitString("@", short_arrays);
+			if(arrays[0].equals("double_array")) {
+				return other.toArray(other.toNumberArray(Double.class, other.custemSplitString(",", arrays[1])));
+			}
+		}
+		return new double[0];
+	}
+	//==============================================================
+	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, float[] value) {
+		nbt.setString(nbtName, "float_array@" + other.toString(other.toArray(value)));
+		return nbt;
+	}
+	
+	public float[] getNBTFloatArray(NBTTagCompound nbt, String nbtName) {
+		String short_arrays = nbt.getString(nbtName);
+		if(short_arrays.contains("@")) {
+			String[] arrays = other.custemSplitString("@", short_arrays);
+			if(arrays[0].equals("float_array")) {
+				return other.toArray(other.toNumberArray(Float.class, other.custemSplitString(",", arrays[1])));
+			}
+		}
+		return new float[0];
 	}
 }

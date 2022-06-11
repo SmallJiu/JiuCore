@@ -29,7 +29,7 @@ public class CommandValueRemove extends BaseCommand.CommandNormal {
 		super("remove", modid, 2);
 		this.valueID = valueID;
 		this.valueName = Values.getValueName(valueID);
-		this.log = LogManager.getLogger(JiuUtils.other.upperCaseToFirstLetter(valueID));
+		this.log = LogManager.getLogger(JiuUtils.other.upperFirst(valueID));
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class CommandValueRemove extends BaseCommand.CommandNormal {
 				if(uid == null) {
 					uid = ((EntityPlayer) sender).getUniqueID();
 				}
-				ValueStateType type = Values.remove(this.valueID, uid, 0);
+				ValueStateType type = Values.remove(this.valueID, uid);
 
 				if(type == ValueStateType.SUCCESS) {
 					this.log.log(Level.INFO, "Remove Success, " + sender.getName() + " has 0 " + this.valueName);
@@ -74,7 +74,7 @@ public class CommandValueRemove extends BaseCommand.CommandNormal {
 		String name = args[0];
 
 		UUID uid = JiuUtils.entity.hasNameOrUUID(name) ? JiuUtils.entity.getUUID(name) : getPlayer(server, sender, name).getUniqueID();
-		ValueStateType type = Values.remove(this.valueID, uid, 0);
+		ValueStateType type = Values.remove(this.valueID, uid);
 
 		switch(type) {
 			case SUCCESS:

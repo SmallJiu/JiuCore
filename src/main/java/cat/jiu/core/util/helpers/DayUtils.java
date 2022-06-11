@@ -1,56 +1,45 @@
 package cat.jiu.core.util.helpers;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
-@SuppressWarnings("deprecation")
 public final class DayUtils {
 	
-	public static final GlobalFestivalsDay global = new GlobalFestivalsDay();
-	public static final ChineseFestivalsDay chinese = new ChineseFestivalsDay();
-	
-	public Date addDate(Date date, int year, int month, int day, int hour, int m, int s) {
-		date.setYear((this.getYear() - 1900) + year);
-		date.setMonth((this.getMonth() - 1) + month);
-		date.setDate(this.getDayOfMonth() + day);
-		date.setHours(this.getHour() + hour);
-		date.setMinutes(this.getMinutes() + m);
-		date.setSeconds(this.getSecond() + s);
-		return date;
-	}
+	public final GlobalFestivalsDay global = new GlobalFestivalsDay();
+	public final ChineseFestivalsDay chinese = new ChineseFestivalsDay();
 	
 	public int getYear() {
-		Date date = new Date();
-		return date.getYear() + 1900;
+		LocalDateTime date = LocalDateTime.now();
+		return date.getYear();
 	}
 	
 	public int getMonth() {
-		Date date = new Date();
-		return date.getMonth() + 1;
+		LocalDateTime date = LocalDateTime.now();
+		return date.getMonth().getValue();
 	}
 	
 	public int getDayOfWeek() {
-		Date date = new Date();
-		return date.getDay();
+		LocalDateTime date = LocalDateTime.now();
+		return date.getDayOfWeek().getValue();
 	}
 	
 	public int getDayOfMonth() {
-		Date date = new Date();
-		return date.getDate();
+		LocalDateTime date = LocalDateTime.now();
+		return date.getDayOfMonth();
 	}
 	
 	public int getHour() {
-		Date date = new Date();
-		return date.getHours();
+		LocalDateTime date = LocalDateTime.now();
+		return date.getHour();
 	}
 	
 	public int getMinutes() {
-		Date date = new Date();
-		return date.getMinutes();
+		LocalDateTime date = LocalDateTime.now();
+		return date.getMinute();
 	}
 	
 	public int getSecond() {
-		Date date = new Date();
-		return date.getSeconds();
+		LocalDateTime date = LocalDateTime.now();
+		return date.getSecond();
 	}
 	
 	public boolean isTheDay(int month, int day) {
@@ -63,7 +52,7 @@ public final class DayUtils {
 	
 	private static final DayUtils day = new DayUtils();
 	
-	public static class ChineseFestivalsDay {
+	public class ChineseFestivalsDay {
 		public boolean isChineseNationalDay() {
 			return day.isTheDay(10, 1);
 		}
@@ -85,7 +74,8 @@ public final class DayUtils {
 		}
 	}
 	
-	public static class GlobalFestivalsDay {
+	public class GlobalFestivalsDay {
+		
 		public boolean isNewYear() {
 			return day.isTheDay(1, 1);
 		}

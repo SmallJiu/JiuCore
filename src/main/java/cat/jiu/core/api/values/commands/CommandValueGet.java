@@ -29,7 +29,7 @@ public class CommandValueGet extends BaseCommand.CommandNormal {
 		super("get", modid, 0);
 		this.valueID = valueID;
 		this.valueName = Values.getValueName(valueID);
-		this.log = LogManager.getLogger(JiuUtils.other.upperCaseToFirstLetter(valueID));
+		this.log = LogManager.getLogger(JiuUtils.other.upperFirst(valueID));
 	}
 	
 	@Override

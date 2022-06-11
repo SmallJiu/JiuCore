@@ -47,11 +47,7 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static void addDrops(ResourceLocation name, DropType drop) {
 		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
-<<<<<<< Updated upstream
-		if(entity == null) throw new RuntimeException("Can not find entity: " + name);
-=======
 		if(entity == null) unknowEntity(name);
->>>>>>> Stashed changes
 		
 		String s = entity.getName();
 		if(!Drop.containsKey(s)) {
@@ -62,20 +58,12 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static void addDrops(EntityLivingBase entity, DropType drop) {
 		if(entity instanceof EntityPlayer) {
-<<<<<<< Updated upstream
-			JiuCore.instance.log.error("Can not add drops to: " + entity.getClass().getSimpleName());
-=======
-			JiuCore.instance.log.error("Can not add drops to Player!");
->>>>>>> Stashed changes
+			JiuCore.getLogOS().error("Can not add drops to Player!");
 			return;
 		}
 		
 		String s = EntityList.getEntityString(entity);
-<<<<<<< Updated upstream
-		if(s == null) throw new RuntimeException("Can not find entity: " + entity.getName());
-=======
 		if(s == null) unknowEntity(entity);
->>>>>>> Stashed changes
 		
 		if(!Drop.containsKey(s)) {
 			Drop.put(s, Lists.newArrayList());
@@ -85,23 +73,12 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static List<DropType> getDrops(EntityLivingBase entity) {
 		String s = EntityList.getEntityString(entity);
-<<<<<<< Updated upstream
-		if(s == null) throw new RuntimeException("Can not find entity: " + entity.getEntityId());
-//		System.out.println("EntityName: " + entity.getName() + ", EntityID: " + entity.getEntityId() + ", Size: " + drops.size() + ", Name: " + EntityList.getEntityString(entity));
-		
-=======
 		if(s == null) unknowEntity(entity);
 
->>>>>>> Stashed changes
 		if(!Drop.containsKey(s)) return null;
 		return Drop.get(s);
 	}
 	
-<<<<<<< Updated upstream
-	public static List<DropType> getDrops(ResourceLocation name) {
-		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
-		if(entity == null) throw new RuntimeException("Can not find entity: " + name);
-=======
 	private static void unknowEntity(ResourceLocation name) {
 		throw new RuntimeException("Can not find entity: " + name);
 	}
@@ -113,7 +90,6 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	public static List<DropType> getDrops(ResourceLocation name) {
 		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
 		if(entity == null) unknowEntity(name);
->>>>>>> Stashed changes
 		
 		String s = entity.getName();
 		if(!Drop.containsKey(s)) return null;
@@ -177,7 +153,7 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 		public DropType(int minCount, int maxCount, float chance, ItemStack stack) {
 			this.minCount = minCount;
 			this.maxCount = maxCount;
-			this.chance = chance > 1F ? 1F : chance < 0.001F ? 0.001F : chance;
+			this.chance = chance > 1F ? 1F : chance < 0F ? 0F : chance;
 			this.stack = stack;
 		}
 		@Override
@@ -190,15 +166,16 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 		}
 	}
 
-	final JiuRandom rand = new JiuRandom();
+	static final JiuRandom rand = new JiuRandom();
 
 	@Override
 	public void onEntityDeathDropItems(EntityLivingBase entity, DamageSource source, List<EntityItem> drops, List<ItemStack> items, int lootingLevel, boolean recentlyHit) {
 		if(!entity.getEntityWorld().isRemote) {
 			List<DropType> otherDrops = getDrops(entity);
 			if(otherDrops != null) {
-				for(DropType stackType : otherDrops) {
-					ItemStack stack = stackType.stack.copy();
+				for(DropType stackTypeT : otherDrops) {
+					DropType stackType = stackTypeT.clone();
+					ItemStack stack = stackType.stack;
 					stack.setCount(rand.nextIntFromRange(stackType.minCount, stackType.maxCount));
 					
 					if(rand.nextInt(1000) <= stackType.chance*1000) {

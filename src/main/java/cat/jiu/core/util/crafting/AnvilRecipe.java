@@ -70,7 +70,7 @@ public final class AnvilRecipe {
 		}
 		
 		public int getExpLevel() {
-			return new Integer(this.expLevel);
+			return this.expLevel;
 		}
 	}
 }

@@ -145,7 +145,7 @@ public final class EntityUtils {
         Potion potion = Potion.getPotionFromResourceLocation(id);
         
         if(potion == null) {
-        	JiuCore.instance.log.fatal("Effect not found: " + id);
+        	JiuCore.getLogOS().fatal("Effect not found: " + id);
         	return null;
         }else {
         	return potion;
