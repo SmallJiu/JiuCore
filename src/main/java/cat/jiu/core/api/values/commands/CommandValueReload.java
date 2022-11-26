@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cat.jiu.core.api.values.Values;
-import cat.jiu.core.api.values.Values.ValueStateType;
+import cat.jiu.core.types.ValueStateType;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseCommand;
 

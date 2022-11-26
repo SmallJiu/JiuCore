@@ -1,12 +1,19 @@
 package cat.jiu.core.util.helpers;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.Validate;
 
@@ -16,54 +23,172 @@ import com.google.gson.JsonObject;
 
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.util.JiuUtils;
-import cat.jiu.core.util.Time;
-
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public final class OtherUtils {
-	public BigInteger letterToNumber(int ii, String value) {
+	public BlockPos toPos(NBTTagCompound nbt) {
+		if(nbt==null || nbt.getSize()==0) return null;
+		return new BlockPos(nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
+	}
+	public NBTTagCompound toNBT(BlockPos pos) {
+		NBTTagCompound nbt = new NBTTagCompound();
+		nbt.setInteger("x", pos.getX());
+		nbt.setInteger("y", pos.getY());
+		nbt.setInteger("z", pos.getZ());
+		return nbt;
+	}
+	
+	public String toStringPath(ResourceLocation loc) {
+		return "./assets/" + loc.getResourceDomain() + "/" + loc.getResourcePath();
+	}
+	
+	public String formatTextColor(String str, char formatChar) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < str.length(); i++) {
+			char ch = str.charAt(i);
+			if(ch == formatChar && i+1 < str.length()) {
+				if(isFormatChar(str.charAt(i+1))) {
+					sb.append("§");
+					continue;
+				}
+			}
+			sb.append(ch);
+		}
+		return sb.toString();
+	}
+	private boolean isFormatChar(char c) {
+		for(TextFormatting format : TextFormatting.values()) {
+			if(format.formattingCode == c) return true;
+		}
+		return false;
+	}
+	
+	@Nullable
+	public File getFileFromResourceLocation(ResourceLocation rl) {
+		return new File(".assets" + File.pathSeparator + rl.getResourceDomain() + File.pathSeparator + rl.getResourcePath().replace('/', File.pathSeparatorChar));
+	}
+	
+	public boolean resourceFileExistsInAssets(ResourceLocation location) {
+		File f = this.getFileFromResourceLocation(location);
+		return f==null ? false : f.exists();
+	}
+	
+	public double[] reverseOrder(double... array) {
+		array = DoubleStream.of(array)
+					.boxed()
+					.sorted(Comparator.reverseOrder())
+					.mapToDouble(Double::doubleValue)
+					.toArray();
+		return array;
+	}
+	
+	public long[] reverseOrder(long... array) {
+		array = LongStream.of(array)
+					.boxed()
+					.sorted(Comparator.reverseOrder())
+					.mapToLong(Long::longValue)
+					.toArray();
+		return array;
+	}
+	
+	public int[] reverseOrder(int... array) {
+		array = IntStream.of(array)
+					.boxed()
+					.sorted(Comparator.reverseOrder())
+					.mapToInt(Integer::intValue)
+					.toArray();
+		return array;
+	}
+	
+	public Class<?>[] getCallingStack() {
+		return securityManager.getStackClasses();
+	}
+	static final CoreSecurityManager securityManager = new CoreSecurityManager();
+	static class CoreSecurityManager extends SecurityManager {
+        Class<?>[] getStackClasses() {
+            return super.getClassContext();
+        }
+    }
+	
+	public BigInteger lettersToNumber(int defaultNum, String value) {
 		value = value.toLowerCase();
-		StringBuilder s = new StringBuilder(ii);
-		for(int i = 0; i < value.length(); i++) {
-			char charr = value.charAt(i);
-			if(JiuCore.CHAR_LETTERS.contains(charr)) {
+		StringBuilder s = new StringBuilder(defaultNum);
+		for(char charr : value.toCharArray()) {
+			if(JiuCore.containsLetter(charr)) {
 				s.append(toNumber(charr));
 			}
 		}
 		return JiuUtils.big_integer.create(s.toString());
 	}
-	private String toNumber(char value) {
+	
+	public String toChar(int value, boolean toUpper) {
+		String result = "a-z";
 		switch(value) {
-			default: return "-1";
-			case 'a': return "01";
-			case 'b': return "02";
-			case 'c': return "03";
-			case 'd': return "04";
-			case 'e': return "05";
-			case 'f': return "06";
-			case 'g': return "07";
-			case 'h': return "08";
-			case 'i': return "09";
-			case 'j': return "10";
-			case 'k': return "11";
-			case 'l': return "12";
-			case 'm': return "13";
-			case 'n': return "14";
-			case 'o': return "15";
-			case 'p': return "16";
-			case 'q': return "17";
-			case 'r': return "18";
-			case 's': return "19";
-			case 't': return "20";
-			case 'u': return "21";
-			case 'v': return "22";
-			case 'w': return "23";
-			case 'x': return "24";
-			case 'y': return "25";
-			case 'z': return "26";
+			case 0: result = "a";
+			case 1: result = "b";
+			case 2: result = "c";
+			case 3: result = "d";
+			case 4: result = "e";
+			case 5: result = "f";
+			case 6: result = "g";
+			case 7: result = "h";
+			case 8: result = "i";
+			case 9: result = "j";
+			case 10: result = "k";
+			case 11: result = "l";
+			case 12: result = "m";
+			case 13: result = "n";
+			case 14: result = "o";
+			case 15: result = "p";
+			case 16: result = "q";
+			case 17: result = "r";
+			case 18: result = "s";
+			case 19: result = "t";
+			case 20: result = "u";
+			case 21: result = "v";
+			case 22: result = "w";
+			case 23: result = "x";
+			case 24: result = "y";
+			case 25: result = "z";
+		}
+		return toUpper ? result.toUpperCase() : result;
+	}
+	
+	public int toNumber(char value) {
+		switch(String.valueOf(value).toLowerCase().charAt(0)) {
+			default: return -1;
+			case 'a': return 0;
+			case 'b': return 1;
+			case 'c': return 2;
+			case 'd': return 3;
+			case 'e': return 4;
+			case 'f': return 5;
+			case 'g': return 6;
+			case 'h': return 7;
+			case 'i': return 8;
+			case 'j': return 9;
+			case 'k': return 10;
+			case 'l': return 11;
+			case 'm': return 12;
+			case 'n': return 13;
+			case 'o': return 14;
+			case 'p': return 15;
+			case 'q': return 16;
+			case 'r': return 17;
+			case 's': return 18;
+			case 't': return 19;
+			case 'u': return 20;
+			case 'v': return 21;
+			case 'w': return 22;
+			case 'x': return 23;
+			case 'y': return 24;
+			case 'z': return 25;
 		}
 	}
 	
@@ -76,40 +201,73 @@ public final class OtherUtils {
 		return this.addJoins(".", (Object[])arg);
 	}
 	
+	public String toString(Object... args) {
+		return this.addJoins("", args);
+	}
+	
 	public String addJoins(CharSequence delimiter, Object... args) {
-		return this.addJoins(10L, delimiter, args);
+		return this.addJoins(0, delimiter, "", "", args);
+	}
+	
+	public String addJoins(CharSequence delimiter, CharSequence prefix, CharSequence suffix, Object... args) {
+		return this.addJoins(0, delimiter, prefix, suffix, args);
+	}
+
+	public String toString(long format, Object... args) {
+		return this.addJoins(format, "", args);
 	}
 	
 	public String addJoins(long format, CharSequence delimiter, Object... args) {
+		return this.addJoins(format, delimiter, "", "", args);
+	}
+	
+	public String addJoins(long format, CharSequence delimiter, CharSequence prefix, CharSequence suffix, Object... args) {
 		StringJoiner j = new StringJoiner(delimiter);
 		for(int i = 0; i < args.length; i++) {
-			if(args[i] == null) continue;
+			if(args[i] == null) {
+				j.add("null");
+				continue;
+			}
 			StringBuilder str = new StringBuilder(args[i].toString());
 			if(format > 9)
-				if(args[i].getClass() == Long.class && (long)args[i] < format) str.insert(0, this.format((long)args[i], format));
-				else if(args[i].getClass() == Integer.class && (int)args[i] < format) str.insert(0, this.format((int)args[i], format));
-				else if(args[i].getClass() == Short.class && (short)args[i] < format) str.insert(0, this.format((short)args[i],format));
-				else if(args[i].getClass() == Byte.class && (byte)args[i] < format) str.insert(0, this.format((byte)args[i], format));
-			
+				if(args[i] instanceof Number) {
+					if(args[i] instanceof Long && (long)args[i] < format) str.insert(0, this.format((long)args[i], format));
+					else if(args[i] instanceof Integer && (int)args[i] < format) str.insert(0, this.format((int)args[i], format));
+					else if(args[i] instanceof Short && (short)args[i] < format) str.insert(0, this.format((short)args[i],format));
+					else if(args[i] instanceof Byte && (byte)args[i] < format) str.insert(0, this.format((byte)args[i], format));
+					else if(args[i] instanceof BigInteger && JiuUtils.big_integer.less((BigInteger) args[i], BigInteger.valueOf(format))) str.insert(0, this.format((BigInteger)args[i], format));
+				}
 			j.add(str);
 		}
 		return j.toString();
 	}
 	
-	private String format(long num, long f) {
+	private StringBuilder format(BigInteger num, long f) {
+		StringBuilder s = new StringBuilder();
+		if(JiuUtils.big_integer.less(num, BigInteger.TEN)) s.append("0");
+		for(int i = 0; i < Long.toString(f).length()-2; i++) {
+			s.append(0);
+		}
+		return s;
+	}
+	
+	private StringBuilder format(long num, long f) {
 		StringBuilder s = new StringBuilder();
 		if(num < 10) s.append("0");
 		for(int i = 0; i < Long.toString(f).length()-2; i++) {
-			s.append("0");
+			s.append(0);
 		}
-		return s.toString();
+		return s;
 	}
 	
 	public boolean isEmpty(Object[] arg) {
 		return arg == null || arg.length == 0;
 	}
 	public boolean isEmpty(List<?> arg) {
-		return arg == null || arg.size() == 0;
+		return arg == null || arg.isEmpty();
+	}
+	public boolean isEmpty(Map<?,?> arg) {
+		return arg == null || arg.isEmpty();
 	}
 	public boolean isEmpty(JsonObject arg) {
 		return arg == null || arg.size() == 0;
@@ -121,12 +279,12 @@ public final class OtherUtils {
 		return arg == null || arg.isEmpty();
 	}
 	
-	public <T> ArrayList<T> createArrayListWithSize(int size, T fill) {
+	@SuppressWarnings("unchecked")
+	public <E> ArrayList<E> createArrayListWithSize(int size, E fill) {
 		Validate.notNull(fill);
-		@SuppressWarnings("unchecked")
-		T[] fillObj = (T[]) new Object[size];
+		Object[] fillObj = new Object[size];
 		Arrays.fill(fillObj, fill);
-		return Lists.newArrayList(fillObj);
+		return Lists.newArrayList((E[])fillObj);
 	}
 	
 	public ITextComponent createTextComponent(String arg, Object... objs) {
@@ -136,29 +294,6 @@ public final class OtherUtils {
 	public ITextComponent createTextComponent(String arg, TextFormatting color, Object... objs) {
 		ITextComponent text = new TextComponentTranslation(arg, objs);
 		return text.setStyle(text.getStyle().setColor(color)); 
-	}
-	
-	@Deprecated
-	public long parseTick(int s, int tick) {
-		return this.parseTick(0, s, tick);
-	}
-
-	@Deprecated
-	public long parseTick(int m, int s, int tick) {
-		return this.parseTick(0, m, s, tick);
-	}
-
-	@Deprecated
-	public long parseTick(int h, int m, int s, int tick) {
-		return this.parseTick(0, h, m, s, tick);
-	}
-	
-	/**
-	 * @see Time#parseTick(long, long, long, long, long)
-	 */
-	@Deprecated
-	public long parseTick(int day, int h, int m, int s, int tick) {
-		return Time.parseTick(day, h, m, s, tick);
 	}
 	
 	public boolean runBatFile(String file, boolean canEjectWindow) {
@@ -223,7 +358,17 @@ public final class OtherUtils {
 			}
 			return (T[]) numss;
 		}
+		
 		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Number, E extends Number> T[] toNumberArray(T type, E[] args) {
+		T[] arg = (T[]) new Object[args.length];
+		for(int i = 0; i < args.length; i++) {
+			arg[i] = (T) args[i];
+		}
+		return arg;
 	}
 	
 	public long[] toArray(Long[] args) {
@@ -327,32 +472,9 @@ public final class OtherUtils {
 		if(seed.startsWith("0x")) {
 			x = Integer.parseInt(seed.substring(2), 16);
 		}else {
-			x = Integer.parseInt(seed,16);
+			x = Integer.parseInt(seed, 16);
 		}
 		return x;
-	}
-	
-	public String toString(String[] args) {
-		return this.toString(args, null, null, null);
-	}
-	
-	public String toString(String[] args, CharSequence delimiter) {
-		return this.toString(args, delimiter, "", "");
-	}
-	
-	public String toString(String[] args, CharSequence start, CharSequence end) {
-		return this.toString(args, ",", start, end);
-	}
-	
-	public String toString(String[] args, CharSequence delimiter, CharSequence start, CharSequence end) {
-		if(args == null || args.length == 0) {
-			return "null";
-		}
-		StringJoiner j = start != null && delimiter != null && end != null ? new StringJoiner(delimiter, start, end) : new StringJoiner(",");
-		for(String arg : args) {
-			j.add(arg);
-		}
-		return j.toString();
 	}
 	
 	public <T> String toString(List<T> args) {
@@ -363,7 +485,7 @@ public final class OtherUtils {
 		for(T t : args) {
 			v.add(t.toString());
 		}
-		return this.toString(v.toArray(new String[v.size()]));
+		return this.toString(v.toArray());
 	}
 	
 	public <T extends Number> String toString(T[] args) {

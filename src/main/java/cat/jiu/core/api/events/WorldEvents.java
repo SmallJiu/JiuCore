@@ -2,8 +2,8 @@ package cat.jiu.core.api.events;
 
 import java.util.Random;
 
-import cat.jiu.core.api.events.game.IWorldEvent;
-
+import cat.jiu.core.api.events.iface.game.IWorldEvent;
+import cat.jiu.core.util.JiuCoreEvents;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -12,6 +12,9 @@ import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType;
 
 public class WorldEvents implements IWorldEvent {
+	public WorldEvents() {
+		JiuCoreEvents.addEvent(this);
+	}
 	@Override
 	public void onOreGeneratePre(World world, Chunk chunk, BlockPos pos, Random rand) {}
 	@Override

@@ -3,7 +3,7 @@ package cat.jiu.core.trigger;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 
-import cat.jiu.core.JiuCore;
+import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseAdvancement;
 
@@ -41,7 +41,7 @@ public class BreakBlockTrigger extends BaseAdvancement.BaseCriterionTrigger<Brea
 		int meta = json.has("meta") ? json.get("meta").getAsInt() : 0;
 		IBlockState state = JiuUtils.item.getStateFromItemStack(new ItemStack(item, 1, meta));
 		if(state == null) {
-			JiuCore.getLogOS().error(json.get("block").getAsString() + " is NOT Block!");
+			CoreLoggers.getLogOS().error(json.get("block").getAsString() + " is NOT Block!");
 			return new BreakBlockTrigger(null);
 		}
 		return new BreakBlockTrigger(state);

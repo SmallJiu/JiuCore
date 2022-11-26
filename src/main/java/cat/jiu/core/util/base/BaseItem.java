@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import cat.jiu.core.api.IHasModel;
+import cat.jiu.core.types.StackCaches;
 import cat.jiu.core.util.RegisterModel;
 
 import net.minecraft.client.resources.I18n;
@@ -16,6 +17,7 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -36,7 +38,8 @@ public class BaseItem {
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 			this.setNoRepair();
-			RegisterModel.NeedToRegistryModel.add(this);
+			RegisterModel.addNeedRegistryModel(modid, this);
+			ForgeRegistries.ITEMS.register(this);
 		}
 		
 		public Normal(String modid, String name, boolean hasSubtypes) {
@@ -68,11 +71,13 @@ public class BaseItem {
 				}
 			}
 		}
-		
+		private StackCaches caches;
+		public final StackCaches getStackCaches() {return this.caches;}
 		protected int meta = 1;
 		public Normal setMaxMetadata(int maxMeta) {
 			if(this.getHasSubtypes()) {
 				this.meta = maxMeta > 1 ? maxMeta : 1;
+				this.caches = new StackCaches(this, meta);
 			}
 			return this;
 		}
@@ -144,7 +149,8 @@ public class BaseItem {
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 			this.setNoRepair();
-			RegisterModel.NeedToRegistryModel.add(this);
+			RegisterModel.addNeedRegistryModel(modid, this);
+			ForgeRegistries.ITEMS.register(this);
 		}
 		
 		public Food(String modid, String name, int amount, float saturation, boolean isWolfFood, boolean hasSubtypes) {
@@ -182,10 +188,13 @@ public class BaseItem {
 			}
 		}
 		
-		private int meta = 1;
+		private StackCaches caches;
+		public final StackCaches getStackCaches() {return this.caches;}
+		protected int meta = 1;
 		public Food setMaxMetadata(int maxMeta) {
 			if(this.getHasSubtypes()) {
 				this.meta = maxMeta > 1 ? maxMeta : 1;
+				this.caches = new StackCaches(this, meta);
 			}
 			return this;
 		}

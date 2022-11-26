@@ -38,7 +38,7 @@ public class BaseAdvancement {
 		public ResourceLocation getId() {
 			return this.ID;
 		}
-
+		
 		@Override
 		public void addListener(PlayerAdvancements playerAdvancementsIn, Listener<Instance<T>> listener) {
 			BaseCriterionTrigger.Listeners<T> listeners = this.listeners.get(playerAdvancementsIn);
@@ -108,22 +108,21 @@ public class BaseAdvancement {
 		 * @return if player can get Advancement, return true
 		 * @author small_jiu
 		 */
-		public abstract boolean check(Object... args);
+		protected abstract boolean check(Object... args);
 		
 		/**
 		 * deserialize form json
 		 * 
 		 * @param json
 		 *            Advancement 'conditions' JsonObject
-		 * @param context TODO
 		 * @return Trigger instance form Advancement
 		 * @author small_jiu
 		 */
-		public abstract T getInstance(JsonObject json, JsonDeserializationContext context);
+		protected abstract T getInstance(JsonObject json, JsonDeserializationContext context);
 		
-		protected static class Instance<I extends BaseCriterionTrigger<I>> extends AbstractCriterionInstance {
-			private final BaseCriterionTrigger<I> instance;
-			public Instance(BaseCriterionTrigger<I> instance) {
+		protected static class Instance<T extends BaseCriterionTrigger<T>> extends AbstractCriterionInstance {
+			private final BaseCriterionTrigger<T> instance;
+			public Instance(BaseCriterionTrigger<T> instance) {
 				super(instance.getId());
 				this.instance = instance;
 			}
@@ -132,9 +131,9 @@ public class BaseAdvancement {
 			}
 		}
 
-		protected static class Listeners<I extends BaseCriterionTrigger<I>> {
+		protected static class Listeners<T extends BaseCriterionTrigger<T>> {
 			private final PlayerAdvancements playerAdvancements;
-			private final Set<ICriterionTrigger.Listener<Instance<I>>> listeners = Sets.newHashSet();
+			private final Set<ICriterionTrigger.Listener<Instance<T>>> listeners = Sets.newHashSet();
 
 			public Listeners(PlayerAdvancements playerAdvancementsIn) {
 				this.playerAdvancements = playerAdvancementsIn;
@@ -144,18 +143,18 @@ public class BaseAdvancement {
 				return this.listeners.isEmpty();
 			}
 
-			public void add(ICriterionTrigger.Listener<Instance<I>> listener) {
+			public void add(ICriterionTrigger.Listener<Instance<T>> listener) {
 				this.listeners.add(listener);
 			}
 
-			public void remove(ICriterionTrigger.Listener<Instance<I>> listener) {
+			public void remove(ICriterionTrigger.Listener<Instance<T>> listener) {
 				this.listeners.remove(listener);
 			}
 
 			public void trigger(Object... args) {
-				List<ICriterionTrigger.Listener<Instance<I>>> list = null;
-				for(ICriterionTrigger.Listener<Instance<I>> listener : this.listeners) {
-					if(((Instance<I>) listener.getCriterionInstance()).check(args)) {
+				List<ICriterionTrigger.Listener<Instance<T>>> list = null;
+				for(ICriterionTrigger.Listener<Instance<T>> listener : this.listeners) {
+					if(((Instance<T>) listener.getCriterionInstance()).check(args)) {
 						if(list == null) {
 							list = Lists.newArrayList();
 						}
@@ -163,7 +162,7 @@ public class BaseAdvancement {
 					}
 				}
 				if(list != null) {
-					for(ICriterionTrigger.Listener<Instance<I>> listener1 : list) {
+					for(ICriterionTrigger.Listener<Instance<T>> listener1 : list) {
 						listener1.grantCriterion(this.playerAdvancements);
 					}
 				}

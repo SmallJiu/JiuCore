@@ -1,0 +1,21 @@
+{
+	"required": true,
+	"minVersion": "0.7.11",
+	"package": "cat.jiu.core.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"refmap": "jiucore.mixin.refmap.json",
+	"mixins": [
+		"MixinTileEntityUpdataEvent",
+		"MixinWorldInfo",
+		"MixinNBTBase"
+	],
+	"client": [
+		"MixinFallbackResourceManager"
+	],
+	"server": [
+		
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

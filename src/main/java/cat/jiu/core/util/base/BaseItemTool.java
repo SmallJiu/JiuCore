@@ -43,6 +43,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
@@ -52,6 +53,7 @@ public class BaseItemTool {
 		protected final String name;
 		protected final CreativeTabs tab;
 		protected final String modid;
+		@Deprecated
 		protected final RegisterModel model;
 
 		protected Tool(String modid, String name, CreativeTabs tab, boolean hasSubtypes, float attackDamageIn, float attackSpeedIn, ToolMaterial materialIn, Set<Block> effectiveBlocksIn) {
@@ -64,7 +66,8 @@ public class BaseItemTool {
 			this.setUnlocalizedName(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
-			RegisterModel.NeedToRegistryModel.add(this);
+			RegisterModel.addNeedRegistryModel(modid, this);
+			ForgeRegistries.ITEMS.register(this);
 		}
 
 		protected Tool(String modid, String name, CreativeTabs tab, boolean hasSubtypes, ToolMaterial materialIn, Set<Block> effectiveBlocksIn) {
@@ -103,13 +106,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/" + this.name, this.name + "." + i);
+					util.registerItemModel(this, i, "tools/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools", this.name);
+				util.registerItemModel(this, "tools", this.name);
 			}
 		}
 
@@ -137,6 +140,7 @@ public class BaseItemTool {
 		protected final String name;
 		protected final CreativeTabs tab;
 		protected final String modid;
+		@Deprecated
 		protected final RegisterModel model;
 
 		protected Sword(String modid, String name, CreativeTabs tab, boolean hasSubtypes, ToolMaterial materialIn) {
@@ -150,7 +154,8 @@ public class BaseItemTool {
 			this.setUnlocalizedName(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
-			RegisterModel.NeedToRegistryModel.add(this);
+			RegisterModel.addNeedRegistryModel(modid, this);
+			ForgeRegistries.ITEMS.register(this);
 		}
 
 		protected Sword(String modid, String name, CreativeTabs tab, ToolMaterial materialIn) {
@@ -185,13 +190,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/sword/" + this.name, this.name + "." + i);
+					util.registerItemModel(this, i, "tools/sword/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/sword", this.name);
+				util.registerItemModel(this, "tools/sword", this.name);
 			}
 		}
 	}
@@ -221,13 +226,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/pickaxe/" + this.name, this.name + "." + i);
+					util.registerItemModel(this, i, "tools/pickaxe/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/pickaxe", this.name);
+				util.registerItemModel(this, "tools/pickaxe", this.name);
 			}
 		}
 
@@ -263,13 +268,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/axe/" + this.name + "/", this.name + "." + i);
+					util.registerItemModel(this, i, "tools/axe/" + this.name + "/", this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/axe/", this.name);
+				util.registerItemModel(this, "tools/axe/", this.name);
 			}
 		}
 
@@ -305,13 +310,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/shovel/" + this.name + "/", this.name + "." + i);
+					util.registerItemModel(this, i, "tools/shovel/" + this.name + "/", this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/shovel/", this.name);
+				util.registerItemModel(this, "tools/shovel/", this.name);
 			}
 		}
 
@@ -326,6 +331,7 @@ public class BaseItemTool {
 		protected final String name;
 		protected final CreativeTabs tab;
 		protected final String modid;
+		@Deprecated
 		protected final RegisterModel model;
 		protected final IMetadataToolMaterial[] material;
 		protected String toolClass;
@@ -353,7 +359,8 @@ public class BaseItemTool {
 				this.toolClass = "shovel";
 				this.effectiveBlocks.addAll(ItemSpade.EFFECTIVE_ON);
 			}
-			RegisterModel.NeedToRegistryModel.add(this);
+			RegisterModel.addNeedRegistryModel(modid, this);
+			ForgeRegistries.ITEMS.register(this);
 		}
 
 		public MetaTool(String modid, String name, CreativeTabs tab, ToolMaterial mainMaterial, IMetadataToolMaterial[] material) {
@@ -388,13 +395,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/" + this.name, this.name + "." + i);
+					util.registerItemModel(this, i, "tools/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools", this.name);
+				util.registerItemModel(this, "tools", this.name);
 			}
 		}
 
@@ -419,12 +426,7 @@ public class BaseItemTool {
 
 		@Override
 		public int getHarvestLevel(ItemStack stack, String toolClass, EntityPlayer player, IBlockState blockState) {
-			int level = 0;
-			if(stack.getMetadata() >= this.material.length) {
-				level = this.material[this.material.length-1].getHarvestLevel(toolClass, blockState);
-			}else {
-				level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
-			}
+			int level = this.getMaterial(stack).getHarvestLevel(toolClass, blockState);
 			
 			if(level < 0 && toolClass.equals(this.toolClass)) {
 				level = super.getHarvestLevel(stack, toolClass, player, blockState);
@@ -436,13 +438,7 @@ public class BaseItemTool {
 		}
 
 		public int getHarvestLevel(ItemStack stack, String toolClass, IBlockState blockState) {
-			int level = 0;
-			if(stack.getMetadata() >= this.material.length) {
-				level = this.material[this.material.length-1].getHarvestLevel(toolClass, blockState);
-			}else {
-				level = this.material[stack.getMetadata()].getHarvestLevel(toolClass, blockState);
-			}
-			
+			int level = this.getMaterial(stack).getHarvestLevel(toolClass, blockState);
 			if(!this.canHarvestBlock(blockState, stack)) {
 				level = -1;
 			}
@@ -478,6 +474,19 @@ public class BaseItemTool {
 		}
 
 		@Override
+		public Set<String> getToolClasses(ItemStack stack) {
+			return this.toolClass != null ? ImmutableSet.of(this.toolClass) : super.getToolClasses(stack);
+		}
+
+		@Override
+		public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
+			ItemStack mat = this.getMaterial(repair).getRepairItemStack();
+			if(!mat.isEmpty() && OreDictionary.itemMatches(mat, repair, false))
+				return true;
+			return super.getIsRepairable(toRepair, repair);
+		}
+		
+		@Override
 		public int getDamage(ItemStack stack) {
 			if(JiuUtils.nbt.hasNBT(stack, "Damage")) {
 				return JiuUtils.nbt.getItemNBTInt(stack, "Damage");
@@ -485,47 +494,9 @@ public class BaseItemTool {
 			return 0;
 		}
 
-		public void damageItem(ItemStack stack, int amount, EntityLivingBase entity) {
-			if(JiuUtils.nbt.hasNBT(stack, "Damage")) {
-				JiuUtils.nbt.addItemNBT(stack, "Damage", amount);
-			}else {
-				JiuUtils.nbt.setItemNBT(stack, "Damage", amount);
-			}
-
-			if(JiuUtils.nbt.getItemNBTInt(stack, "Damage") > this.getMaxDamage(stack)) {
-				entity.renderBrokenItemStack(stack);
-				stack.shrink(1);
-				if(entity instanceof EntityPlayer) {
-					((EntityPlayer) entity).addStat(StatList.getObjectBreakStats(stack.getItem()));
-				}
-			}
-		}
-
-		@Override
-		public Set<String> getToolClasses(ItemStack stack) {
-			return this.toolClass != null ? ImmutableSet.of(this.toolClass) : super.getToolClasses(stack);
-		}
-
-		@Override
-		public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-			
-			ItemStack mat = ItemStack.EMPTY;
-			if(toRepair.getMetadata() >= this.material.length) {
-				mat = this.material[this.material.length-1].getRepairItemStack();
-			}else {
-				mat = this.material[repair.getMetadata()].getRepairItemStack();
-			}
-			if(!mat.isEmpty() && OreDictionary.itemMatches(mat, repair, false))
-				return true;
-			return super.getIsRepairable(toRepair, repair);
-		}
-
 		@Override
 		public int getMaxDamage(ItemStack stack) {
-			if(stack.getMetadata() >= this.material.length) {
-				return this.material[this.material.length-1].getMaxDamage();
-			}
-			return this.material[stack.getMetadata()].getMaxDamage();
+			return this.getMaterial(stack).getMaxDamage();
 		}
 
 		@Override
@@ -541,6 +512,25 @@ public class BaseItemTool {
 				JiuUtils.nbt.setItemNBT(stack, "Damage", 0);
 			}
 		}
+		
+		public void damageItem(ItemStack stack, int amount, EntityLivingBase entity) {
+			if(JiuUtils.nbt.hasNBT(stack, "Damage")) {
+				JiuUtils.nbt.addItemNBT(stack, "Damage", amount);
+			}else {
+				JiuUtils.nbt.setItemNBT(stack, "Damage", amount);
+			}
+
+			if(JiuUtils.nbt.getItemNBTInt(stack, "Damage") > this.getMaxDamage(stack)) {
+				stack.shrink(1);
+				if(entity != null) {
+					entity.renderBrokenItemStack(stack);
+					if(entity instanceof EntityPlayer) {
+						((EntityPlayer) entity).addStat(StatList.getObjectBreakStats(stack.getItem()));
+					}
+				}
+				
+			}
+		}
 
 		@Override
 		public boolean canDestroyBlockInCreative(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
@@ -549,10 +539,17 @@ public class BaseItemTool {
 
 		@Override
 		public int getItemEnchantability(ItemStack stack) {
+			return this.getMaterial(stack).getEnchantability();
+		}
+		
+		public IMetadataToolMaterial getMaterial(ItemStack stack) {
 			if(stack.getMetadata() >= this.material.length) {
-				return this.material[this.material.length-1].getEnchantability();
+				return this.material[this.material.length-1];
 			}
-			return this.material[stack.getMetadata()].getEnchantability();
+			if(stack.getMetadata() < 0) {
+				return this.material[0];
+			}
+			return this.material[stack.getMetadata()];
 		}
 	}
 
@@ -609,13 +606,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/sword/" + this.name, this.name + "." + i);
+					util.registerItemModel(this, i, "tools/sword/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/sword", this.name);
+				util.registerItemModel(this, "tools/sword", this.name);
 			}
 		}
 	}
@@ -677,13 +674,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int meta = 0; meta < this.maxMeta; ++meta) {
-					this.model.registerItemModel(this, meta, "tools/pickaxe/" + this.name, this.name + "." + meta);
+					util.registerItemModel(this, meta, "tools/pickaxe/" + this.name, this.name + "." + meta);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/pickaxe", this.name);
+				util.registerItemModel(this, "tools/pickaxe", this.name);
 			}
 		}
 	}
@@ -708,13 +705,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/axe/" + this.name, this.name + "." + i);
+					util.registerItemModel(this, i, "tools/axe/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/axe/", this.name);
+				util.registerItemModel(this, "tools/axe/", this.name);
 			}
 		}
 	}
@@ -734,13 +731,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/shovel/" + this.name + "/", this.name + "." + i);
+					util.registerItemModel(this, i, "tools/shovel/" + this.name + "/", this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/shovel/", this.name);
+				util.registerItemModel(this, "tools/shovel/", this.name);
 			}
 		}
 
@@ -830,13 +827,13 @@ public class BaseItemTool {
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.maxMeta > 1) {
 				for(int i = 0; i < this.maxMeta; ++i) {
-					this.model.registerItemModel(this, i, "tools/hoe/" + this.name + "/", this.name + "." + i);
+					util.registerItemModel(this, i, "tools/hoe/" + this.name + "/", this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "tools/hoe/", this.name);
+				util.registerItemModel(this, "tools/hoe/", this.name);
 			}
 		}
 	}

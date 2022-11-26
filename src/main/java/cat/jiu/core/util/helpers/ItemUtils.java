@@ -3,6 +3,9 @@ package cat.jiu.core.util.helpers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+
+import javax.annotation.Nullable;
+
 import java.util.Map.Entry;
 
 import com.google.common.collect.Lists;
@@ -12,18 +15,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-import cat.jiu.core.JiuCore;
 import cat.jiu.core.test.BlockTest.TestModSubtypes;
 import cat.jiu.core.util.JiuUtils;
-import cat.jiu.core.util.Time;
-import cat.jiu.core.util.base.BaseBlock;
-
+import cat.jiu.core.util.timer.Timer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -44,36 +43,60 @@ import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import net.minecraftforge.fluids.BlockFluidBase;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.oredict.OreDictionary;
 
 public final class ItemUtils {
-	public void itemInit(Item item, String modid, String name, CreativeTabs tab, boolean hasSubtypes, List<Item> ITEMS) {
-		item.setHasSubtypes(hasSubtypes);
-		item.setUnlocalizedName(modid + "." + name);
-		item.setCreativeTab(tab);
-		ForgeRegistries.ITEMS.register(item.setRegistryName(modid, name));
-		ITEMS.add(item);
+	public ItemStack getStackFromBlockPos(World world, BlockPos pos) {
+		ItemStack stack = this.getStackFromBlockState(world.getBlockState(pos));
+		TileEntity tile = world.getTileEntity(pos);
+		NBTTagCompound nbt = null;
+		if(tile != null) {
+			nbt = new NBTTagCompound();
+			nbt.setTag("BlockEntityTag", tile.writeToNBT(new NBTTagCompound()));
+		}
+		return JiuUtils.nbt.setNBT(stack, nbt);
 	}
 	
-	public void blockInit(Block block, String modid, String name, CreativeTabs tab, float hardness, boolean hasSubType, List<Block> BLOCKS) {
-		block.setUnlocalizedName(modid + "." + name);
-		block.setCreativeTab(tab);
-		if(hardness < 0) {
-			block.setHardness(Float.MAX_VALUE);
-		}else {
-			block.setHardness(hardness);
+	public List<PotionEffect> toEffects(JsonElement arg) {
+		if(arg.isJsonObject()) {
+			return this.toEffects(arg.getAsJsonObject());
+		}else if(arg.isJsonArray()){
+			return this.toEffects(arg.getAsJsonArray());
 		}
-		BLOCKS.add(block);
-		ForgeRegistries.BLOCKS.register(block.setRegistryName(modid, name));
-		ForgeRegistries.ITEMS.register(new BaseBlock.BaseBlockItem(block, hasSubType).setRegistryName(modid, name));
+		return null;
+	}
+	
+	public List<PotionEffect> toEffects(JsonObject arg) {
+		List<PotionEffect> effects = Lists.newArrayList();
+		arg.entrySet().stream().forEach(effect -> {
+			effects.add(this.toEffect(effect.getValue()));
+		});
+		return effects;
+	}
+	
+	public List<PotionEffect> toEffects(JsonArray arg) {
+		List<PotionEffect> effects = Lists.newArrayList();
+		arg.forEach(effect -> {
+			effects.add(this.toEffect(effect));
+		});
+		return effects;
+	}
+	
+	public PotionEffect toEffect(JsonElement arg) {
+		if(arg.isJsonObject()) {
+			return this.toEffect(arg.getAsJsonObject());
+		}else if(arg.isJsonPrimitive()) {
+			return this.toEffect(arg.getAsString());
+		}
+		return null;
 	}
 	
 	public PotionEffect toEffect(String arg) {
@@ -90,7 +113,7 @@ public final class ItemUtils {
 				case 4: ambient = Boolean.parseBoolean(effects[3]);
 				case 3:
 					String[] times = JiuUtils.other.custemSplitString(":", effects[2]);
-					ticks = Time.parseTick(Integer.parseInt(times[0]), Integer.parseInt(times[1]), Integer.parseInt(times[2]));
+					ticks = Timer.parseTick(Integer.parseInt(times[0]), Integer.parseInt(times[1]), Integer.parseInt(times[2]));
 				case 2: level = Integer.parseInt(effects[1]);
 				default: potion = Potion.getPotionFromResourceLocation(effects[0]);
 					break;
@@ -118,8 +141,8 @@ public final class ItemUtils {
 		if(obj.has("level")) {
 			level = obj.get("level").getAsInt();
 		}
-		if(obj.has("time")) {
-			Time t = Time.getTime(obj.get("time"));
+		if(obj.has("lastMillis")) {
+			Timer t = Timer.getTime(obj.get("lastMillis"));
 			ticks = t != null ? t.getTicks() : 0;
 		}
 		if(potion == null) return null;
@@ -128,7 +151,7 @@ public final class ItemUtils {
 	
 	public String toString(PotionEffect arg) {
 		if(arg == null) return null;
-		return JiuUtils.other.addJoins("@", arg.getEffectName(), arg.getAmplifier(), new Time(arg.getDuration()).toString(), arg.getIsAmbient(), arg.doesShowParticles());
+		return JiuUtils.other.addJoins("@", arg.getEffectName(), arg.getAmplifier(), new Timer(arg.getDuration()).toString(), arg.getIsAmbient(), arg.doesShowParticles());
 	}
 	
 	public JsonObject toJson(PotionEffect arg) {
@@ -137,7 +160,7 @@ public final class ItemUtils {
 		
 		obj.addProperty("name", arg.getEffectName());
 		obj.addProperty("level", arg.getAmplifier());
-		obj.add("time", new Time(arg.getDuration()).toJson(true));
+		obj.add("lastMillis", new Timer(arg.getDuration()).writeTo(JsonObject.class));
 		
 		obj.addProperty("ambient", arg.getIsAmbient());
 		obj.addProperty("showParticles", arg.doesShowParticles());
@@ -326,114 +349,183 @@ public final class ItemUtils {
 	
 	public NBTTagCompound getNBT(JsonObject obj) {
 		NBTTagCompound nbt = new NBTTagCompound();
-		if(obj.has("string")) {
-			for(Entry<String, JsonElement> nbts : obj.get("string").getAsJsonObject().entrySet()) {
-				nbt.setString(nbts.getKey(), nbts.getValue().getAsString());
-			}
-		}
-		if(obj.has("boolean")) {
-			for(Entry<String, JsonElement> nbts : obj.get("boolean").getAsJsonObject().entrySet()) {
-				nbt.setBoolean(nbts.getKey(), nbts.getValue().getAsBoolean());
-			}
-		}
-		if(obj.has("int")) {
-			for(Entry<String, JsonElement> nbts : obj.get("int").getAsJsonObject().entrySet()) {
-				nbt.setInteger(nbts.getKey(), nbts.getValue().getAsInt());
-			}
-		}
-		if(obj.has("long")) {
-			for(Entry<String, JsonElement> nbts : obj.get("long").getAsJsonObject().entrySet()) {
-				nbt.setLong(nbts.getKey(), nbts.getValue().getAsLong());
-			}
-		}
-		if(obj.has("float")) {
-			for(Entry<String, JsonElement> nbts : obj.get("float").getAsJsonObject().entrySet()) {
-				nbt.setFloat(nbts.getKey(), nbts.getValue().getAsFloat());
-			}
-		}
-		if(obj.has("double")) {
-			for(Entry<String, JsonElement> nbts : obj.get("double").getAsJsonObject().entrySet()) {
-				nbt.setDouble(nbts.getKey(), nbts.getValue().getAsDouble());
-			}
-		}
-		if(obj.has("byte")) {
-			for(Entry<String, JsonElement> nbts : obj.get("byte").getAsJsonObject().entrySet()) {
-				nbt.setByte(nbts.getKey(), nbts.getValue().getAsByte());
-			}
-		}
-		if(obj.has("short")) {
-			for(Entry<String, JsonElement> nbts : obj.get("short").getAsJsonObject().entrySet()) {
-				nbt.setShort(nbts.getKey(), nbts.getValue().getAsShort());
-			}
-		}
-		if(obj.has("long_array")) {
-			for(Entry<String, JsonElement> nbts : obj.get("long_array").getAsJsonObject().entrySet()) {
-				JsonArray array = nbts.getValue().getAsJsonArray();
-				long[] num_array = new long[array.size()];
-				for(int i = 0; i < array.size(); i++) {
-					num_array[i] = array.get(i).getAsLong();
+		for(Entry<String, JsonElement> objTags : obj.entrySet()) {
+			String key = objTags.getKey();
+			JsonElement value = objTags.getValue();
+			if("string".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setString(nbts.getKey(), nbts.getValue().getAsString());
 				}
-				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				continue;
 			}
-		}
-		if(obj.has("int_array")) {
-			for(Entry<String, JsonElement> nbts : obj.get("int_array").getAsJsonObject().entrySet()) {
-				JsonArray array = nbts.getValue().getAsJsonArray();
-				int[] int_array = new int[array.size()];
-				for(int i = 0; i < array.size(); i++) {
-					int_array[i] = array.get(i).getAsInt();
+			if("boolean".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setBoolean(nbts.getKey(), nbts.getValue().getAsBoolean());
 				}
-				nbt.setIntArray(nbts.getKey(), int_array);
+				continue;
 			}
-		}
-		if(obj.has("short_array")) {
-			for(Entry<String, JsonElement> nbts : obj.get("short_array").getAsJsonObject().entrySet()) {
-				JsonArray array = nbts.getValue().getAsJsonArray();
-				short[] num_array = new short[array.size()];
-				for(int i = 0; i < array.size(); i++) {
-					num_array[i] = array.get(i).getAsShort();
+			if("int".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setInteger(nbts.getKey(), nbts.getValue().getAsInt());
 				}
-				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				continue;
 			}
-		}
-		if(obj.has("byte_array")) {
-			for(Entry<String, JsonElement> nbts : obj.get("byte_array").getAsJsonObject().entrySet()) {
-				JsonArray array = nbts.getValue().getAsJsonArray();
-				byte[] num_array = new byte[array.size()];
-				for(int i = 0; i < array.size(); i++) {
-					num_array[i] = array.get(i).getAsByte();
+			if("long".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setLong(nbts.getKey(), nbts.getValue().getAsLong());
 				}
-				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				continue;
 			}
-		}
-		if(obj.has("double_array")) {
-			for(Entry<String, JsonElement> nbts : obj.get("double_array").getAsJsonObject().entrySet()) {
-				JsonArray array = nbts.getValue().getAsJsonArray();
-				double[] num_array = new double[array.size()];
-				for(int i = 0; i < array.size(); i++) {
-					num_array[i] = array.get(i).getAsDouble();
+			if("float".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setFloat(nbts.getKey(), nbts.getValue().getAsFloat());
 				}
-				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				continue;
 			}
-		}
-		if(obj.has("float_array")) {
-			for(Entry<String, JsonElement> nbts : obj.get("float_array").getAsJsonObject().entrySet()) {
-				JsonArray array = nbts.getValue().getAsJsonArray();
-				float[] num_array = new float[array.size()];
-				for(int i = 0; i < array.size(); i++) {
-					num_array[i] = array.get(i).getAsFloat();
+			if("double".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setDouble(nbts.getKey(), nbts.getValue().getAsDouble());
 				}
-				JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				continue;
 			}
-		}
-		if(obj.has("tags")) {
-			for(Entry<String, JsonElement> tags : obj.get("tags").getAsJsonObject().entrySet()) {
-				nbt.setTag(tags.getKey(), this.getNBT(tags.getValue().getAsJsonObject()));
-				
+			if("byte".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setByte(nbts.getKey(), nbts.getValue().getAsByte());
+				}
+				continue;
+			}
+			if("short".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					nbt.setShort(nbts.getKey(), nbts.getValue().getAsShort());
+				}
+				continue;
+			}
+			if("int_array".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					JsonArray array = nbts.getValue().getAsJsonArray();
+					int[] int_array = new int[array.size()];
+					for(int i = 0; i < array.size(); i++) {
+						int_array[i] = array.get(i).getAsInt();
+					}
+					nbt.setIntArray(nbts.getKey(), int_array);
+				}
+				continue;
+			}
+			if("short_array".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					JsonArray array = nbts.getValue().getAsJsonArray();
+					short[] num_array = new short[array.size()];
+					for(int i = 0; i < array.size(); i++) {
+						num_array[i] = array.get(i).getAsShort();
+					}
+					JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				}
+				continue;
+			}
+			if("byte_array".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					JsonArray array = nbts.getValue().getAsJsonArray();
+					byte[] num_array = new byte[array.size()];
+					for(int i = 0; i < array.size(); i++) {
+						num_array[i] = array.get(i).getAsByte();
+					}
+					JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				}
+				continue;
+			}
+			if("double_array".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					JsonArray array = nbts.getValue().getAsJsonArray();
+					double[] num_array = new double[array.size()];
+					for(int i = 0; i < array.size(); i++) {
+						num_array[i] = array.get(i).getAsDouble();
+					}
+					JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				}
+				continue;
+			}
+			if("float_array".equals(key)) {
+				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
+					JsonArray array = nbts.getValue().getAsJsonArray();
+					float[] num_array = new float[array.size()];
+					for(int i = 0; i < array.size(); i++) {
+						num_array[i] = array.get(i).getAsFloat();
+					}
+					JiuUtils.nbt.setNBT(nbt, nbts.getKey(), num_array);
+				}
+				continue;
+			}
+			if("tags".equals(key)) {
+				for(Entry<String, JsonElement> tags : value.getAsJsonObject().entrySet()) {
+					nbt.setTag(tags.getKey(), this.getNBT(tags.getValue().getAsJsonObject()));
+				}
+				continue;
+			}
+			if(value.isJsonObject()) {
+				nbt.setTag(key, this.getNBT(value.getAsJsonObject()));
+				continue;
+			}
+			if(value.isJsonArray()) {
+				nbt.setTag(key, this.getNBT(value.getAsJsonArray()));
+				continue;
 			}
 		}
 		
 		return nbt;
+	}
+	
+	public NBTTagList getNBT(JsonArray array) {
+		NBTTagList list = new NBTTagList();
+		for(int i = 0; i < array.size(); i++) {
+			JsonElement array_element = array.get(i);
+			if(array_element.isJsonObject()) {
+				list.appendTag(this.getNBT(array_element.getAsJsonObject()));
+				continue;
+			}
+			if(array_element.isJsonArray()) {
+				list.appendTag(this.getNBT(array_element.getAsJsonArray()));
+				continue;
+			}
+			if(array_element.isJsonPrimitive()) {
+				JsonPrimitive pri = array_element.getAsJsonPrimitive();
+				if(pri.isString()) {
+					list.appendTag(new NBTTagString(pri.getAsString()));
+					continue;
+				}
+				if(pri.isBoolean()) {
+					list.appendTag(new NBTTagByte(pri.getAsBoolean() ? (byte)1 : (byte)0));
+					continue;
+				}
+				if(pri.isNumber()) {
+					Number num = pri.getAsNumber();
+					if(num instanceof Integer) {
+						list.appendTag(new NBTTagInt((Integer) num));
+						continue;
+					}
+					if(num instanceof Double) {
+						list.appendTag(new NBTTagDouble((Double) num));
+						continue;
+					}
+					if(num instanceof Byte) {
+						list.appendTag(new NBTTagByte((Byte) num));
+						continue;
+					}
+					if(num instanceof Long) {
+						list.appendTag(new NBTTagLong((Long) num));
+						continue;
+					}
+					if(num instanceof Float) {
+						list.appendTag(new NBTTagFloat((Float) num));
+						continue;
+					}
+					if(num instanceof Short) {
+						list.appendTag(new NBTTagShort((Short) num));
+						continue;
+					}
+				}
+			}
+		}
+		return list;
 	}
 	
 	public ItemStack toStack(String stack) {
@@ -477,9 +569,7 @@ public final class ItemUtils {
 	
 	public List<ItemStack> toStacks(JsonArray array) {
 		List<ItemStack> stacks = Lists.newArrayList();
-		
-		for(int i = 0; i < array.size(); i++) {
-			JsonElement e = array.get(i);
+		array.forEach(e -> {
 			if(e.isJsonArray()) {
 				List<ItemStack> stackss = this.toStacks(e);
 				if(stackss != null) stacks.addAll(stackss);
@@ -489,17 +579,15 @@ public final class ItemUtils {
 					stacks.add(s);
 				}
 			}
-		}
-		
+		});
 		if(stacks.isEmpty()) return null;
 		return stacks;
 	}
 	
 	public List<ItemStack> toStacks(JsonObject obj) {
 		List<ItemStack> stacks = Lists.newArrayList();
-		
-		for(Entry<String, JsonElement> stack : obj.entrySet()) {
-			JsonElement e = stack.getValue();
+		obj.entrySet().stream().forEach(es -> {
+			JsonElement e = es.getValue();
 			if(e.isJsonArray()) {
 				List<ItemStack> stackss = this.toStacks(e);
 				if(stackss != null) stacks.addAll(stackss);
@@ -509,8 +597,7 @@ public final class ItemUtils {
 					stacks.add(s);
 				}
 			}
-		}
-		
+		});
 		if(stacks.isEmpty()) return null;
 		return stacks;
 	}
@@ -620,11 +707,13 @@ public final class ItemUtils {
 		}
 		return stack.getItem() instanceof ItemBlock;
 	}
-	
+
+	@Nullable
 	public Block getBlockFromItemStack(ItemStack stack) {
 		return isBlock(stack) ? ((ItemBlock)stack.getItem()).getBlock() : null;
 	}
 	
+	@Nullable
 	@SuppressWarnings("deprecation")
 	public IBlockState getStateFromItemStack(ItemStack stack) {
 		return isBlock(stack) ? getBlockFromItemStack(stack).getStateFromMeta(stack.getMetadata()) : null;
@@ -694,44 +783,8 @@ public final class ItemUtils {
 	}
 	
 	/**
-	 * {@link #getStackFromString(String, String)}
-	 */
-	public ItemStack getStackFromString(String name) {
-		return this.getStackFromString(name, "1");
-	}
-	
-	/**
-	 * {@link #getStackFromString(String, String, String)}
-	 */
-	public ItemStack getStackFromString(String name, String amout) {
-		return this.getStackFromString(name, amout, "0");
-	}
-	
-	public ItemStack getStackFromString(String name, String amout, String meta) {
-		try {
-			Item jItem = Item.getByNameOrId(name);
-			if(jItem == null) return ItemStack.EMPTY; 
-			int jAmout = Integer.parseInt(amout);
-			int jMeta = Integer.parseInt(meta);
-			boolean isBlock = jItem instanceof ItemBlock;
-			
-			if(isBlock) {
-				if(!(jMeta > 15)) {
-					return new ItemStack(jItem, jAmout, jMeta);
-				}else {
-					JiuCore.getLogOS().fatal("\"" + name +  "\": "+ "\"" + jMeta + "\"" + " It's too large! It must be >=15");
-					return new ItemStack(jItem, jAmout, 15);
-				}
-			}else {
-				return new ItemStack(jItem, jAmout, jMeta);
-			}
-		} catch (Exception e) {
-			JiuCore.getLogOS().fatal(e.getMessage() + " is not Number!");
-			return ItemStack.EMPTY;
-		}
-	}
-	
-	/**
+	 * Not check nbt, amount<p>
+	 * check meta<p>
 	 * {@link #equalsStack(ItemStack, ItemStack, boolean)}
 	 */
 	public boolean equalsStack(ItemStack stackA, ItemStack stackB) {
@@ -739,6 +792,8 @@ public final class ItemUtils {
 	}
 	
 	/**
+	 * Not check nbt<p>
+	 * check meta<p>
 	 * {@link #equalsStack(ItemStack, ItemStack, boolean, boolean)}
 	 */
 	public boolean equalsStack(ItemStack stackA, ItemStack stackB, boolean checkAmout) {
@@ -746,6 +801,8 @@ public final class ItemUtils {
 	}
 	
 	/**
+	 * 
+	 * Not check nbt<p>
 	 * {@link #equalsStack(ItemStack, ItemStack, boolean, boolean, boolean)}
 	 */
 	public boolean equalsStack(ItemStack stackA, ItemStack stackB, boolean checkDamage, boolean checkAmout) {

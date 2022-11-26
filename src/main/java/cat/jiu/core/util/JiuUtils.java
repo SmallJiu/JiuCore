@@ -6,8 +6,8 @@ import cat.jiu.core.util.helpers.DayUtils;
 import cat.jiu.core.util.helpers.EntityUtils;
 import cat.jiu.core.util.helpers.ItemNBTUtils;
 import cat.jiu.core.util.helpers.ItemUtils;
+import cat.jiu.core.util.helpers.JsonUtil;
 import cat.jiu.core.util.helpers.OtherUtils;
-import cat.jiu.core.util.system.file.JsonUtil;
 
 public final class JiuUtils {
 	public static final DayUtils day = new DayUtils();

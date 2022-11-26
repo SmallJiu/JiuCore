@@ -18,8 +18,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
-import cat.jiu.core.JiuCore;
-import cat.jiu.core.api.events.entity.IEntityDeathDropItems;
+import cat.jiu.core.CoreLoggers;
+import cat.jiu.core.api.events.iface.entity.IEntityDeathDropItems;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -58,7 +58,7 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static void addDrops(EntityLivingBase entity, DropType drop) {
 		if(entity instanceof EntityPlayer) {
-			JiuCore.getLogOS().error("Can not add drops to Player!");
+			CoreLoggers.getLogOS().error("Can not add drops to Player!");
 			return;
 		}
 		
@@ -173,9 +173,8 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 		if(!entity.getEntityWorld().isRemote) {
 			List<DropType> otherDrops = getDrops(entity);
 			if(otherDrops != null) {
-				for(DropType stackTypeT : otherDrops) {
-					DropType stackType = stackTypeT.clone();
-					ItemStack stack = stackType.stack;
+				for(DropType stackType : otherDrops) {
+					ItemStack stack = stackType.stack.copy();
 					stack.setCount(rand.nextIntFromRange(stackType.minCount, stackType.maxCount));
 					
 					if(rand.nextInt(1000) <= stackType.chance*1000) {

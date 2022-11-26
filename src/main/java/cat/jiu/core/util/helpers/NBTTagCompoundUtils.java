@@ -3,13 +3,12 @@ package cat.jiu.core.util.helpers;
 import java.math.BigInteger;
 
 import cat.jiu.core.util.JiuUtils;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagLongArray;
 
-class NBTTagCompoundUtils {
+public class NBTTagCompoundUtils {
 	protected final OtherUtils other = JiuUtils.other;
 	public boolean hasNBT(ItemStack stack, String nbtName) {
 		return this.getItemNBT(stack).hasKey(nbtName);
@@ -174,7 +173,7 @@ class NBTTagCompoundUtils {
 	}
 	//=================================================================================================//
 	public NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, String[] value) {
-		nbt.setString(nbtName, other.toString(value));
+		nbt.setString(nbtName, other.toString((Object[])value));
 		return nbt;
 	}
 	

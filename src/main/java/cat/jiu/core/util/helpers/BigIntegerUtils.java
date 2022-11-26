@@ -4,19 +4,26 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import cat.jiu.core.JiuCore;
+import cat.jiu.core.util.JiuUtils;
 
 public class BigIntegerUtils {
 	public BigInteger create(String value) {
-		if(value.length() == 0) {
+		if(value == null || value.length() == 0) {
 			return BigInteger.ZERO;
 		}
+		value = value.toLowerCase();
+		StringBuilder v = new StringBuilder("0");
 		for(int i = 0; i < value.length(); i++) {
-			if(!JiuCore.CHAR_NUMBERS.contains(value.charAt(i))) {
-				JiuCore.getLogOS().error(value + " -> " + value.charAt(i) + " is NOT Number!");
-				return BigInteger.ZERO;
+			char n = value.charAt(i);
+			if(JiuCore.containsNumber(n)) {
+				v.append(n);
+			}
+			
+			if(JiuCore.containsLetter(n)) {
+				v.append(JiuUtils.other.toNumber(n));
 			}
 		}
-		return new BigInteger(value);
+		return new BigInteger(v.toString());
 	}
 	
 	public BigInteger copy(BigInteger other) {
@@ -28,8 +35,9 @@ public class BigIntegerUtils {
 	 * @author small_jiu
 	 */
 	public boolean less(BigInteger less, BigInteger to) {
+		if(less == null && to == null) return true;
 		if(less == null || to == null) return false;
-		return !to.equals(to.min(less));
+		return to.compareTo(less) == -1;
 	}
 	
 	/**
@@ -37,8 +45,9 @@ public class BigIntegerUtils {
 	 * @author small_jiu
 	 */
 	public boolean lessOrEqual(BigInteger less, BigInteger equ) {
+		if(less == null && equ == null) return true;
 		if(less == null || equ == null) return false;
-		return equ.equals(less) || this.less(less, equ);
+		return equ.compareTo(less) <= 0;
 	}
 	
 	/**
@@ -46,8 +55,9 @@ public class BigIntegerUtils {
 	 * @author small_jiu
 	 */
 	public boolean greater(BigInteger greater, BigInteger to) {
+		if(greater == null && to == null) return true;
 		if(greater == null || to == null) return false;
-		return !to.equals(to.max(greater));
+		return greater.compareTo(to) == 1;
 	}
 	
 	/**
@@ -55,8 +65,9 @@ public class BigIntegerUtils {
 	 * @author small_jiu
 	 */
 	public boolean greaterOrEqual(BigInteger greater, BigInteger equ) {
+		if(greater == null && equ == null) return true;
 		if(greater == null || equ == null) return false;
-		return equ.equals(greater) || this.greater(greater, equ);
+		return equ.compareTo(greater) >= 0;
 	}
 	
 	public String format(long value) {
@@ -199,63 +210,6 @@ public class BigIntegerUtils {
 		return bi;
 	}
 	
-	public String formatByte(long value, int length) {
-		return this.formatByte(BigInteger.valueOf(value), length);
-	}
-	public String formatByte(BigInteger value, int length) {
-		String bi = BigInteger.ZERO.toString();
-		
-		if(this.greaterOrEqual(value, this.Dogga)) {
-			bi = value.divide(this.Dogga).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "DB";
-		}
-		if(this.greaterOrEqual(value, this.Nona)) {
-			bi = value.divide(this.Nona).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "NB";
-		}
-		if(this.greaterOrEqual(value, this.Bronto)) {
-			bi = value.divide(this.Bronto).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "BB";
-		}
-		if(this.greaterOrEqual(value, this.Yotta)) {
-			bi = value.divide(this.Yotta).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "YB";
-		}
-		if(this.greaterOrEqual(value, this.Zetta)) {
-			bi = value.divide(this.Zetta).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "ZB";
-		}
-		if(this.greaterOrEqual(value, this.Exa)) {
-			bi = value.divide(this.Exa).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "EB";
-		}
-		if(this.greaterOrEqual(value, this.Peta)) {
-			bi = value.divide(this.Peta).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "PB";
-		}
-		if(this.greaterOrEqual(value, this.Trillion)) {
-			bi = value.divide(this.Trillion).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "TB";
-		}
-		if(this.greaterOrEqual(value, this.Giga)) {
-			bi = value.divide(this.Giga).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "GB";
-		}
-		if(this.greaterOrEqual(value, this.Mega)) {
-			bi = value.divide(this.Mega).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "MB";
-		}
-		if(this.greaterOrEqual(value, this.Kilo)) {
-			bi = value.divide(this.Kilo).toString();
-			return bi + "." + subString(value.toString().substring(bi.length()), length) + "KB";
-		}
-		if(this.less(value, this.Kilo)) {
-			bi = value.toString();
-			return bi + "B";
-		}
-		return bi;
-	}
-	
 	private String subString(String str, int endlength) {
 		if(str.length() > endlength) {
 			return str.substring(0, endlength);
@@ -311,18 +265,4 @@ public class BigIntegerUtils {
 	/** 10^9 */public final BigInteger G = BigInteger.TEN.pow(3*3);
 	/** 10^6 */public final BigInteger M = BigInteger.TEN.pow(3*2);
 	/** 10^3 */public final BigInteger K = BigInteger.TEN.pow(3*1);
-	
-	public final BigInteger TWO = BigInteger.valueOf(2);
-	/** 2^110 Byte : 1DB */public final BigInteger Dogga = this.TWO.pow(110);
-	/** 2^100 Byte : 1NB */public final BigInteger Nona = this.TWO.pow(100);
-	/** 2^90 Byte : 1BB */public final BigInteger Bronto = this.TWO.pow(90);
-	/** 2^80 Byte : 1YB */public final BigInteger Yotta = this.TWO.pow(80);
-	/** 2^70 Byte : 1ZB */public final BigInteger Zetta = this.TWO.pow(70);
-	/** 2^60 Byte : 1EB */public final BigInteger Exa = this.TWO.pow(60);
-	/** 2^50 Byte : 1PB */public final BigInteger Peta = this.TWO.pow(50);
-	/** 2^40 Byte : 1TB */public final BigInteger Trillion = this.TWO.pow(40);
-	/** 2^30 Byte : 1GB */public final BigInteger Giga = this.TWO.pow(30);
-	/** 2^20 Byte : 1MB */public final BigInteger Mega = this.TWO.pow(20);
-	/** 2^10 Byte : 1KB */public final BigInteger Kilo = this.TWO.pow(10);
-	/** 1 Byte : 1B */public final BigInteger BYTE = BigInteger.valueOf(1);
 }

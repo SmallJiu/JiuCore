@@ -4,9 +4,9 @@ import java.math.BigInteger;
 import java.util.List;
 
 import cat.jiu.core.JiuCore;
-import cat.jiu.core.api.events.item.IItemInPlayerHandTick;
-import cat.jiu.core.api.events.item.IItemInPlayerInventoryTick;
-import cat.jiu.core.api.events.item.IItemInWorldTickEvent;
+import cat.jiu.core.api.events.iface.item.IItemInPlayerHandTick;
+import cat.jiu.core.api.events.iface.item.IItemInPlayerInventoryTick;
+import cat.jiu.core.api.events.iface.item.IItemInWorldTickEvent;
 import cat.jiu.core.capability.CapabilityJiuEnergy;
 import cat.jiu.core.capability.EnergyUtils;
 import cat.jiu.core.capability.JiuEnergyStorage;
@@ -99,7 +99,7 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			if(nbt.getBoolean("TestEnergy")) {
 				this.addEnergy(JiuUtils.energy, invStack);
 					
-				JiuUtils.entity.sendI18nMessage(player, JiuUtils.energy.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
+				JiuUtils.entity.sendMessage(player, JiuUtils.energy.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
 			}
 		}
 	}
@@ -112,23 +112,25 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 			if(mainnbt.getBoolean("TestEnergy") || offnbt.getBoolean("TestEnergy")) {
 				if(mainHand.getItem() == this) {
 					this.addEnergy(JiuUtils.energy, mainHand);
-					JiuUtils.entity.sendI18nMessage(player, JiuUtils.energy.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
+					JiuUtils.entity.sendMessage(player, JiuUtils.energy.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
 				}else if(offHand.getItem() == this) {
 					this.addEnergy(JiuUtils.energy, offHand);
-					JiuUtils.entity.sendI18nMessage(player, JiuUtils.energy.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
+					JiuUtils.entity.sendMessage(player, JiuUtils.energy.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
 				}
 			}
 		}
 	}
 	
 	@Override
-	public void onItemInWorldTick(EntityItem item, World world, BlockPos pos) {
+	public void onItemInWorldTick(EntityItem item) {
+		World world = item.getEntityWorld();
+		BlockPos pos = item.getPosition();
 		if(item.getItem().getItem() == this) {
 			NBTTagCompound nbt = item.getItem().getTagCompound() != null ? item.getItem().getTagCompound() : new NBTTagCompound();
 			if(nbt.getBoolean("TestEnergy")) {
 				if(JiuUtils.item.equalsStack(item.getItem(), new ItemStack(this), false, false)) {
 					this.addEnergy(JiuUtils.energy, item.getItem());
-					JiuUtils.entity.sendI18nMessageToAllPlayer(world, JiuUtils.energy.getFEEnergy(item.getItem())+": World", TextFormatting.GREEN);
+					JiuUtils.entity.sendMessageToAllPlayer(world, JiuUtils.energy.getFEEnergy(item.getItem())+": World", TextFormatting.GREEN);
 				}
 			}else {
 				if(item.getItem().getItem() == this || item.getItem().getItem() == Item.getItemFromBlock(Init.TestBlock)) {
@@ -167,7 +169,7 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 									item.setPosition(tpos.getX(), tpos.getY(), tpos.getZ());
 								}
 								
-								JiuUtils.entity.sendI18nMessageToAllPlayer(world, "In World: Meta: " + item.getItem().getMetadata() + " Y: " + item.getPosition().getY(), TextFormatting.GREEN);
+								JiuUtils.entity.sendMessageToAllPlayer(world, "In World: Meta: " + item.getItem().getMetadata() + " Y: " + item.getPosition().getY(), TextFormatting.GREEN);
 								item.getItem().setCount(0);
 							}
 						}

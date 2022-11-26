@@ -20,8 +20,8 @@ public class JiuCoreTriggers {
 	}
 	
 	public static abstract class ItemCriterionTrigger<I extends ItemCriterionTrigger<I>> extends BaseAdvancement.BaseCriterionTrigger<I> {
-		private final Item item;
-		private final int meta;
+		protected final Item item;
+		protected final int meta;
 		protected ItemCriterionTrigger(ResourceLocation id, Item item, int meta) {
 			super(id);
 			this.item = item;

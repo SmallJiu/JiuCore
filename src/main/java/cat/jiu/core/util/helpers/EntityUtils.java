@@ -5,20 +5,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Maps;
-import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import cat.jiu.core.JiuCore;
+import cat.jiu.core.CoreLoggers;
+import cat.jiu.core.api.ITimer;
 import net.minecraft.block.BlockLiquid;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -26,15 +25,23 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.stats.StatBase;
+import net.minecraft.stats.StatList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+
 import net.minecraftforge.fluids.BlockFluidBase;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public final class EntityUtils {
+	public int getPlayerDeathCount(EntityPlayer player) {
+		return this.getPlayerStatisticsCount(player, StatList.DEATHS);
+	}
+	public int getPlayerStatisticsCount(EntityPlayer player, StatBase stat) {
+		return player.world.getMinecraftServer().getPlayerList().getPlayerStatsFile(player).readStat(stat);
+	}
+	
 	// 是否是指定玩家名
 	// 是则返回true，不是则返回false
 	/**
@@ -76,17 +83,6 @@ public final class EntityUtils {
 			|| world.getBlockState(pos).getBlock() instanceof BlockLiquid;
 	}
 	
-	@SideOnly(Side.CLIENT)
-	public void sendI18nMessage(ICommandSender sender, String key, Object... obj) {
-		sender.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4)); 
-	}
-	
-	@SideOnly(Side.CLIENT)
-	public void sendI18nMessage(ICommandSender sender, String key, TextFormatting color, Object... obj) {
-		TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
-		sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
-	}
-	
 	public void sendMessage(ICommandSender sender, String key, Object... obj) {
 		sender.sendMessage(new TextComponentTranslation(key, obj)); 
 	}
@@ -96,45 +92,29 @@ public final class EntityUtils {
 		sender.sendMessage(text.setStyle(text.getStyle().setColor(color))); 
 	}
 	
-	@SideOnly(Side.CLIENT)
-	public void sendI18nMessageToAllPlayer(World world, String key, Object... obj) {
-		for (EntityPlayer player : world.playerEntities) {
-			player.sendMessage(new TextComponentTranslation(I18n.format(key, obj), 4));
-		}
-	}
-	
-	@SideOnly(Side.CLIENT)
-	public void sendI18nMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
-		for (EntityPlayer player : world.playerEntities) {
-			TextComponentTranslation text = new TextComponentTranslation(I18n.format(key, obj));
-			player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
-		}
-	}
-	
 	public void sendMessageToAllPlayer(World world, String key, Object... obj) {
-		for(EntityPlayer player : world.playerEntities) {
+		for(EntityPlayer player : world.getMinecraftServer().getPlayerList().getPlayers()) {
 			player.sendMessage(new TextComponentTranslation(key, obj));
 		}
 	}
 	
 	public void sendMessageToAllPlayer(World world, String key, TextFormatting color, Object... obj) {
-		for(EntityPlayer player : world.playerEntities) {
+		for(EntityPlayer player : world.getMinecraftServer().getPlayerList().getPlayers()) {
 			TextComponentTranslation text = new TextComponentTranslation(key, obj);
 			player.sendMessage(text.setStyle(text.getStyle().setColor(color)));
 		}
 	}
 	
 	/**
-	 * 
 	 * @param entity the entity
 	 * @param potion {@link MobEffects}
-	 * @param potionTime measure potionTime by the second
+	 * @param potionTime measure potionTime by the format_second
 	 * @param potionLevel potion level, muse be >= 255
 	 * 
 	 * @author small_jiu
 	 */
-	public void addPotionEffect(EntityLivingBase entity, Potion potion, int potionTime, int potionLevel) {
-		entity.addPotionEffect(new PotionEffect(potion, potionTime * 20, potionLevel));
+	public void addPotionEffect(EntityLivingBase entity, Potion potion, ITimer time, int potionLevel) {
+		entity.addPotionEffect(new PotionEffect(potion, (int)time.getAllTicks(), potionLevel));
 	}
 	
 	/**
@@ -145,35 +125,35 @@ public final class EntityUtils {
         Potion potion = Potion.getPotionFromResourceLocation(id);
         
         if(potion == null) {
-        	JiuCore.getLogOS().fatal("Effect not found: " + id);
+        	CoreLoggers.getLogOS().fatal("Effect not found: " + id);
         	return null;
         }else {
         	return potion;
         }
     }
 
-	private final HashMap<String, UUID> NameToUUID = Maps.newHashMap();
-	private final HashMap<UUID, String> UUIDToName = Maps.newHashMap();
+	private static final HashMap<String, UUID> NameToUUID = Maps.newHashMap();
+	private static final HashMap<UUID, String> UUIDToName = Maps.newHashMap();
 
 	public void initNameAndUUID(@Nullable MinecraftServer server) {
 		if(server != null) {
 			server.getPlayerProfileCache().save();
 			server.getPlayerProfileCache().load();
 		}
-		File file = new File("./usernamecache.json");
+		File file = MinecraftServer.USER_CACHE_FILE;
 		if(file.exists()) {
-			this.NameToUUID.clear();
-			this.UUIDToName.clear();
+			NameToUUID.clear();
+			UUIDToName.clear();
 			try(FileInputStream in = new FileInputStream(file)) {
-				JsonObject obj = new JsonParser().parse(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
-				for(Entry<String, JsonElement> cache : obj.entrySet()) {
-					String name = cache.getValue().getAsString();
-					UUID uid = UUID.fromString(cache.getKey());
-					this.NameToUUID.put(name, uid);
-					this.UUIDToName.put(uid, name);
+				JsonArray array = JsonUtil.parser.parse(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonArray();
+				for(int i = 0; i < array.size(); i++) {
+					JsonObject player = array.get(i).getAsJsonObject();
+					
+					String name = player.get("name").getAsString();
+					UUID uid = UUID.fromString(player.get("uuid").getAsString());
+					NameToUUID.put(name, uid);
+					UUIDToName.put(uid, name);
 				}
-				this.NameToUUID.put("Initialization", new UUID(0, 0));
-				this.UUIDToName.put(new UUID(0, 0), "Initialization");
 			}catch(IOException e) {
 				e.printStackTrace();
 			}
@@ -181,23 +161,43 @@ public final class EntityUtils {
 	}
 
 	public boolean hasNameOrUUID(String name) {
-		return (!this.NameToUUID.isEmpty() && !this.UUIDToName.isEmpty()) ? this.NameToUUID.containsKey(name) && this.UUIDToName.containsValue(name) : false;
+		return NameToUUID.containsKey(name) && UUIDToName.containsValue(name);
 	}
 
 	public boolean hasNameOrUUID(UUID uid) {
-		return (!this.NameToUUID.isEmpty() && !this.UUIDToName.isEmpty()) ? this.UUIDToName.containsKey(uid) && this.NameToUUID.containsValue(uid) : false;
+		return UUIDToName.containsKey(uid) && NameToUUID.containsValue(uid);
 	}
 
 	public UUID getUUID(String name) {
 		if(this.hasNameOrUUID(name)) {
-			return this.NameToUUID.get(name);
+			UUID uid = NameToUUID.get(name);
+			if(uid==null) {
+				for(Entry<UUID, String> uuid : UUIDToName.entrySet()) {
+					if(uuid.getValue().equals(name)) {
+						uid = uuid.getKey();
+						NameToUUID.put(name, uid);
+						break;
+					}
+				}
+			}
+			return uid;
 		}
 		return null;
 	}
 
 	public String getName(UUID uid) {
 		if(this.hasNameOrUUID(uid)) {
-			return this.UUIDToName.get(uid);
+			String name = UUIDToName.get(uid);
+			if(name==null) {
+				for(Entry<String, UUID> names : NameToUUID.entrySet()) {
+					if(names.getValue().equals(uid)) {
+						name = names.getKey();
+						UUIDToName.put(uid, name);
+						break;
+					}
+				}
+			}
+			return name;
 		}
 		return null;
 	}

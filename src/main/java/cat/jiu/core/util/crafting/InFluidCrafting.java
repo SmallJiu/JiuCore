@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import cat.jiu.core.api.events.item.IItemInFluidTickEvent;
+import cat.jiu.core.api.events.iface.item.IItemInFluidTickEvent;
 import cat.jiu.core.util.JiuUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -18,7 +18,7 @@ import net.minecraft.world.World;
 @SuppressWarnings("unchecked")
 public class InFluidCrafting implements IItemInFluidTickEvent{
 	
-	// recipe id, input
+	// recipe clazz, input
 	private static HashMap<Integer, ItemStack> recipe_map = new HashMap<Integer, ItemStack>();
 	// input, recipe type
 	private static HashMap<ItemStack, InFluidCraftingRecipeType> map = new HashMap<ItemStack, InFluidCraftingRecipeType>();
@@ -120,8 +120,10 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 	}
 	
 	@Override
-	public void onItemInFluidTick(EntityItem item, World world, BlockPos pos, IBlockState state) {
+	public void onItemInFluidTick(EntityItem item, IBlockState state) {
 		ItemStack stack = item.getItem();
+		World world = item.getEntityWorld();
+		BlockPos pos = item.getPosition();
 		
 		if(!map.isEmpty()) {
 			for(int i : recipe_map.keySet()) {

@@ -4,8 +4,12 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.lwjgl.input.Mouse;
+import org.lwjgl.input.Keyboard;
 
+import cat.jiu.core.api.handler.IBuilder;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,7 +21,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 import net.minecraftforge.fml.relauncher.Side;
@@ -29,20 +32,20 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class BaseUI {
 	@SideOnly(Side.CLIENT)
-	public static class BaseGui<CON extends Container, TE extends TileEntity> extends GuiContainer{
+	public static class BaseGui<CONTAINER extends Container, TILEENTITY extends TileEntity> extends GuiContainer{
 		public final ResourceLocation background;
 		protected final EntityPlayer player;
 		protected final World world;
 		protected final BlockPos pos;
-		protected final CON container;
-		protected final TE te;
+		protected final CONTAINER container;
+		protected final TILEENTITY te;
 		
-		public BaseGui(CON container, EntityPlayer player, TE te, ResourceLocation background, int xSize, int ySize) {
+		public BaseGui(CONTAINER container, EntityPlayer player, TILEENTITY te, ResourceLocation background, int xSize, int ySize) {
 			this(container, player, te.getWorld(), te.getPos(), background, ySize, ySize);
 		}
 		
 		@SuppressWarnings("unchecked")
-		public BaseGui(CON container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
+		public BaseGui(CONTAINER container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
 			super(container);
 			this.background = background;
 			this.xSize = xSize;
@@ -50,16 +53,15 @@ public class BaseUI {
 			this.player = player;
 			this.world = world;
 			this.pos = pos;
-			this.te = (TE) this.world.getTileEntity(pos);
+			this.te = (TILEENTITY) this.world.getTileEntity(pos);
 			this.container = container;
 		}
-		
-		@Override
+
+		protected void init() {}
 		public final void initGui() {
 			super.initGui();
 			this.init();
 		}
-		protected void init() {}
 		
 		@Override
 		protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
@@ -71,7 +73,7 @@ public class BaseUI {
 			this.drawTexturedModalRect(x, y, 0, 0, this.xSize, this.ySize);
 		}
 		
-		@Override
+		protected void drawGuiScreen(int mouseX, int mouseY, float partialTicks) {}
 		public final void drawScreen(int mouseX, int mouseY, float partialTicks) {
 			super.drawDefaultBackground();
 			super.drawScreen(mouseX, mouseY, partialTicks);
@@ -79,122 +81,70 @@ public class BaseUI {
 			this.drawGuiScreen(mouseX, mouseY, partialTicks);
 		}
 		
-		protected void drawGuiScreen(int mouseX, int mouseY, float partialTicks) {}
+		protected TILEENTITY getTileEntity() {
+			return this.te;
+		}
+		protected CONTAINER getContainer() {
+			return this.container;
+		}
 		
-		protected boolean isInRange(int mouseX, int mouseY, int minX, int minY, int maxX, int maxY) {
-			int x = (this.width - this.xSize) / 2;
-			int y = (this.height - this.ySize) / 2;
-			
-			minX += x;
-			minY += y;
-			maxX += x;
-			maxY += y;
-			
+		public static boolean isInRange(int mouseX, int mouseY, int minX, int minY, int width, int height) {
+			int maxX = minX + width;
+			int maxY = minY + height;
 			return (mouseX >= minX && mouseY >= minY) && (mouseX <= maxX && mouseY <= maxY);
 		}
 	}
 	
-	@Deprecated
-	public static class ScrollBar {
-		private final GuiContainer gui;
-		private final int barX;
-		private final int barY;
-		private final int barWidth;
-		private final int barHeight;
-		private boolean wasClicking;
-		private final ResourceLocation img;
-		private final int barButtonTextureX;
-		private final int barButtonTextureY;
-		private final int barButtonTextureWidth;
-		private final int barButtonTextureHeight;
-		
-		public ScrollBar(GuiContainer gui, ResourceLocation img, int barX, int barY, int barWidth, int barHeight, int barButtonTextureX, int barButtonTextureY, int barButtonTextureWidth, int barButtonTextureHeight) {
-			this.gui = gui;
-			this.img = img;
-			this.barX = barX;
-			this.barY = barY;
-			this.barWidth = barWidth;
-			this.barHeight = barHeight;
-			this.barButtonTextureX = barButtonTextureX;
-			this.barButtonTextureY = barButtonTextureY;
-			this.barButtonTextureWidth = barButtonTextureWidth;
-			this.barButtonTextureHeight = barButtonTextureHeight;
+	/**
+	 * player use Keyboard key_tab on text field, can fast input player name
+	 * @author small_jiu
+	 */
+	public static class NameGuiTextField extends GuiTextField {
+		private final boolean canSelectedSelf;
+		public NameGuiTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height, boolean canSelectedSelf) {
+			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
+			this.canSelectedSelf = canSelectedSelf;
 		}
-		
-		public boolean isScrolling(boolean canScroll, int mouseX, int mouseY) {
-			boolean flag = Mouse.isButtonDown(0);
-			int guiLeft = this.gui.getGuiLeft() + this.barX;
-			int guiTop = this.gui.getGuiTop() + this.barY;
-			int barWidth = guiLeft + this.barWidth;
-			int barHeight = guiTop + this.barHeight;
-			boolean f = false;
-
-			if(!this.wasClicking && flag && mouseX >= guiLeft && mouseY >= guiTop && mouseX < barWidth && mouseY < barHeight) {
-				f = canScroll;
-			}
-			if(!flag) {
-				f = false;
-			}
-			this.wasClicking = flag;
-			return f;
-		}
-		
-		public float currentScroll(int mouseX, int mouseY) {
-			float currentScroll = ((float) (mouseY - barY) - 7.5F) / ((float) (barHeight - barY) - 15.0F);
-			currentScroll = MathHelper.clamp(currentScroll, 0.0F, 1.0F);
-			return currentScroll;
-		}
-		
-		public void draw(float currentScroll, boolean canScroll, int yMove, int yMaxDown) {
-			this.gui.mc.getTextureManager().bindTexture(this.img);
-			int guiLeft = this.gui.getGuiLeft() + this.barX;
-			int guiTop = this.gui.getGuiTop() + this.barY;
-			int guiMaxDown = guiTop + yMove;
-			this.gui.drawTexturedModalRect(
-					guiLeft, // x
-					guiTop + (int) ((float) (guiMaxDown - guiTop - yMaxDown) * currentScroll),// y
-					this.barButtonTextureX + (canScroll ? 0 : 12),// textureX
-					this.barButtonTextureY,// textureY
-					this.barButtonTextureHeight,// H
-					this.barButtonTextureWidth);// W
-		}
-		
-		public static int selectRows(int slots, float currentScroll, int slotWidth, int slotHeight) {
-			int outRows = (slots + slotWidth - 1) / slotWidth - slotHeight;
-			int selectRows = MathHelper.clamp((int) ((double) (currentScroll * (float) outRows) + 0.5D), 0, outRows);
-			return selectRows;
-		}
-		
-		public static void scrollTo(Container con, int stackListSize, List<ItemStack> stackList, float currentScroll, int slotWidth, int slotHeight) {
-			int selectRows = selectRows(stackListSize, currentScroll, slotWidth, slotHeight);
-			for(int slotY = 0; slotY < slotHeight; ++slotY) {
-				for(int slotX = 0; slotX < slotWidth; ++slotX) {
-					int stackIndex = slotX + (slotY + selectRows) * slotWidth;
-					int slotIndex = slotX + slotY * slotWidth;
-
-					Slot selectSlot = con.getSlot(slotIndex);
-					if(stackIndex >= 0 && stackIndex < stackListSize) {
-						selectSlot.putStack(stackList.get(stackIndex));
+		private int index = 0;
+		@Override
+		public boolean textboxKeyTyped(char typedChar, int keyCode) {
+			boolean lag = super.textboxKeyTyped(typedChar, keyCode);
+			if(!lag && keyCode == Keyboard.KEY_TAB) {
+				List<EntityPlayer> playerList = Minecraft.getMinecraft().player.world.playerEntities;
+				if(this.index >= playerList.size()) {
+					this.index = 0;
+				}
+				String name = playerList.get(this.index).getName();
+				if(this.canSelectedSelf) {
+					super.setText(name);
+					this.index++;
+				}else if(playerList.size() > 1) {
+					if(name.equals(Minecraft.getMinecraft().player.getName())) {
+						this.index++;
+						return this.textboxKeyTyped(typedChar, keyCode);
 					}else {
-						selectSlot.putStack(ItemStack.EMPTY);
+						super.setText(name);
 					}
+					lag = true;
+					this.index++;
 				}
 			}
+			return lag;
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public static class BaseContainer<TE extends TileEntity> extends Container {
+	public static class BaseContainer<TILEENTITY extends TileEntity> extends Container {
 		protected final BlockPos pos;
 		protected final EntityPlayer player;
 		protected final InventoryPlayer inventory;
 		protected final World world;
-		protected TE te = null;
+		protected TILEENTITY te = null;
 		
 		public BaseContainer(EntityPlayer player, World world, BlockPos pos) {
-			this((TE) world.getTileEntity(pos), player, world, pos);
+			this((TILEENTITY) world.getTileEntity(pos), player, world, pos);
 		}
-		public BaseContainer(TE te, EntityPlayer player, World world, BlockPos pos) {
+		public BaseContainer(TILEENTITY te, EntityPlayer player, World world, BlockPos pos) {
 			this.player = player;
 			this.inventory = player.inventory;
 			this.world = world;
@@ -202,36 +152,38 @@ public class BaseUI {
 			this.te = te;
 		}
 		
-		public void sendChanges() {}
-		
-		@Override
+		protected void sendChanges() {}
 		public final void detectAndSendChanges() {
 			super.detectAndSendChanges();
-			this.te = (TE) this.world.getTileEntity(this.pos);
+			this.te = (TILEENTITY) this.world.getTileEntity(this.pos);
 			this.sendChanges();
 		}
 		
 		@SideOnly(Side.CLIENT)
 		protected void updateChanges(int id, int data) {}
-		
 		@SideOnly(Side.CLIENT)
 		@Override
 		public final void updateProgressBar(int id, int data) {
 			this.updateChanges(id, data);
 		}
-		
-		@Override
-		public final boolean canInteractWith(EntityPlayer player) {
-			boolean haveBlock = player.world.getBlockState(this.pos).getBlock() != Blocks.AIR;
-			return player.world.equals(player.getEntityWorld()) && player.getDistanceSq(this.pos) <= 32.0 && haveBlock;
+
+		protected boolean canSeeUI(EntityPlayer player) {return true;};
+		public boolean canInteractWith(EntityPlayer player) {
+			boolean hasBlock = player.world.getBlockState(this.pos).getBlock() != Blocks.AIR;
+			return player.dimension == this.player.dimension && player.getDistanceSq(this.pos) <= 32.0 && hasBlock && this.canSeeUI(player);
 		}
 		
-		protected void addHandlerSlot(ItemStackHandler handler, int x, int y, int slotWidth, int slotHeight) {
+		/**
+		 * @param slot custom slot, 
+		 * @param slot_args itemHandler, slotIndex, slotX, slotY
+		 * @author small_jiu
+		 */
+		protected void addHandlerSlot(ItemStackHandler handler, int x, int y, int slotWidth, int slotHeight, IBuilder<Slot> slot) {
 			int slotIndex = 0;
 			for(int slotY = 0; slotY < slotHeight; slotY++) {
 				for(int slotX = 0; slotX < slotWidth; slotX++) {
 					if(slotIndex >= handler.getSlots()) return;
-					this.addSlotToContainer(new SlotItemHandler(handler, slotIndex, x + 18 * slotX, y + (18 * slotY)));
+					this.addSlotToContainer(slot.builder(handler, slotIndex, x + (18 * slotX), y + (18 * slotY)));
 					slotIndex += 1;
 				}	
 			}
@@ -252,7 +204,7 @@ public class BaseUI {
 			}
 		}
 		
-		public TE getTileEntity() {
+		public TILEENTITY getTileEntity() {
 			return this.te;
 		}
 		
@@ -338,6 +290,10 @@ public class BaseUI {
 
 			return flag;
 		}
+	}
+	
+	public static final class ContainerNull extends Container {
+		public boolean canInteractWith(EntityPlayer entityplayer){return false;}
 	}
 	
 	public static class UndefinedIndexSlot extends SlotItemHandler {

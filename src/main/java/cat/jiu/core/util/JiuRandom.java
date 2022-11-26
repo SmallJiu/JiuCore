@@ -27,12 +27,7 @@ public class JiuRandom {
 	}
 	
 	public String nextIP() {
-		int i0 = this.nextIntNoZero(254);
-		int i1 = this.nextInt(254);
-		int i2 = this.nextInt(254);
-		int i3 = this.nextIntNoZero(254);
-		
-		return i0+"."+i1+"."+i2+"."+i3;
+		return JiuUtils.other.addJoins(0, ".", this.nextIntNoZero(254), this.nextInt(254), this.nextInt(254), this.nextIntNoZero(254));
 	}
 
 	public String nextMAC(boolean toUpperCase) {
@@ -44,12 +39,10 @@ public class JiuRandom {
 	}
 	
 	public String nextHexadecima(int size, boolean has0x, boolean toUpperCase) {
+		if(size < 1 || size > 7) size = 7;
 		String x = has0x ? "0x" : "";
 		StringBuilder hex = new StringBuilder();
 		
-		if(size < 1 || size > 7) {
-			return this.nextHexadecima(this.nextIntNoZero(7), has0x, toUpperCase);
-		}
 		for(int i = 0; i < size; ++i) {
 			hex.append(this.nextNumberOrLetter(toUpperCase, 5, 9));
 		}
@@ -68,12 +61,9 @@ public class JiuRandom {
 
 	public String nextNumberOrLetter(boolean toUpperCase, int letterSeed, int numberseed) {
 		boolean i = this.nextBoolean();
-		int letterSeed0 = letterSeed;
-		
-		if(letterSeed < 1) letterSeed0 = 1;
-		if(letterSeed > 25) letterSeed0 = 25;
+		int letterSeed0 = letterSeed > 25 ? 25 : letterSeed <= 0 ? 3 : letterSeed;
 
-		if(i){
+		if(i) {
 			return this.nextLetter(letterSeed0, toUpperCase);
 		}else {
 			return Integer.toString(this.nextInt(numberseed));
@@ -85,44 +75,8 @@ public class JiuRandom {
 	}
 
 	public String nextLetter(int seed, boolean toUpperCase) {
-		if(toUpperCase){
-			return this.letter(seed).toUpperCase();
-		}else {
-			return this.letter(seed).toLowerCase();
-		}
-	}
-
-	private String letter(int seed) {
 		int i = this.nextInt(seed > 25 ? 25 : seed <= 0 ? 3 : seed);
-
-		switch(i){
-			case 0:return "A";
-			case 1:return "B";
-			case 2:return "C";
-			case 3:return "D";
-			case 4:return "E";
-			case 5:return "F";
-			case 6:return "G";
-			case 7:return "H";
-			case 8:return "I";
-			case 9:return "J";
-			case 10:return "K";
-			case 11:return "L";
-			case 12:return "M";
-			case 13:return "N";
-			case 14:return "O";
-			case 15:return "P";
-			case 16:return "Q";
-			case 17:return "R";
-			case 18:return "S";
-			case 19:return "T";
-			case 20:return "U";
-			case 21:return "V";
-			case 22:return "W";
-			case 23:return "X";
-			case 24:return "Y";
-			default:return "Z";
-		}
+		return JiuUtils.other.toChar(i, toUpperCase);
 	}
 	
 	public int nextIntFromRange(int min, int max) {
@@ -133,23 +87,25 @@ public class JiuRandom {
 			min = temp_1;
 			max = temp_0; 
 		}
-		int i = this.nextInt(max);
 		
-		if(i <= max && i >= min){
-			return i;
-		}else{
-			return this.nextIntFromRange(min, max);
+		while(true) {
+			int i = this.nextInt(max);
+			if(i <= max && i >= min) return i;
 		}
 	}
 	
 	public int nextIntNoZero() {
-		int i = rand.nextInt();
-		return i != 0 ? i : this.nextIntNoZero();
+		while(true) {
+			int i = rand.nextInt();
+			if(i != 0) return i;
+		}
 	}
 	
 	public int nextIntNoZero(int seed) {
-		int i = rand.nextInt(seed);
-		return i != 0 ? i : this.nextIntNoZero(seed);
+		while(true) {
+			int i = rand.nextInt(seed);
+			if(i != 0) return i;
+		}
 	}
 
 	public int nextInt() {
@@ -173,13 +129,28 @@ public class JiuRandom {
 		return rand.nextBoolean();
 	}
 	
+	public void nextBytesNoZero(byte[] buf) {
+		byte[] buff = buf;
+		rand.nextBytes(buff);
+		for(int i = 0; i < buff.length; i++) {
+			byte b = buff[i];
+			if(b!=0) {
+				buf[i] = b;
+			}else {
+				buf[i] = (byte) this.nextIntNoZero(Byte.MAX_VALUE);
+			}
+		}
+	}
+	
 	public void nextBytes(byte[] buf) {
 		rand.nextBytes(buf);
 	}
 	
 	public double nextDoubleNoZero() {
-		double i = rand.nextDouble();
-		return i != 0 ? i : this.nextDoubleNoZero();
+		while(true) {
+			double i = rand.nextDouble();
+			if(i != 0) return i;
+		}
 	}
 
 	public double nextDouble() {
@@ -187,8 +158,10 @@ public class JiuRandom {
 	}
 	
 	public float nextFloatNoZero() {
-		float i = rand.nextFloat();
-		return i != 0 ? i : this.nextFloatNoZero();
+		while(true) {
+			float i = rand.nextFloat();
+			if(i != 0) return i;
+		}
 	}
 
 	public float nextFloat() {
@@ -200,11 +173,33 @@ public class JiuRandom {
 	}
 	
 	public long nextLongNoZero() {
-		long i = rand.nextLong();
-		return i != 0 ? i : this.nextLongNoZero();
+		while(true) {
+			long i = rand.nextLong();
+			if(i != 0) return i;
+		}
 	}
 
 	public long nextLong() {
 		return rand.nextLong();
+	}
+	
+	@Override
+	public JiuRandom clone() {
+		return new JiuRandom(rand);
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.rand.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		return getClass().getName() + "@" + Integer.toHexString(this.rand.hashCode());
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return this.rand.equals(obj);
 	}
 }

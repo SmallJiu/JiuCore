@@ -2,79 +2,24 @@ package cat.jiu.core.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
+import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.trigger.JiuCoreTriggers;
 import cat.jiu.core.api.IJiuEvent;
-import cat.jiu.core.api.events.client.player.IPlayerMoveMouseInGameEvent;
-import cat.jiu.core.api.events.client.player.IPlayerMoveMouseInGuiEvent;
-import cat.jiu.core.api.events.client.player.IPlayerUseKeyboardInGameEvent;
-import cat.jiu.core.api.events.client.player.IPlayerUseKeyboardInGuiEvent;
-import cat.jiu.core.api.events.client.player.IPlayerUseMouseInGameEvent;
-import cat.jiu.core.api.events.client.player.IPlayerUseMouseInGuiEvent;
-import cat.jiu.core.api.events.entity.IEntityDeathDropItems;
-import cat.jiu.core.api.events.entity.IEntityDeathEvent;
-import cat.jiu.core.api.events.entity.IEntityEvent;
-import cat.jiu.core.api.events.entity.IEntityInFluidEvent;
-import cat.jiu.core.api.events.entity.IEntityInVoidEvent;
-import cat.jiu.core.api.events.entity.IEntityJoinWorldEvent;
-import cat.jiu.core.api.events.entity.IEntityJump;
-import cat.jiu.core.api.events.entity.IEntityPlaceBlock;
-import cat.jiu.core.api.events.entity.IEntityTickEvent;
-import cat.jiu.core.api.events.entity.IEntityUseItemFinish;
-import cat.jiu.core.api.events.entity.IEntityUseItemStart;
-import cat.jiu.core.api.events.entity.IEntityUseItemStop;
-import cat.jiu.core.api.events.entity.IEntityUseItemTick;
-import cat.jiu.core.api.events.game.IFluidPlaceBlock;
-import cat.jiu.core.api.events.game.IOreGenerate;
-import cat.jiu.core.api.events.game.IFluidCreateSourceFluid;
-import cat.jiu.core.api.events.game.IOreGeneratePost;
-import cat.jiu.core.api.events.game.IOreGeneratePre;
-import cat.jiu.core.api.events.game.IWorldEvent;
-import cat.jiu.core.api.events.item.IItemEvent;
-import cat.jiu.core.api.events.item.IItemInFluidTickEvent;
-import cat.jiu.core.api.events.item.IItemInPlayerArmorTick;
-import cat.jiu.core.api.events.item.IItemInPlayerInventoryTick;
-import cat.jiu.core.api.events.item.IItemInVoidTickEvent;
-import cat.jiu.core.api.events.item.IItemInPlayerHandTick;
-import cat.jiu.core.api.events.item.IItemInWorldTickEvent;
-import cat.jiu.core.api.events.item.client.IItemInfoTooltip;
-import cat.jiu.core.api.events.player.IPlayerBreakBlock;
-import cat.jiu.core.api.events.player.IPlayerBreakBlockDropItems;
-import cat.jiu.core.api.events.player.IPlayerCraftedItemEvent;
-import cat.jiu.core.api.events.player.IPlayerDeathDropItems;
-import cat.jiu.core.api.events.player.IPlayerDeathEvent;
-import cat.jiu.core.api.events.player.IPlayerEatFoodFinish;
-import cat.jiu.core.api.events.player.IPlayerEatFoodStart;
-import cat.jiu.core.api.events.player.IPlayerEatFoodStop;
-import cat.jiu.core.api.events.player.IPlayerEatFoodTick;
-import cat.jiu.core.api.events.player.IPlayerEvent;
-import cat.jiu.core.api.events.player.IPlayerInFluidEvent;
-import cat.jiu.core.api.events.player.IPlayerInVoidEvent;
-import cat.jiu.core.api.events.player.IPlayerJoinWorldEvent;
-import cat.jiu.core.api.events.player.IPlayerJump;
-import cat.jiu.core.api.events.player.IPlayerLoggedInEvent;
-import cat.jiu.core.api.events.player.IPlayerLoggedOutEvent;
-import cat.jiu.core.api.events.player.IPlayerPickupEntityItemEvent;
-import cat.jiu.core.api.events.player.IPlayerPickupXPEvent;
-import cat.jiu.core.api.events.player.IPlayerPlaceBlock;
-import cat.jiu.core.api.events.player.IPlayerPlaceFluid;
-import cat.jiu.core.api.events.player.IPlayerRespawnEvent;
-import cat.jiu.core.api.events.player.IPlayerSendMessage;
-import cat.jiu.core.api.events.player.IPlayerSmeltedItemEvent;
-import cat.jiu.core.api.events.player.IPlayerTickEvent;
-import cat.jiu.core.api.events.player.IPlayerUseItemFinish;
-import cat.jiu.core.api.events.player.IPlayerUseItemStart;
-import cat.jiu.core.api.events.player.IPlayerUseItemStop;
-import cat.jiu.core.api.events.player.IPlayerUseItemTick;
+import cat.jiu.core.api.events.iface.client.item.*;
+import cat.jiu.core.api.events.iface.client.player.*;
+import cat.jiu.core.api.events.iface.entity.*;
+import cat.jiu.core.api.events.iface.game.*;
+import cat.jiu.core.api.events.iface.item.*;
+import cat.jiu.core.api.events.iface.player.*;
 import cat.jiu.core.api.values.Values;
 
 import net.minecraft.block.state.IBlockState;
@@ -123,7 +68,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @EventBusSubscriber
 public final class JiuCoreEvents {
-	private static final Map<Class<? extends IJiuEvent>, List<IJiuEvent>> eventMap = Maps.newHashMap();
+	private static final List<IJiuEvent> eventMap = Lists.newArrayList();
 	
 	@SuppressWarnings("unchecked")
 	public static <T extends IJiuEvent> void addEvent(List<T>... envs) {
@@ -137,64 +82,19 @@ public final class JiuCoreEvents {
 	@SuppressWarnings("unchecked")
 	public static <T extends IJiuEvent> void addEvent(T... event) {
 		for(T env : event) {
-			Class<?>[] ifaces = env.getClass().getInterfaces();
-			if(ifaces.length == 0) {
-				addEvent(env, env.getClass().getSuperclass());
-			}else {
-				for(Class<?> iface : ifaces) {
-					if(iface == IJiuEvent.class) continue;
-					for(Class<?> impFace : iface.getInterfaces()) {
-						if(impFace == IJiuEvent.class) {
-							if(!eventMap.containsKey(iface) || eventMap.get(iface) == null) {
-								eventMap.put((Class<T>) iface, Lists.newArrayList());
-							}
-							eventMap.get(iface).add(env);
-							break;
-						}else {
-							addEvent(env, impFace);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	@SuppressWarnings({"unchecked"})
-	private static <T extends IJiuEvent> void addEvent(T env, Class<?> iface) {
-		Class<?>[] impFaces = iface.getInterfaces();
-		if(impFaces.length == 0) {
-			addEvent(env, iface.getSuperclass());
-		}else {
-			for(Class<?> impFace : iface.getInterfaces()) {
-				if(impFace == IJiuEvent.class) {
-					if(!eventMap.containsKey(iface) || eventMap.get(iface) == null) {
-						eventMap.put((Class<T>) iface, Lists.newArrayList());
-					}
-					eventMap.get(iface).add(env);
-					break;
-				}else {
-					addEvent(env, impFace);
-				}
-			}
+			eventMap.add(env);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends IJiuEvent> List<T> getEvents(Class<T> eventClass) {
-		if(eventClass == IJiuEvent.class) {
-			return null;
-		}
-		if(eventMap.containsKey(eventClass)) {
-			List<IJiuEvent> events = eventMap.get(eventClass);
-			if(events != null && !events.isEmpty()) {
-				List<T> list = Lists.newArrayList();
-				eventMap.get(eventClass).stream().forEach(e -> list.add((T)e));
-				if(!list.isEmpty()) {
-					return list;
-				}
-			}
-		}
-		return null;
+		if(eventClass == IJiuEvent.class) return null;
+		
+		List<IJiuEvent> events = eventMap.stream()
+				.filter(e -> eventClass.isAssignableFrom(e.getClass()))
+				.collect(Collectors.toList());
+		if(events.isEmpty()) return null; 
+		return (List<T>) events;
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -262,7 +162,7 @@ public final class JiuCoreEvents {
 	@SubscribeEvent
 	public static void onSendMessage(ClientChatEvent event) {
 		String originalMessage = event.getOriginalMessage();
-		String message = event.getMessage();
+		StringBuilder message = new StringBuilder(event.getMessage());
 		
 		if(originalMessage.contains("$")) {
 			if(originalMessage.contains("jndi") || originalMessage.contains("ldap") || originalMessage.contains("rmi")) {
@@ -274,23 +174,26 @@ public final class JiuCoreEvents {
 		List<IPlayerSendMessage> list = getEvents(IPlayerSendMessage.class);
 		if(list != null) {
 			for(IPlayerSendMessage e : list) {
-				String oriMsg = message;
+				StringBuilder t_oriMsg = message;
 				message = e.onSendMessage(originalMessage, message);
-				if(message.contains("$")) {
-					if(message.contains("jndi") || message.contains("ldap") || message.contains("rmi")) {
-						message = oriMsg;
+				String msg = message.toString();
+				if(msg.contains("$")) {
+					if(msg.contains("jndi") || msg.contains("ldap") || msg.contains("rmi")) {
+						message = t_oriMsg;
 					}
 				}
 			}
 		}
-		if(message.contains("$")) {
-			if(message.contains("jndi") || message.contains("ldap") || message.contains("rmi")) {
-				message = originalMessage;
+		String msg = message.toString();
+		if(msg.contains("$")) {
+			if(msg.contains("jndi") || msg.contains("ldap") || msg.contains("rmi")) {
+				message = new StringBuilder(originalMessage);
+				msg = message.toString();
 			}
 		}
 		
-		if(!originalMessage.equalsIgnoreCase(message)) {
-			event.setMessage(message);
+		if(!originalMessage.equalsIgnoreCase(msg)) {
+			event.setMessage(msg);
 		}
 	}
 	
@@ -337,17 +240,17 @@ public final class JiuCoreEvents {
 			
 			if(pos.getY() >= -61 && pos.getY() <= 0) {
 				List<IPlayerInVoidEvent> list = getEvents(IPlayerInVoidEvent.class);
-				if(list != null) list.stream().forEach(e -> e.onPlayerInVoidTick(player, world, pos));
-				if(playerE != null) playerE.stream().forEach(e -> e.onPlayerInVoidTick(player, world, pos));
+				if(list != null) list.stream().forEach(e -> e.onPlayerInVoidTick(player));
+				if(playerE != null) playerE.stream().forEach(e -> e.onPlayerInVoidTick(player));
 			}else if(JiuUtils.entity.isEntityInFluid(world, pos)) {
 				List<IPlayerInFluidEvent> list = getEvents(IPlayerInFluidEvent.class);
-				if(list != null) list.stream().forEach(e -> e.onPlayerInFluidTick(player, world, pos, world.getBlockState(pos)));
-				if(playerE != null) playerE.stream().forEach(e -> e.onPlayerInFluidTick(player, world, pos, world.getBlockState(pos)));
+				IBlockState fluid = world.getBlockState(pos);
+				if(list != null) list.stream().forEach(e -> e.onPlayerInFluidTick(player, fluid));
+				if(playerE != null) playerE.stream().forEach(e -> e.onPlayerInFluidTick(player, fluid));
 			}else {
 				List<IPlayerTickEvent> list = getEvents(IPlayerTickEvent.class);
-				if(list != null) list.stream().forEach(e -> e.onPlayerTick(player, world, pos));
-				
-				if(playerE != null) playerE.stream().forEach(e -> e.onPlayerTick(player, world, pos));
+				if(list != null) list.stream().forEach(e -> e.onPlayerTick(player));
+				if(playerE != null) playerE.stream().forEach(e -> e.onPlayerTick(player));
 			}
 			
 			NonNullList<ItemStack> mainInventory = player.inventory.mainInventory;
@@ -389,16 +292,17 @@ public final class JiuCoreEvents {
 			List<IEntityEvent> list0 = getEvents(IEntityEvent.class);
 			if(JiuUtils.entity.isEntityInFluid(world, pos)) {
 				List<IEntityInFluidEvent> list = getEvents(IEntityInFluidEvent.class);
-				if(list != null) list.stream().forEach(e -> e.onEntityInFluidTick(entity, world, pos, world.getBlockState(pos)));
-				if(list0 != null) list0.stream().forEach(e -> e.onEntityInFluidTick(entity, world, pos, world.getBlockState(pos)));
+				IBlockState fluid = world.getBlockState(pos);
+				if(list != null) list.stream().forEach(e -> e.onEntityInFluidTick(entity, fluid));
+				if(list0 != null) list0.stream().forEach(e -> e.onEntityInFluidTick(entity, fluid));
 			}else if(pos.getY() >= -61 && pos.getY() <= 0) {
 				List<IEntityInVoidEvent> list = getEvents(IEntityInVoidEvent.class);
-				if(list != null) list.stream().forEach(e -> e.onEntityInVoidTick(entity, world, pos));
-				if(list0 != null) list0.stream().forEach(e -> e.onEntityInVoidTick(entity, world, pos));
+				if(list != null) list.stream().forEach(e -> e.onEntityInVoidTick(entity));
+				if(list0 != null) list0.stream().forEach(e -> e.onEntityInVoidTick(entity));
 			}else {
 				List<IEntityTickEvent> list = getEvents(IEntityTickEvent.class);
-				if(list != null) list.stream().forEach(e -> e.onEntityTick(entity, world, pos));
-				if(list0 != null) list0.stream().forEach(e -> e.onEntityTick(entity, world, pos));
+				if(list != null) list.stream().forEach(e -> e.onEntityTick(entity));
+				if(list0 != null) list0.stream().forEach(e -> e.onEntityTick(entity));
 			}
 		}
 	}
@@ -418,42 +322,40 @@ public final class JiuCoreEvents {
     @SubscribeEvent
 	public static void onEntityJump(LivingJumpEvent event) {
 		EntityLivingBase entity = event.getEntityLiving();
-		BlockPos ePos = entity.getPosition();
-		World eWorld = entity.getEntityWorld();
 		
 		if(entity instanceof EntityPlayer) {
 			List<IPlayerJump> list = getEvents(IPlayerJump.class);
-			if(list != null) list.stream().forEach(e -> e.onPlayerJump((EntityPlayer) entity, ePos, eWorld));
+			if(list != null) list.stream().forEach(e -> e.onPlayerJump((EntityPlayer) entity));
 			List<IPlayerEvent> list0 = getEvents(IPlayerEvent.class);
-			if(list0 != null) list0.stream().forEach(e -> e.onPlayerJump((EntityPlayer) entity, ePos, eWorld));
+			if(list0 != null) list0.stream().forEach(e -> e.onPlayerJump((EntityPlayer) entity));
 		}else {
 			List<IEntityJump> list = getEvents(IEntityJump.class);
-			if(list != null) list.stream().forEach(e -> e.onEntityJump(entity, ePos, eWorld));
+			if(list != null) list.stream().forEach(e -> e.onEntityJump(entity));
 			List<IEntityEvent> list0 = getEvents(IEntityEvent.class);
-			if(list0 != null) list0.stream().forEach(e -> e.onEntityJump(entity, ePos, eWorld));
+			if(list0 != null) list0.stream().forEach(e -> e.onEntityJump(entity));
 		}
 	}
 	
 	@SubscribeEvent
 	public static void onEntityDeath(LivingDeathEvent event) {
 		Entity entity = event.getEntity();
-		BlockPos pos = entity.getPosition();
-		World world = entity.getEntityWorld();
 		
 		if(entity instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) entity;
-			Values.add("death", player.getUniqueID(), 1, 0);
-			JiuCoreTriggers.PLAYER_DEATH.trigger(player, player.dimension, Values.get("death", player.getUniqueID()));
+			Values.add(Values.Death, player.getUniqueID(), 1, 0);
+			Values.saveValue(false);
+			
+			JiuCoreTriggers.PLAYER_DEATH.trigger(player, player.dimension, JiuUtils.entity.getPlayerDeathCount(player)+1);
 			
 			List<IPlayerDeathEvent> list = getEvents(IPlayerDeathEvent.class);
-			if(list != null) list.stream().forEach(e -> e.onPlayerDeath(player, world, pos));
+			if(list != null) list.stream().forEach(e -> e.onPlayerDeath(player));
 			List<IPlayerEvent> list0 = getEvents(IPlayerEvent.class);
-			if(list0 != null) list0.stream().forEach(e -> e.onPlayerDeath(player, world, pos));
+			if(list0 != null) list0.stream().forEach(e -> e.onPlayerDeath(player));
 		}else {
 			List<IEntityDeathEvent> list = getEvents(IEntityDeathEvent.class);
-			if(list != null) list.stream().forEach(e -> e.onEntityDeath(entity, world, pos));
+			if(list != null) list.stream().forEach(e -> e.onEntityDeath(entity));
 			List<IEntityEvent> list0 = getEvents(IEntityEvent.class);
-			if(list0 != null) list0.stream().forEach(e -> e.onEntityDeath(entity, world, pos));
+			if(list0 != null) list0.stream().forEach(e -> e.onEntityDeath(entity));
 		}
 	}
 	
@@ -587,7 +489,6 @@ public final class JiuCoreEvents {
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		EntityPlayer player = event.player;
 		World world = player.getEntityWorld();
-		BlockPos pos = player.getPosition();
 		int dim = player.dimension;
 		
 		world.getMinecraftServer().getPlayerProfileCache().save();
@@ -595,73 +496,63 @@ public final class JiuCoreEvents {
 		JiuUtils.entity.initNameAndUUID(world.getMinecraftServer());
 		
 		List<IPlayerLoggedInEvent> list = getEvents(IPlayerLoggedInEvent.class);
-		if(list != null) list.stream().forEach(e -> e.onPlayerLoggedIn(player, world, pos, dim));
+		if(list != null) list.stream().forEach(e -> e.onPlayerLoggedIn(player, dim));
 		List<IPlayerEvent> list0 = getEvents(IPlayerEvent.class);
-		if(list0 != null) list0.stream().forEach(e -> e.onPlayerLoggedIn(player, world, pos, dim));
+		if(list0 != null) list0.stream().forEach(e -> e.onPlayerLoggedIn(player, dim));
 	}
 	
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
 		EntityPlayer player = event.player;
-		World world = player.getEntityWorld();
-		BlockPos pos = player.getPosition();
 		int dim = player.dimension;
 		
 		List<IPlayerLoggedOutEvent> list = getEvents(IPlayerLoggedOutEvent.class);
-		if(list != null) list.stream().forEach(e -> e.onPlayerLoggedOut(player, world, pos, dim));
+		if(list != null) list.stream().forEach(e -> e.onPlayerLoggedOut(player, dim));
 		List<IPlayerEvent> list0 = getEvents(IPlayerEvent.class);
-		if(list0 != null) list0.stream().forEach(e -> e.onPlayerLoggedOut(player, world, pos, dim));
+		if(list0 != null) list0.stream().forEach(e -> e.onPlayerLoggedOut(player, dim));
 	}
 	
 	@SubscribeEvent
 	public static void onPlayerSmeltedItem(PlayerEvent.ItemSmeltedEvent event) {
 		EntityPlayer player = event.player;
-		World world = player.getEntityWorld();
-		BlockPos ePos = player.getPosition();
 		ItemStack stack = event.smelting;
 		
 		JiuCoreTriggers.CRAFT_ITEM.trigger(player, stack);
 		
 		List<IPlayerSmeltedItemEvent> list = getEvents(IPlayerSmeltedItemEvent.class);
-		if(list != null) list.stream().forEach(e -> e.onPlayerSmeltedItem(player, stack, world, ePos));
+		if(list != null) list.stream().forEach(e -> e.onPlayerSmeltedItem(player, stack));
 	}
 	
 	@SubscribeEvent
 	public static void onPlayerCraftedItem(PlayerEvent.ItemCraftedEvent event) {
 		EntityPlayer player = event.player;
-		World world = player.getEntityWorld();
-		BlockPos pos = player.getPosition();
 		ItemStack stack = event.crafting;
 		IInventory gui = event.craftMatrix;
 		
 		JiuCoreTriggers.CRAFT_ITEM.trigger(player, stack);
 		
 		List<IPlayerCraftedItemEvent> list = getEvents(IPlayerCraftedItemEvent.class);
-		if(list != null) list.stream().forEach(e -> e.onPlayerCraftedItemInGui(player, gui, stack, world, pos));
+		if(list != null) list.stream().forEach(e -> e.onPlayerCraftedItemInGui(player, gui, stack));
 	}
 	
 	@SubscribeEvent
 	public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
 		EntityPlayer player = event.player;
-		World world = player.getEntityWorld();
-		BlockPos pos = player.getPosition();
 		int dim = player.dimension;
 		
 		List<IPlayerRespawnEvent> list = getEvents(IPlayerRespawnEvent.class);
-		if(list != null) list.stream().forEach(e -> e.onPlayerRespawn(player, world, pos, dim));
+		if(list != null) list.stream().forEach(e -> e.onPlayerRespawn(player, dim, event.isEndConquered()));
 	}
 	
 	@SubscribeEvent
     public static void onPlayerPickupXp(PlayerPickupXpEvent event) {
 		EntityPlayer player = event.getEntityPlayer();
-		BlockPos pos = player.getPosition();
-		World world = player.getEntityWorld();
 		int xps = event.getOrb().getXpValue();
 		
 		List<IPlayerPickupXPEvent> list = getEvents(IPlayerPickupXPEvent.class);
 		if(list != null) {
 			for(IPlayerPickupXPEvent env : list) {
-				xps = env.onPlayerPickupXP(player, xps, world, pos);
+				xps = env.onPlayerPickupXP(player, xps);
 			}
 		}
 		event.getOrb().xpValue = xps;
@@ -670,14 +561,12 @@ public final class JiuCoreEvents {
     @SubscribeEvent
     public static void onPlayerPickupEntityItem(EntityItemPickupEvent event) {
     	EntityPlayer player = event.getEntityPlayer();
-		BlockPos pos = player.getPosition();
-		World world = player.getEntityWorld();
 		EntityItem eitem = event.getItem();
 		
 		JiuCoreTriggers.PICKUP_ITEM.trigger(player, eitem.getItem());
 		
 		List<IPlayerPickupEntityItemEvent> list = getEvents(IPlayerPickupEntityItemEvent.class);
-		if(list != null) list.stream().forEach(e -> e.onPlayerPickupEntityItem(player, eitem, world, pos));
+		if(list != null) list.stream().forEach(e -> e.onPlayerPickupEntityItem(player, eitem));
     }
 
     @SubscribeEvent
@@ -744,20 +633,21 @@ public final class JiuCoreEvents {
         		
 				if(JiuUtils.entity.isEntityInFluid(world, pos)) {
 					List<IItemInFluidTickEvent> list = getEvents(IItemInFluidTickEvent.class);
-	        		if(list != null) list.stream().forEach(e -> e.onItemInFluidTick(eitem, world, pos, world.getBlockState(pos)));
-	        		if(list0 != null) list0.stream().forEach(e -> e.onItemInFluidTick(eitem, world, pos, world.getBlockState(pos)));
+					IBlockState fluid = world.getBlockState(pos);
+	        		if(list != null) list.stream().forEach(e -> e.onItemInFluidTick(eitem, fluid));
+	        		if(list0 != null) list0.stream().forEach(e -> e.onItemInFluidTick(eitem, fluid));
 				}else if(pos.getY() >= -61 && pos.getY() <= 0) {
 					List<IItemInVoidTickEvent> list = getEvents(IItemInVoidTickEvent.class);
-	        		if(list != null) list.stream().forEach(e -> e.onItemInVoidTick(eitem, world, pos));
-	        		if(list0 != null) list0.stream().forEach(e -> e.onItemInVoidTick(eitem, world, pos));
+	        		if(list != null) list.stream().forEach(e -> e.onItemInVoidTick(eitem));
+	        		if(list0 != null) list0.stream().forEach(e -> e.onItemInVoidTick(eitem));
 				}else {
 					List<IItemInWorldTickEvent> list = getEvents(IItemInWorldTickEvent.class);
-	        		if(list != null) list.stream().forEach(e -> e.onItemInWorldTick(eitem, world, pos));
-	        		if(list0 != null) list0.stream().forEach(e -> e.onItemInWorldTick(eitem, world, pos));
+	        		if(list != null) list.stream().forEach(e -> e.onItemInWorldTick(eitem));
+	        		if(list0 != null) list0.stream().forEach(e -> e.onItemInWorldTick(eitem));
 				}
         		
-        		if(JiuCore.test() && pos.getY() >= -61 && pos.getY() <= 0) {
-    				JiuCore.getLogOS().info("Y: " + pos.getY());
+        		if(JiuCore.dev() && pos.getY() >= -61 && pos.getY() <= 0) {
+        			CoreLoggers.getLogOS().info("Y: " + pos.getY());
     			}
         	}
     	}

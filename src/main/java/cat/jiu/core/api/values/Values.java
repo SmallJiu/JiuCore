@@ -19,49 +19,45 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.commands.CommandJiuCore;
+import cat.jiu.core.types.ValueStateType;
 import cat.jiu.core.util.JiuUtils;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 
 public class Values {
+	public static final String Death = "death";
+	public static final String Coin = "coin";
+	
 	static final HashMap<UUID, HashMap<String, BigInteger>> values = Maps.newHashMap();
 	static final HashMap<String, HashMap<String, String>> language = Maps.newHashMap();
 	static final HashMap<String, BigInteger> default_value = Maps.newHashMap();
 	static final ArrayList<String> value_list = Lists.newArrayList();
 	static final UUID Initialization = new UUID(0,0);
-	static int changeTime = 0;
+	static int modCount = 0;
 	
 	public static boolean hasValue(String valueID) {
 		return value_list.contains(valueID);
 	}
 	
 	public static String getValueName(String valueID) {
-		String s = JiuUtils.other.upperFirst(valueID);
-		boolean lag = false;
-		try { Class.forName("net.minecraft.client.Minecraft"); lag = true; }catch(Throwable e) {e.fillInStackTrace();}
+		String name = JiuUtils.other.upperFirst(valueID);
+		String langCode = JiuCore.proxy.getLanguageCode();
 		
-		if(lag) {
-			String langCode = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
-			if(language.containsKey(langCode)) {
-				if(language.get(langCode).containsKey(valueID)) {
-					s = language.get(langCode).get(valueID);
-				}
-			}
-		}else {
-			if(language.containsKey("en_us")) {
-				if(language.get("en_us").containsKey(valueID)) {
-					s = language.get("en_us").get(valueID);
-				}
+		if(language.containsKey(langCode)) {
+			HashMap<String, String> langs = language.get(langCode);
+			if(langs != null && langs.containsKey(valueID)) {
+				String s = langs.get(valueID);
+				if(s != null) name = s;
 			}
 		}
-		return s;
+		return name;
 	}
 	
 	/**
-	 * add custom value to map and storage file, Default Value is Zero
+	 * add custom value to map and storage file, Default Value is Zero(0)
 	 * @param valueID The custom value name
 	 * 
 	 * @author small_jiu
@@ -83,15 +79,17 @@ public class Values {
 	 */
 	public static void addValue(String valueID, BigInteger defaultValue) {
 		if("name".equals(valueID)) return;
-		String s = valueID.toUpperCase();
-		for(int i = 0; i < s.length(); i++) {
-			char letter = s.charAt(i);
-			if(!JiuCore.CHAR_LETTERS.contains(letter) && letter != '_') {
-				throw new RuntimeException("Value name must be ALL Letter: " + valueID + " -> " + letter);
+		if(!hasValue(valueID)) {
+			{
+				String s = valueID.toUpperCase();
+				for(int i = 0; i < s.length(); i++) {
+					char letter = s.charAt(i);
+					if(!JiuCore.containsLetter(letter) && letter != '_' && letter != '-') {
+						throw new RuntimeException("Value name must be ALL 'letter' or '_' or '-': " + valueID + " ==> " + letter);
+					}
+				}
 			}
-		}
-		
-		if(!value_list.contains(valueID)) {
+			
 			value_list.add(valueID);
 			default_value.put(valueID, defaultValue);
 			
@@ -107,10 +105,9 @@ public class Values {
 			if(!values.get(Initialization).containsKey(valueID)) {
 				values.get(Initialization).put(valueID, defaultValue);
 			}
-			
-			saveValue();
+			Values.saveValue(true);
 		}else {
-			JiuCore.getLogOS().error(valueID + " is Already added.");
+			CoreLoggers.getLogOS().error("Value: '" + valueID + "' is Already added.");
 		}
 	}
 	
@@ -126,7 +123,7 @@ public class Values {
 	 */
 	public static ValueStateType set(String valueID, UUID uid, BigInteger value, int writeTime) {
 		if(!value_list.contains(valueID)) return ValueStateType.NOT_FOUND_VALUE;
-		if(uid.equals(Initialization)) return ValueStateType.Initialization;
+		if(Initialization.equals(uid)) return ValueStateType.Initialization;
 		if(!values.containsKey(uid)) values.put(uid, Maps.newHashMap());
 		
 		Map<String, BigInteger> map = values.get(uid);
@@ -137,20 +134,8 @@ public class Values {
 			}
 		}
 		
-		if(map.containsKey(valueID)) {
-			map.replace(valueID, value);
-			changeTime += 1;
-			
-			if(changeTime >= writeTime) {
-				changeTime = 0;
-				saveValue();
-				return ValueStateType.SUCCESS;
-			}
-			
-			return ValueStateType.NOT_ARRIVAL_TIME;
-		}else {
-			return ValueStateType.NOT_FOUND_VALUE;
-		}
+		map.replace(valueID, value);
+		return ValueStateType.SUCCESS;
 	}
 	
 	/**
@@ -174,14 +159,8 @@ public class Values {
 				map.put(valueID, default_value.get(valueID));
 			}
 		}
-		map.replace(valueID, map.get(valueID).add(value));
-		changeTime += 1;
-		if(changeTime >= writeTime) {
-			changeTime = 0;
-			saveValue();
-			return ValueStateType.SUCCESS;
-		}
-		return ValueStateType.NOT_ARRIVAL_TIME;
+		map.put(valueID, map.get(valueID).add(value));
+		return ValueStateType.SUCCESS;
 	}
 	
 	/**
@@ -194,12 +173,10 @@ public class Values {
 	 * @author small_jiu
 	 */
 	public static boolean canSubtract(String valueID, UUID uid, BigInteger value) {
-		if(!uid.equals(Initialization)) {
-			if(values.containsKey(uid) && values.get(uid).containsKey(valueID)) {
-				return JiuUtils.big_integer.greaterOrEqual(get(valueID, uid).subtract(value), BigInteger.ZERO);
-			}
-		}
-		return false;
+		if(!Initialization.equals(uid)) return false;
+		if(!values.containsKey(uid) && !values.get(uid).containsKey(valueID)) return false;
+		
+		return JiuUtils.big_integer.greaterOrEqual(get(valueID, uid).subtract(value), BigInteger.ZERO);
 	}
 	
 	/**
@@ -224,15 +201,9 @@ public class Values {
 				map.put(valueID, default_value.get(valueID));
 			}
 		}
-		if(BigInteger.ZERO.max(map.get(valueID).subtract(value)).equals(map.get(valueID).subtract(value))) {
-			map.replace(valueID, map.get(valueID).subtract(value));
-			changeTime += 1;
-			if(changeTime >= writeTime) {
-				changeTime = 0;
-				saveValue();
-				return ValueStateType.SUCCESS;
-			}
-			return ValueStateType.NOT_ARRIVAL_TIME;
+		if(canSubtract(valueID, uid, value)) {
+			map.put(valueID, map.get(valueID).subtract(value));
+			return ValueStateType.SUCCESS;
 		}else {
 			return ValueStateType.ZERO;
 		}
@@ -268,10 +239,8 @@ public class Values {
 			values.put(uid, Maps.newHashMap());
 		}
 		Map<String, BigInteger> map = values.get(uid);
-		if(!map.containsKey(valueID)) {
-			if(value_list.contains(valueID)) {
-				map.put(valueID, default_value.get(valueID));
-			}
+		if(!map.containsKey(valueID) && value_list.contains(valueID)) {
+			map.put(valueID, default_value.get(valueID));
 		}
 		return map.get(valueID);
 	}
@@ -367,14 +336,16 @@ public class Values {
 		}
 	}
 	
-	public static void saveValue() {
+	public static void saveValue(boolean showLoggerInfo) {
 		for(int i = 0; i < 10; i++) {
 			if(Values.saveValues()) {
-				JiuCore.getLogOS().info("Save values to file success, retry count: {}", i);
+				if(showLoggerInfo) {
+					CoreLoggers.getLogOS().info("Save values to file success, retry count: {}", i);
+				}
 				return;
 			}
 		}
-		JiuCore.getLogOS().error("Can't save values to File!");
+		CoreLoggers.getLogOS().error("Can not save values to File!");
 	}
 	
 	private static boolean saveValues() {
@@ -383,38 +354,10 @@ public class Values {
 			for(Entry<String, JsonElement> objValue : obj.entrySet()) {
 				objValue.getValue().getAsJsonObject().addProperty("name", JiuUtils.entity.getName(UUID.fromString(objValue.getKey())));
 			}
-			return JiuUtils.json.toJsonFile("./values/value.json", obj);
+			return JiuUtils.json.toJsonFile("./values/value.json", obj, true);
 		}else {
 			return false;
 		}
-	}
-	
-	/**
-	 * SUCCESS: All done<p>
-	 * UNABLE_WRITE: success, but not write to storage file<p>
-	 * NULL: UUID is null<p>
-	 * ZERO: After subtract it will be negative number<p>
-	 * NOT_FOUND_VALUE: Not found of value name<p>
-	 * FILE_NOT_FOUND: Not found values storage file<p>
-	 * FAIL: unknown Error<p>
-	 * IOError: IOException<p>
-	 * NOT_ARRIVAL_TIME: The number of changes did not reach the specified number<p>
-	 * Initialization name can NOT be Initialization
-	 * 
-	 * 
-	 * @author small_jiu
-	 */
-	public static enum ValueStateType {
-		/** All done */ SUCCESS,
-		/** success, but not write to storage file */ UNABLE_WRITE,
-		/** UUID is null */ NULL,
-		/** After subtract, it will be negative number */ ZERO,
-		/** Not found of value name */ NOT_FOUND_VALUE,
-		/** Not found value's storage file */ FILE_NOT_FOUND,
-		/** unknown Error */ FAIL,
-		/** The number of changes did not reach the specified number */NOT_ARRIVAL_TIME,
-		/** IOException */ IOError,
-		/** name can NOT be Initialization*/ Initialization;
 	}
 	
 	/** {@link #remove(String, UUID, int)} */

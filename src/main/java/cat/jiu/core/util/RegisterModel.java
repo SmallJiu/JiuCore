@@ -1,8 +1,10 @@
 package cat.jiu.core.util;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.api.IHasModel;
@@ -22,10 +24,11 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 @EventBusSubscriber
 public class RegisterModel {
-	private final String modid;
+	private String modid;
 	
 	public RegisterModel(String modid) {
 		this.modid = modid;
@@ -33,6 +36,10 @@ public class RegisterModel {
 	
 	public String getModID() {
 		return this.modid;
+	}
+	public RegisterModel setModID(String modid) {
+		this.modid = modid;
+		return this;
 	}
 	
 	/**
@@ -178,24 +185,51 @@ public class RegisterModel {
 		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(new ResourceLocation(file), variant));
 	}
 	
+	@Deprecated
 	public static final List<IHasModel> NeedToRegistryModel = Lists.newArrayList();
+	private static final Map<String, List<IHasModel>> NeedToRegistryModelMap = Maps.newHashMap();
 	
+	public static void addNeedRegistryModel(String modid, IHasModel entry) {
+		if(!NeedToRegistryModelMap.containsKey(modid)) {
+			NeedToRegistryModelMap.put(modid, Lists.newArrayList());
+		}
+		
+		NeedToRegistryModelMap.get(modid).add(entry);
+	}
+	
+	@SuppressWarnings({"rawtypes", "deprecation"})
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public static void onModelRegister(ModelRegistryEvent event) {
-		if(JiuCore.test()) {
+		if(JiuCore.dev()) {
+			RegisterModel util = new RegisterModel("jc");
 			for (Item item : Init.ITEMS) {
 				if (item instanceof IHasModel) {
-					((IHasModel) item).getItemModel();;
+					((IHasModel) item).getItemModel(util);
 				}
 			}
 			
 			for (Block block : Init.BLOCKS) {
 				if (block instanceof IHasModel) {
-					((IHasModel) block).getItemModel();
+					((IHasModel) block).getItemModel(util);
 				}
 			}
 		}
-		NeedToRegistryModel.stream().forEach(e -> {e.getItemModel();});
+
+		RegisterModel util = new RegisterModel("jc");
+		NeedToRegistryModelMap.forEach((modid, value) -> {
+			util.setModID(modid);
+			value.forEach(e->{
+				e.getItemModel(util);
+			});
+		});
+		
+		NeedToRegistryModel.stream().forEach(e -> {
+			if(e instanceof IForgeRegistryEntry) {
+				e.getItemModel(new RegisterModel(((IForgeRegistryEntry)e).getRegistryName().getResourceDomain()));
+			}else {
+				e.getItemModel();
+			}
+		});
 	}
 }

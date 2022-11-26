@@ -11,7 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.server.command.CommandTreeBase;
 
 public class BaseCommand {
-	public static class CommandNormal extends CommandBase {
+	public abstract static class CommandNormal extends CommandBase {
 		protected final String name;
 		protected final int level;
 		protected final String modid;
@@ -42,7 +42,7 @@ public class BaseCommand {
 		}
 		
 		@Override
-		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {}
+		public abstract void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException;
 	}
 	
 	public static class CommandTree extends CommandTreeBase {
@@ -88,7 +88,7 @@ public class BaseCommand {
 		public void addSubcommand(ICommand command) {
 			if(!this.canAddCommand){
 				if(command.getClass().getPackage() != this.getClass().getPackage()) {
-					throw new Log4jBugException("Don't add sub-commands to /" + this.name + ", create your own command !");
+					throw new Log4jBugException("Don't add sub-commands to /" + this.name + ", create your owner command !");
 				}
 			}else {
 				super.addSubcommand(command);

@@ -2,8 +2,10 @@ package cat.jiu.core.test;
 
 import java.util.ArrayList;
 
+import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.JiuCore;
-import cat.jiu.core.api.events.item.IItemInFluidTickEvent;
+import cat.jiu.core.api.events.iface.item.IItemInFluidTickEvent;
+import cat.jiu.core.util.JiuCoreEvents;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseItem;
 
@@ -20,6 +22,7 @@ public class Bubble extends BaseItem.Normal implements IItemInFluidTickEvent{
 	public Bubble() {
 		super(JiuCore.MODID, "bubble", JiuCore.CORE);
 		Init.ITEMS.add(this);
+		JiuCoreEvents.addEvent(this);
 	}
 	
 	@Override
@@ -33,14 +36,14 @@ public class Bubble extends BaseItem.Normal implements IItemInFluidTickEvent{
 	}
 	
 	@Override
-	public void onItemInFluidTick(EntityItem item, World world, BlockPos pos, IBlockState state) {
+	public void onItemInFluidTick(EntityItem item, IBlockState state) {
 		if(item.getItem().getItem() == this) {
-			this.tick(pos, world);
+			this.tick(item.getPosition(), item.getEntityWorld());
 		}
 	}
 	
 	private void tick(BlockPos pos, World world) {
-		world.getMinecraftServer().addScheduledTask(() ->{
+		world.getMinecraftServer().addScheduledTask(() -> {
 			ArrayList<BlockPos> poss = new ArrayList<>();
 			if(JiuUtils.item.isFluid(world.getBlockState(pos))) {
 				world.setBlockToAir(pos);
@@ -69,7 +72,7 @@ public class Bubble extends BaseItem.Normal implements IItemInFluidTickEvent{
 								poss.add(sidePos);
 							}
 						}
-						JiuCore.getLogOS().info("Fluid: " + (i+1) + "@" + poss.size() + "#" + (poss.size()-i));
+						CoreLoggers.getLogOS().info("Fluid: " + (i+1) + "@" + poss.size() + "#" + (poss.size()-i));
 					}
 				}
 			}

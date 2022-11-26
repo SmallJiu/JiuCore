@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Lists;
 
 import cat.jiu.core.api.values.Values;
-import cat.jiu.core.api.values.Values.ValueStateType;
+import cat.jiu.core.types.ValueStateType;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseCommand;
 

@@ -3,12 +3,13 @@ package cat.jiu.core.test;
 import java.math.BigInteger;
 import java.util.List;
 
+import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.api.ISubBlockSerializable;
 import cat.jiu.core.util.JiuUtils;
+import cat.jiu.core.util.RegisterModel;
 import cat.jiu.core.util.base.BaseBlock;
 import cat.jiu.core.util.base.BaseBlock.BaseBlockItem;
-
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -60,14 +61,14 @@ public class BlockTest extends BaseBlock.Sub<BlockTest.TestModSubtypes> {
 	
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		JiuCore.getLogOS().info(JiuUtils.item.getTexture(JiuUtils.item.getStackFromBlockState(world.getBlockState(pos))).toString());
+		CoreLoggers.getLogOS().info(JiuUtils.item.getTexture(JiuUtils.item.getStackFromBlockState(world.getBlockState(pos))).toString());
 		return Blocks.TNT.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
 	}
 	
 	@Override
-	public void getItemModel() {
-		this.model.setBlockStateMapper(this, !this.getHasSubtypes(), "test/test_block");
-		super.getItemModel();
+	public void getItemModel(RegisterModel util) {
+		util.setBlockStateMapper(this, !this.getHasSubtypes(), "test/test_block");
+		super.getItemModel(util);
 	}
 	
 	public enum TestModSubtypes implements ISubBlockSerializable {
