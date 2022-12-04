@@ -6,7 +6,7 @@ import net.minecraft.command.CommandTime;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Mod.EventBusSubscriber
+//@Mod.EventBusSubscriber
 public class Test {
 	@SubscribeEvent
 	public static void onWorldTimeChange(WorldTimeChangeEvent event) {

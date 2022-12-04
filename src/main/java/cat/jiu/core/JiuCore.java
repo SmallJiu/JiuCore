@@ -56,7 +56,7 @@ public class JiuCore implements IInFluidCraftingEvent, IMod {
 	public static final String MODID = "jiucore";
 	public static final String NAME = "JiuCore";
 	public static final String OWNER = "small_jiu";
-	public static final String VERSION = "1.1.5-a0";
+	public static final String VERSION = "1.1.5-a1";
 
 	private static Boolean isDev; // if is IDE, you can set to 'true' to enable some test stuff
 	public static final boolean dev() {
