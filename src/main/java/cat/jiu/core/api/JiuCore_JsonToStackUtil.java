@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Stream;
 import java.util.Map.Entry;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -219,18 +221,18 @@ public final class JiuCore_JsonToStackUtil {
 			}
 			return array;
 		}
-		return null;
+		return JsonNull.INSTANCE;
 	}
 	
 	private static JsonArray getNumberArray(NBTTagString str) {
 		String s = str.getString().toLowerCase();
 		if(s.contains("short_array@")) {
 			JsonArray num_array = new JsonArray();
-			String[] num_strs = custemSplitString("@", s);
+			String[] num_strs = splitString("@", s);
 			if(num_strs.length >= 2) {
 				String nums = num_strs[1];
 				if(nums.contains(",")) {
-					for (Short num : toNumberArray(Short.class, custemSplitString(",", nums))) {
+					for (Short num : toNumberArray(Short.class, splitString(",", nums))) {
 						num_array.add(num);
 					}
 				}else {
@@ -240,11 +242,11 @@ public final class JiuCore_JsonToStackUtil {
 			return num_array;
 		}else if(s.contains("double_array@")) {
 			JsonArray num_array = new JsonArray();
-			String[] num_strs = custemSplitString("@", s);
+			String[] num_strs = splitString("@", s);
 			if(num_strs.length >= 2) {
 				String nums = num_strs[1];
 				if(nums.contains(",")) {
-					for (Double num : toNumberArray(Double.class, custemSplitString(",", nums))) {
+					for (Double num : toNumberArray(Double.class, splitString(",", nums))) {
 						num_array.add(num);
 					}
 				}else {
@@ -254,11 +256,11 @@ public final class JiuCore_JsonToStackUtil {
 			return num_array;
 		}else if(s.contains("float_array@")) {
 			JsonArray num_array = new JsonArray();
-			String[] num_strs = custemSplitString("@", s);
+			String[] num_strs = splitString("@", s);
 			if(num_strs.length >= 2) {
 				String nums = num_strs[1];
 				if(nums.contains(",")) {
-					for (Float num : toNumberArray(Float.class, custemSplitString(",", nums))) {
+					for (Float num : toNumberArray(Float.class, splitString(",", nums))) {
 						num_array.add(num);
 					}
 				}else {
@@ -270,7 +272,7 @@ public final class JiuCore_JsonToStackUtil {
 		return null;
 	}
 	
-	private static String[] custemSplitString(String arg, String separator){
+	private static String[] splitString(String arg, String separator){
 		if(arg==null || arg.isEmpty() || arg.equals("")) {
 			return new String[] {"null"};
 		}
@@ -393,122 +395,77 @@ public final class JiuCore_JsonToStackUtil {
 		for(Entry<String, JsonElement> objTags : obj.entrySet()) {
 			String key = objTags.getKey();
 			JsonElement value = objTags.getValue();
-			if("string".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setString(nbts.getKey(), nbts.getValue().getAsString());
-				}
-				continue;
-			}
-			if("boolean".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setBoolean(nbts.getKey(), nbts.getValue().getAsBoolean());
-				}
-				continue;
-			}
-			if("int".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setInteger(nbts.getKey(), nbts.getValue().getAsInt());
-				}
-				continue;
-			}
-			if("long".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setLong(nbts.getKey(), nbts.getValue().getAsLong());
-				}
-				continue;
-			}
-			if("float".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setFloat(nbts.getKey(), nbts.getValue().getAsFloat());
-				}
-				continue;
-			}
-			if("double".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setDouble(nbts.getKey(), nbts.getValue().getAsDouble());
-				}
-				continue;
-			}
-			if("byte".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setByte(nbts.getKey(), nbts.getValue().getAsByte());
-				}
-				continue;
-			}
-			if("short".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					nbt.setShort(nbts.getKey(), nbts.getValue().getAsShort());
-				}
-				continue;
-			}
-			if("int_array".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					JsonArray array = nbts.getValue().getAsJsonArray();
-					int[] int_array = new int[array.size()];
-					for(int i = 0; i < array.size(); i++) {
-						int_array[i] = array.get(i).getAsInt();
-					}
-					nbt.setIntArray(nbts.getKey(), int_array);
-				}
-				continue;
-			}
-			if("short_array".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					JsonArray array = nbts.getValue().getAsJsonArray();
-					short[] num_array = new short[array.size()];
-					for(int i = 0; i < array.size(); i++) {
-						num_array[i] = array.get(i).getAsShort();
-					}
-					setNBT(nbt, nbts.getKey(), num_array);
-				}
-				continue;
-			}
-			if("byte_array".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					JsonArray array = nbts.getValue().getAsJsonArray();
-					byte[] num_array = new byte[array.size()];
-					for(int i = 0; i < array.size(); i++) {
-						num_array[i] = array.get(i).getAsByte();
-					}
-					nbt.setByteArray(nbts.getKey(), num_array);
-				}
-				continue;
-			}
-			if("double_array".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					JsonArray array = nbts.getValue().getAsJsonArray();
-					double[] num_array = new double[array.size()];
-					for(int i = 0; i < array.size(); i++) {
-						num_array[i] = array.get(i).getAsDouble();
-					}
-					setNBT(nbt, nbts.getKey(), num_array);
-				}
-				continue;
-			}
-			if("float_array".equals(key)) {
-				for(Entry<String, JsonElement> nbts : value.getAsJsonObject().entrySet()) {
-					JsonArray array = nbts.getValue().getAsJsonArray();
-					float[] num_array = new float[array.size()];
-					for(int i = 0; i < array.size(); i++) {
-						num_array[i] = array.get(i).getAsFloat();
-					}
-					setNBT(nbt, nbts.getKey(), num_array);
-				}
-				continue;
-			}
-			if("tags".equals(key)) {
-				for(Entry<String, JsonElement> tags : value.getAsJsonObject().entrySet()) {
-					nbt.setTag(tags.getKey(), toNBT(tags.getValue().getAsJsonObject()));
-				}
-				continue;
-			}
 			if(value.isJsonObject()) {
-				nbt.setTag(key, toNBT(value.getAsJsonObject()));
-				continue;
-			}
-			if(value.isJsonArray()) {
-				nbt.setTag(key, toNBT(value.getAsJsonArray()));
-				continue;
+				JsonObject valueObj = value.getAsJsonObject();
+				Stream<Entry<String, JsonElement>> stream = valueObj.entrySet().stream();
+				if("string".equals(key)) {
+					stream.forEach(nbts -> nbt.setString(nbts.getKey(), nbts.getValue().getAsString()));
+				}else if("boolean".equals(key)) {
+					stream.forEach(nbts -> nbt.setBoolean(nbts.getKey(), nbts.getValue().getAsBoolean()));
+				}else if("int".equals(key)) {
+					stream.forEach(nbts -> nbt.setInteger(nbts.getKey(), nbts.getValue().getAsInt()));
+				}else if("long".equals(key)) {
+					stream.forEach(nbts -> nbt.setLong(nbts.getKey(), nbts.getValue().getAsLong()));
+				}else if("float".equals(key)) {
+					stream.forEach(nbts -> nbt.setFloat(nbts.getKey(), nbts.getValue().getAsFloat()));
+				}else if("double".equals(key)) {
+					stream.forEach(nbts -> nbt.setDouble(nbts.getKey(), nbts.getValue().getAsDouble()));
+				}else if("byte".equals(key)) {
+					stream.forEach(nbts -> nbt.setByte(nbts.getKey(), nbts.getValue().getAsByte()));
+				}else if("short".equals(key)) {
+					stream.forEach(nbts -> nbt.setShort(nbts.getKey(), nbts.getValue().getAsShort()));
+				}else if("int_array".equals(key)) {
+					stream.forEach(nbts -> {
+						JsonArray array = nbts.getValue().getAsJsonArray();
+						int[] int_array = new int[array.size()];
+						for(int i = 0; i < array.size(); i++) {
+							int_array[i] = array.get(i).getAsInt();
+						}
+						nbt.setIntArray(nbts.getKey(), int_array);
+					});
+				}else if("short_array".equals(key)) {
+					stream.forEach(nbts -> {
+						JsonArray array = nbts.getValue().getAsJsonArray();
+						short[] num_array = new short[array.size()];
+						for(int i = 0; i < array.size(); i++) {
+							num_array[i] = array.get(i).getAsShort();
+						}
+						setNBT(nbt, nbts.getKey(), num_array);
+					});
+				}else if("byte_array".equals(key)) {
+					stream.forEach(nbts -> {
+						JsonArray array = nbts.getValue().getAsJsonArray();
+						byte[] num_array = new byte[array.size()];
+						for(int i = 0; i < array.size(); i++) {
+							num_array[i] = array.get(i).getAsByte();
+						}
+						nbt.setByteArray(nbts.getKey(), num_array);
+					});
+				}else if("double_array".equals(key)) {
+					stream.forEach(nbts -> {
+						JsonArray array = nbts.getValue().getAsJsonArray();
+						double[] num_array = new double[array.size()];
+						for(int i = 0; i < array.size(); i++) {
+							num_array[i] = array.get(i).getAsDouble();
+						}
+						setNBT(nbt, nbts.getKey(), num_array);
+					});
+				}else if("float_array".equals(key)) {
+					stream.forEach(nbts -> {
+						JsonArray array = nbts.getValue().getAsJsonArray();
+						float[] num_array = new float[array.size()];
+						for(int i = 0; i < array.size(); i++) {
+							num_array[i] = array.get(i).getAsFloat();
+						}
+						setNBT(nbt, nbts.getKey(), num_array);
+					});
+				}else if("tags".equals(key)) {
+					stream.forEach(tags -> nbt.setTag(tags.getKey(), toNBT(tags.getValue().getAsJsonObject())));
+				}else {
+					nbt.setTag(key, toNBT(valueObj)); 
+				}
+			}else if(value.isJsonArray()) {
+				nbt.setTag(key, toNBT(value.getAsJsonArray())); 
 			}
 		}
 		
@@ -521,47 +478,28 @@ public final class JiuCore_JsonToStackUtil {
 			JsonElement array_element = array.get(i);
 			if(array_element.isJsonObject()) {
 				list.appendTag(toNBT(array_element.getAsJsonObject()));
-				continue;
-			}
-			if(array_element.isJsonArray()) {
+			}else if(array_element.isJsonArray()) {
 				list.appendTag(toNBT(array_element.getAsJsonArray()));
-				continue;
-			}
-			if(array_element.isJsonPrimitive()) {
+			}else if(array_element.isJsonPrimitive()) {
 				JsonPrimitive pri = array_element.getAsJsonPrimitive();
 				if(pri.isString()) {
 					list.appendTag(new NBTTagString(pri.getAsString()));
-					continue;
-				}
-				if(pri.isBoolean()) {
+				}else if(pri.isBoolean()) {
 					list.appendTag(new NBTTagByte(pri.getAsBoolean() ? (byte)1 : (byte)0));
-					continue;
-				}
-				if(pri.isNumber()) {
+				}else if(pri.isNumber()) {
 					Number num = pri.getAsNumber();
 					if(num instanceof Integer) {
 						list.appendTag(new NBTTagInt((Integer) num));
-						continue;
-					}
-					if(num instanceof Double) {
+					}else if(num instanceof Double) {
 						list.appendTag(new NBTTagDouble((Double) num));
-						continue;
-					}
-					if(num instanceof Byte) {
-						list.appendTag(new NBTTagByte((Byte) num));
-						continue;
-					}
-					if(num instanceof Long) {
-						list.appendTag(new NBTTagLong((Long) num));
-						continue;
-					}
-					if(num instanceof Float) {
-						list.appendTag(new NBTTagFloat((Float) num));
-						continue;
-					}
-					if(num instanceof Short) {
-						list.appendTag(new NBTTagShort((Short) num));
-						continue;
+					}else if(num instanceof Byte) {
+						list.appendTag(new NBTTagByte((Byte) num)); 
+					}else if(num instanceof Long) {
+						list.appendTag(new NBTTagLong((Long) num)); 
+					}else if(num instanceof Float) {
+						list.appendTag(new NBTTagFloat((Float) num)); 
+					}else if(num instanceof Short) {
+						list.appendTag(new NBTTagShort((Short) num)); 
 					}
 				}
 			}
@@ -610,7 +548,7 @@ public final class JiuCore_JsonToStackUtil {
 	}
 	
 	private static ItemStack setNBT(ItemStack stack, NBTTagCompound nbt) {
-		if(nbt != null) stack.setTagCompound(nbt);
+		if(stack!=null && !stack.isEmpty() && nbt != null) stack.setTagCompound(nbt);
 		return stack;
 	}
 	
@@ -618,11 +556,16 @@ public final class JiuCore_JsonToStackUtil {
 		if(args == null || args.length == 0) {
 			return "null";
 		}
-		List<String> l = Lists.newArrayList();
-		for(T i : args) {
-			l.add(i.toString());
+		String[] strs = new String[args.length];
+		for(int i = 0; i < args.length; i++) {
+			strs[i] = String.valueOf(args[i]);
 		}
-		return toString(l.toArray(new String[0]));
+		
+		StringJoiner j = new StringJoiner(",");
+		for(String arg : strs) {
+			j.add(arg);
+		}
+		return j.toString();
 	}
 	
 	private static Short[] toArray(short[] args) {
@@ -647,16 +590,5 @@ public final class JiuCore_JsonToStackUtil {
 			arg[i] = args[i];
 		}
 		return arg;
-	}
-	
-	private static String toString(String[] args) {
-		if(args == null || args.length == 0) {
-			return "null";
-		}
-		StringJoiner j = new StringJoiner(",");
-		for(String arg : args) {
-			j.add(arg);
-		}
-		return j.toString();
 	}
 }

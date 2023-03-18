@@ -10,7 +10,8 @@
 		"MixinNBTBase"
 	],
 	"client": [
-		"MixinFallbackResourceManager"
+		"MixinFallbackResourceManager",
+		"MixinSimpleReloadableResourceManager"
 	],
 	"server": [
 		

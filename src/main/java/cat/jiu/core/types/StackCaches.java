@@ -11,11 +11,13 @@ import net.minecraft.item.ItemStack;
 public class StackCaches {
 	protected final Map<Integer, ItemStack> levels = Maps.newHashMap();
 	protected final Item item;
+	public final int maxMeta;
 	public StackCaches(Block block, int maxMeta) {
 		this(Item.getItemFromBlock(block), maxMeta);
 	}
 	public StackCaches(Item item, int maxMeta) {
 		this.item = item;
+		this.maxMeta = maxMeta;
 		for(int meta = 0; meta < maxMeta; meta++) {
 			this.levels.put(meta, new ItemStack(item, 1, meta));
 		}

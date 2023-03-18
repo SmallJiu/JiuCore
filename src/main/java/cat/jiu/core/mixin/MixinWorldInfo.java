@@ -4,15 +4,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import cat.jiu.core.api.annotation.Unfinish;
-import cat.jiu.core.api.events.mixin.clazz.game.WorldTimeChangeEvent;
+import cat.jiu.core.events.game.WorldTimeChangeEvent;
 import cat.jiu.core.util.JiuUtils;
 
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraftforge.common.MinecraftForge;
 
-@Unfinish
 @Mixin(value = World.class)
 public class MixinWorldInfo {
 	private MixinWorldInfo() {

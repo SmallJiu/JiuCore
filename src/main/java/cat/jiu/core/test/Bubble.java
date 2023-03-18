@@ -4,13 +4,10 @@ import java.util.ArrayList;
 
 import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.JiuCore;
-import cat.jiu.core.api.events.iface.item.IItemInFluidTickEvent;
-import cat.jiu.core.util.JiuCoreEvents;
+import cat.jiu.core.events.item.ItemInWorldEvent;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseItem;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -18,11 +15,14 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class Bubble extends BaseItem.Normal implements IItemInFluidTickEvent{
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+public class Bubble extends BaseItem.Normal {
 	public Bubble() {
 		super(JiuCore.MODID, "bubble", JiuCore.CORE);
 		Init.ITEMS.add(this);
-		JiuCoreEvents.addEvent(this);
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 	
 	@Override
@@ -35,10 +35,10 @@ public class Bubble extends BaseItem.Normal implements IItemInFluidTickEvent{
 		return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
 	}
 	
-	@Override
-	public void onItemInFluidTick(EntityItem item, IBlockState state) {
-		if(item.getItem().getItem() == this) {
-			this.tick(item.getPosition(), item.getEntityWorld());
+	@SubscribeEvent
+	public void onItemInFluidTick(ItemInWorldEvent.InFluid event) {
+		if(event.item.getItem().getItem() == this) {
+			this.tick(event.item.getPosition(), event.item.getEntityWorld());
 		}
 	}
 	

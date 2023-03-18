@@ -3,8 +3,7 @@ package cat.jiu.core.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import cat.jiu.core.api.events.iface.game.IInFluidCraftingEvent;
-import cat.jiu.core.util.JiuCoreEvents;
+import cat.jiu.core.events.game.InFluidCraftingEvent;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseCommand;
 import cat.jiu.core.util.crafting.InFluidCrafting;
@@ -20,6 +19,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextFormatting;
+
+import net.minecraftforge.common.MinecraftForge;
 
 public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 	public CommandInFluidCrafting() {
@@ -170,10 +171,7 @@ public class CommandInFluidCrafting extends BaseCommand.CommandTree{
 			
 			long time = System.currentTimeMillis();
 			
-			List<IInFluidCraftingEvent> list = JiuCoreEvents.getEvents(IInFluidCraftingEvent.class);
-			if(list != null) {
-				list.stream().forEach(e -> e.onAddInFluidCrafting(new Recipes(this.modid)));
-			}
+			MinecraftForge.EVENT_BUS.post(new InFluidCraftingEvent(new Recipes(this.modid)));
 			
 			JiuUtils.entity.sendMessage(sender, "command.jc.craft.influid.reload.1.info", TextFormatting.GREEN, "( " + (System.currentTimeMillis() - time)+"ms )");
 		}

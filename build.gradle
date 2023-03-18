@@ -19,7 +19,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
 
-version = "1.12.2-1.1.5-a1"
+version = "1.12.2-1.1.6-a0"
 group = "cat.jiu.core" 
 archivesBaseName = "JiuCore"
 

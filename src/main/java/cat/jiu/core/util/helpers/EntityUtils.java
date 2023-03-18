@@ -144,6 +144,11 @@ public final class EntityUtils {
 		if(file.exists()) {
 			NameToUUID.clear();
 			UUIDToName.clear();
+			
+			UUID init = new UUID(0,0);
+			NameToUUID.put("Initialization", init);
+			UUIDToName.put(init, "Initialization");
+			
 			try(FileInputStream in = new FileInputStream(file)) {
 				JsonArray array = JsonUtil.parser.parse(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonArray();
 				for(int i = 0; i < array.size(); i++) {
@@ -161,11 +166,11 @@ public final class EntityUtils {
 	}
 
 	public boolean hasNameOrUUID(String name) {
-		return NameToUUID.containsKey(name) && UUIDToName.containsValue(name);
+		return NameToUUID.containsKey(name) || UUIDToName.containsValue(name);
 	}
 
 	public boolean hasNameOrUUID(UUID uid) {
-		return UUIDToName.containsKey(uid) && NameToUUID.containsValue(uid);
+		return UUIDToName.containsKey(uid) || NameToUUID.containsValue(uid);
 	}
 
 	public UUID getUUID(String name) {

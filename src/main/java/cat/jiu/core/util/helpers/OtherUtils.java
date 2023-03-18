@@ -1,6 +1,8 @@
 package cat.jiu.core.util.helpers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -21,8 +23,8 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import cat.jiu.core.JiuCore;
 import cat.jiu.core.util.JiuUtils;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -32,6 +34,104 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public final class OtherUtils {
+	
+	public int[] perseInt(long value) {
+		int[] result;
+		if(value <= Integer.MAX_VALUE) {
+			result = new int[1];
+			result[0] = (int)value;
+		}else {
+			int intNum = (int) (value / Integer.MAX_VALUE);
+			if(value % Integer.MAX_VALUE > 0) {
+				result = new int[intNum+1];
+				for(int i = 0; i < result.length-1; i++) {
+					result[i] = Integer.MAX_VALUE;
+				}
+				result[result.length-1] = (int) (value % Integer.MAX_VALUE);
+			}else {
+				result = new int[intNum];
+				for(int i = 0; i < result.length; i++) {
+					result[i] = Integer.MAX_VALUE;
+				}
+			}
+		}
+		return result;
+	}
+	
+	private static final int MAX = 104857600;
+	private int maxLength = MAX;
+	public int setMaxLength(int max) {
+		int old = this.maxLength;
+		this.maxLength = max;
+		return old;
+	}
+	public void resetMaxLength() {
+		this.maxLength = MAX;
+	}
+	
+	/**
+	 * @param value max: 104857600 * 2147483647 + 2147483646 (225,179,983,411,150,846)
+	 */
+	public int[] perseInt(BigInteger value) {
+		int[] result;
+		if(JiuUtils.big_integer.lessOrEqual(value, BigIntegerUtils.INTEGER_MAX)) {
+			result = new int[1];
+			result[0] = value.intValue();
+		}else {
+			int intNum = value.divide(BigIntegerUtils.INTEGER_MAX).intValue();
+			if(intNum >= this.maxLength) {
+				intNum = this.maxLength;
+			}
+			if(JiuUtils.big_integer.greater(value.remainder(BigIntegerUtils.INTEGER_MAX), BigInteger.ZERO)) {
+				result = new int[intNum+1];
+				for(int i = 0; i < result.length-1; i++) {
+					result[i] = Integer.MAX_VALUE;
+				}
+				result[result.length-1] = value.remainder(BigIntegerUtils.INTEGER_MAX).intValue();
+			}else {
+				result = new int[intNum];
+				for(int i = 0; i < result.length; i++) {
+					result[i] = Integer.MAX_VALUE;
+				}
+			}
+		}
+		return result;
+	}
+	
+	/** 'A' - 'Z' */private static final List<Character> CHAR_LETTERS = Lists.newArrayList('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
+	/** "A" - "Z" */private static final List<String> STRING_LETTERS = Lists.newArrayList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+	public boolean containsLetter(char c) {
+		return CHAR_LETTERS.contains(c);
+	}
+	public boolean containsLetter(String c) {
+		return STRING_LETTERS.contains(c);
+	}
+	
+	/** '0' - '9' */private static final List<Character> CHAR_NUMBERS = Lists.newArrayList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+	/** "0" - "9" */private static final List<String> STRING_NUMBERS = Lists.newArrayList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+	public boolean containsNumber(char num) {
+		return CHAR_NUMBERS.contains(num);
+	}
+	public boolean containsNumber(String num) {
+		return STRING_NUMBERS.contains(num);
+	}
+	
+	public long getLong(String value) {
+		long v = 0;
+		try {
+			v = Long.parseLong(value);
+		}catch(Exception e) {
+			for(int i = 0; i < value.length(); i++) {
+				try {
+					v += Long.parseLong(String.valueOf(value.charAt(i)));
+				}catch(Exception e2) {
+					v += value.charAt(i);
+				}
+			}
+		}
+		return v;
+	}
+	
 	public BlockPos toPos(NBTTagCompound nbt) {
 		if(nbt==null || nbt.getSize()==0) return null;
 		return new BlockPos(nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
@@ -120,8 +220,8 @@ public final class OtherUtils {
 		value = value.toLowerCase();
 		StringBuilder s = new StringBuilder(defaultNum);
 		for(char charr : value.toCharArray()) {
-			if(JiuCore.containsLetter(charr)) {
-				s.append(toNumber(charr));
+			if(this.containsLetter(charr)) {
+				s.append((int)charr);
 			}
 		}
 		return JiuUtils.big_integer.create(s.toString());
@@ -160,36 +260,9 @@ public final class OtherUtils {
 		return toUpper ? result.toUpperCase() : result;
 	}
 	
+	@Deprecated
 	public int toNumber(char value) {
-		switch(String.valueOf(value).toLowerCase().charAt(0)) {
-			default: return -1;
-			case 'a': return 0;
-			case 'b': return 1;
-			case 'c': return 2;
-			case 'd': return 3;
-			case 'e': return 4;
-			case 'f': return 5;
-			case 'g': return 6;
-			case 'h': return 7;
-			case 'i': return 8;
-			case 'j': return 9;
-			case 'k': return 10;
-			case 'l': return 11;
-			case 'm': return 12;
-			case 'n': return 13;
-			case 'o': return 14;
-			case 'p': return 15;
-			case 'q': return 16;
-			case 'r': return 17;
-			case 's': return 18;
-			case 't': return 19;
-			case 'u': return 20;
-			case 'v': return 21;
-			case 'w': return 22;
-			case 'x': return 23;
-			case 'y': return 24;
-			case 'z': return 25;
-		}
+		return value;
 	}
 	
 	public String toLangKey(String modid, String... args) {
@@ -692,6 +765,67 @@ public final class OtherUtils {
 	public String upperFirst(String arg) {
 		return arg.substring(0, 1).toUpperCase() + arg.substring(1);
 	}
+	
+	public void moveFile(File source, File target) {
+		if(source==null || target==null || !source.exists()) return;
+		
+		target.mkdirs();
+		if(!target.exists()) {
+			try {
+				target.createNewFile();
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try(FileInputStream is = new FileInputStream(source);
+			FileOutputStream os = new FileOutputStream(target)) {
+			byte[] buf = new byte[4096];
+			int read = 0;
+			while((read = is.read(buf)) != -1) {
+				os.write(buf, 0, read);
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public String formatBytes(long bytes, int length) {
+		String s = "";
+		if(bytes >= TB) {
+			s = String.valueOf(bytes / TB);
+			return s + "." + subString(String.valueOf(bytes).substring(s.length()), length) + " TB";
+		}
+		if(bytes >= GB) {
+			s = String.valueOf(bytes / GB);
+			return s + "." + subString(String.valueOf(bytes).substring(s.length()), length) + " GB";
+		}
+		if(bytes >= MB) {
+			s = String.valueOf(bytes / MB);
+			return s + "." + subString(String.valueOf(bytes).substring(s.length()), length) + " MB";
+		}
+		if(bytes >= KB) {
+			s = String.valueOf(bytes / KB);
+			return s + "." + subString(String.valueOf(bytes).substring(s.length()), length) + " KB";
+		}
+		if(bytes < 1024) {
+			return bytes + " B";
+		}
+		return "NaN";
+	}
+	
+	private String subString(String str, int endlength) {
+		if(str.length() > endlength) {
+			return str.substring(0, endlength);
+		}else {
+			return str;
+		}
+	}
+	
+	public static final long KB = (long) Math.pow(1024, 2);
+	public static final long MB = (long) Math.pow(1024, 3);
+	public static final long GB = (long) Math.pow(1024, 4);
+	public static final long TB = (long) Math.pow(1024, 5);
 	
 	/*
 	@SuppressWarnings("unchecked")

@@ -18,37 +18,29 @@ import com.google.gson.JsonPrimitive;
 import cat.jiu.core.test.BlockTest.TestModSubtypes;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.timer.Timer;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTPrimitive;
-import net.minecraft.nbt.NBTTagByte;
-import net.minecraft.nbt.NBTTagByteArray;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagDouble;
-import net.minecraft.nbt.NBTTagFloat;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraft.nbt.NBTTagIntArray;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagLong;
-import net.minecraft.nbt.NBTTagLongArray;
-import net.minecraft.nbt.NBTTagShort;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import net.minecraftforge.fluids.BlockFluidBase;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.oredict.OreDictionary;
@@ -925,23 +917,28 @@ public final class ItemUtils {
 		return names;
 	}
 	
-	/**
-	 * Unfinsh!<p>
-	 * getTexture From ItemStack
-	 * 
-	 * @author small_jiu
-	 */
-	@SuppressWarnings({ "deprecation", "unused" })
-	public ResourceLocation getTexture(ItemStack stack) {
-		TextureMap map = Minecraft.getMinecraft().getTextureMapBlocks();
-		
-		if(isBlock(stack)) {
-			Block block = getBlockFromItemStack(stack);
-			IBlockState state = block.getStateFromMeta(stack.getMetadata());
-		}else if(stack.getItem() instanceof Item) {
-			Item item = stack.getItem();
+	@SideOnly(Side.CLIENT)
+	public ResourceLocation getTexture(IBlockState state, EnumFacing face) {
+		Minecraft mc = Minecraft.getMinecraft();
+		IBakedModel model = mc.getRenderItem().getItemModelMesher().getItemModel(getStackFromBlockState(state));
+		List<BakedQuad> l = model.getQuads(getStateFromItemStack(getStackFromBlockState(state)), face, 100);
+		String name = "";
+		if(!l.isEmpty()) {
+			name = l.get(0).getSprite().getIconName();
+		}else {
+			name = model.getParticleTexture().getIconName();
 		}
-		return new ResourceLocation(map.getAtlasSprite(stack.getItem().getRegistryName().toString()).getIconName());
+		
+		ResourceLocation texture = new ResourceLocation(name);
+		return texture;
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public ResourceLocation getTexture(ItemStack stack) {
+		Minecraft mc = Minecraft.getMinecraft();
+		String name = mc.getRenderItem().getItemModelMesher().getItemModel(stack).getParticleTexture().getIconName();
+		ResourceLocation texture = new ResourceLocation(name);
+		return texture;
 	}
 	
 	/**

@@ -16,8 +16,8 @@ import com.google.gson.JsonParser;
  */
 public enum GoogleTranslate {
 	zh_CN("zh_CN"),
-	en_US("en"),
 	zh_tw("zh_TW"),
+	en_US("en"),
 	af_za("af"),
 	ar_sa("ar"),
 	ast_es("es"),

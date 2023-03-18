@@ -12,7 +12,6 @@ public class CoreMain {
     public static final BigInteger BIGINTEGER_MAX = BigInteger.valueOf(2L).pow(Integer.MAX_VALUE-1);
 	static final DayUtils day = new DayUtils();
     static BigIntegerUtils util = new BigIntegerUtils();
-    static Logger log = new Logger("JiuJiu");
     static org.apache.logging.log4j.Logger logger = LogManager.getLogger("JiuJiu");
     
 	public static void main(String[] args) throws InterruptedException {

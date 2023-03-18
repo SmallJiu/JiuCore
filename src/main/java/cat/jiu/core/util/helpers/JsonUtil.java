@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -20,7 +21,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 public final class JsonUtil {
-	static final Gson gson = new GsonBuilder().create();
+	static final Gson gson = new GsonBuilder().serializeNulls().create();
 	static final JsonParser parser = new JsonParser();
 	
 	@SuppressWarnings("unchecked")
@@ -87,7 +88,7 @@ public final class JsonUtil {
 	}
 	
 	public boolean toJsonFile(String path, Object src, boolean format) {
-		String json = gson.toJson(src);
+		String json = src instanceof JsonElement ? String.valueOf(src) : gson.toJson(src);
 		
 		try {
 			File file = new File(path);
@@ -99,7 +100,7 @@ public final class JsonUtil {
 	        }
 	        
 	        file.createNewFile();
-	        OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+	        OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file));
             write.write(format ? this.formatJson(json) : json);
             write.flush();
             write.close();
@@ -171,6 +172,8 @@ public final class JsonUtil {
 			V value = list.get(i);
 			if(value instanceof List) {
 				array.add(this.toJsonArray((List)value));
+			}if(value instanceof Set) {
+				array.add(this.toJsonArray((Set)value));
 			}else if(value instanceof Map) {
 				array.add(this.toJsonObject((Map)value));
 			}else {
@@ -179,7 +182,35 @@ public final class JsonUtil {
 				}else if(value instanceof Boolean) {
 					array.add((Boolean)value);
 				}else {
-					array.add(value.toString());
+					array.add(String.valueOf(value));
+				}
+			}
+		}
+		return array;
+	}
+	
+	/**
+	 * This method only deserializes Number, Boolean, and String.<p> 
+	 * If it looks like {@code ItemStack} or other, please write your own method
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public <V> JsonArray toJsonArray(Set<V> list) {
+		JsonArray array = new JsonArray();
+		
+		for (V value : list) {
+			if(value instanceof List) {
+				array.add(this.toJsonArray((List)value));
+			}if(value instanceof Set) {
+				array.add(this.toJsonArray((Set)value));
+			}else if(value instanceof Map) {
+				array.add(this.toJsonObject((Map)value));
+			}else {
+				if(value instanceof Number) {
+					array.add((Number)value);
+				}else if(value instanceof Boolean) {
+					array.add((Boolean)value);
+				}else {
+					array.add(String.valueOf(value));
 				}
 			}
 		}
@@ -199,13 +230,15 @@ public final class JsonUtil {
 				obj.add(mapEntry.getKey().toString(), this.toJsonObject((Map) mapEntry.getValue()));
 			}else if(mapEntry.getValue() instanceof List) {
 				obj.add(mapEntry.getKey().toString(), this.toJsonArray((List)mapEntry.getValue()));
+			}else if(mapEntry.getValue() instanceof Set) {
+				obj.add(mapEntry.getKey().toString(), this.toJsonArray((Set)mapEntry.getValue()));
 			}else {
 				if(mapEntry.getValue() instanceof Number) {
 					obj.addProperty(mapEntry.getKey().toString(), (Number)mapEntry.getValue());
 				}else if(mapEntry.getValue() instanceof Boolean) {
 					obj.addProperty(mapEntry.getKey().toString(), (Boolean)mapEntry.getValue());
 				}else {
-					obj.addProperty(mapEntry.getKey().toString(), mapEntry.getValue().toString());
+					obj.addProperty(mapEntry.getKey().toString(), String.valueOf(mapEntry.getValue()));
 				}
 			}
 		}

@@ -1,5 +1,8 @@
 package cat.jiu.core.api;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.google.gson.JsonObject;
 
 import cat.jiu.core.api.handler.ISerializable;
@@ -7,6 +10,7 @@ import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.timer.BigTimer;
 import cat.jiu.core.util.timer.MillisTimer;
 import cat.jiu.core.util.timer.Timer;
+import cat.jiu.sql.SQLValues;
 import net.minecraft.nbt.NBTTagCompound;
 
 public interface ITimer extends ISerializable {
@@ -159,6 +163,16 @@ public interface ITimer extends ISerializable {
 	}
 	
 	@Override
+	default SQLValues write(SQLValues value) {
+		if(value == null) value = new SQLValues();
+		value.put("ticks", this.getTicks());
+		value.put("allTicks", this.getAllTicks());
+		value.put("isBig", this instanceof BigTimer);
+		value.put("isSys", this instanceof MillisTimer);
+		return value;
+	}
+	
+	@Override
 	default void read(JsonObject json) {
 		this.format(json.get("ticks").getAsLong());
 		this.setAllTicks(json.get("allTicks").getAsLong());
@@ -167,6 +181,12 @@ public interface ITimer extends ISerializable {
 	default void read(NBTTagCompound nbt) {
 		this.format(nbt.getLong("ticks"));
 		this.setAllTicks(nbt.getLong("allTicks"));
+	}
+
+	@Override
+	default void read(ResultSet result) throws SQLException {
+		this.format(result.getLong("ticks"));
+		this.setAllTicks(result.getLong("allTicks"));
 	}
 
 	@Deprecated

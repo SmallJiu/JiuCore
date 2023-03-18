@@ -6,9 +6,13 @@ import javax.annotation.Nonnull;
 
 import org.lwjgl.input.Keyboard;
 
+import com.google.common.collect.Lists;
+
 import cat.jiu.core.api.handler.IBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -22,7 +26,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
+import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
@@ -30,6 +35,7 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
+@SideOnly(Side.CLIENT)
 public class BaseUI {
 	@SideOnly(Side.CLIENT)
 	public static class BaseGui<CONTAINER extends Container, TILEENTITY extends TileEntity> extends GuiContainer{
@@ -99,9 +105,9 @@ public class BaseUI {
 	 * player use Keyboard key_tab on text field, can fast input player name
 	 * @author small_jiu
 	 */
-	public static class NameGuiTextField extends GuiTextField {
+	public static class GuiNameTextField extends GuiTextField {
 		private final boolean canSelectedSelf;
-		public NameGuiTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height, boolean canSelectedSelf) {
+		public GuiNameTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height, boolean canSelectedSelf) {
 			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
 			this.canSelectedSelf = canSelectedSelf;
 		}
@@ -408,6 +414,63 @@ public class BaseUI {
 
 		public void setIndex(int index) {
 			this.index = index;
+		}
+	}
+	
+	public static class GuiPopupMenu extends GuiScreen {
+		protected final List<GuiButton> btns;
+		protected boolean visible = false;
+		public GuiPopupMenu() {
+			this(Lists.newArrayList());
+		}
+		public GuiPopupMenu(List<GuiButton> btns) {
+			this.btns = btns;
+		}
+		
+		public void setVisible(boolean visible) {
+			this.visible = visible;
+			for(int i = 0; i < btns.size(); i++) {
+				this.btns.get(i).visible = visible;
+			}
+		}
+		public boolean isVisible() {
+			return visible;
+		}
+		
+		public void drawPopupMenu(Minecraft mc, int x, int y, float partialTicks) {
+			if(this.visible) {
+				for(int i = 0; i < btns.size(); i++) {
+					GuiButton btn = this.btns.get(i);
+					btn.x = x;
+					btn.y = y;
+					btn.drawButton(mc, x, y, partialTicks);
+					y += btn.height;
+				}
+			}
+		}
+		
+		public boolean mouseClicked(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
+			boolean flag = false;
+			if(mouseButton == 0) {
+				for(GuiButton btn : this.btns) {
+					if(btn.mousePressed(mc, mouseX, mouseY)) {
+						GuiScreenEvent.ActionPerformedEvent.Pre event = new GuiScreenEvent.ActionPerformedEvent.Pre(this, btn, this.btns);
+	                    if (MinecraftForge.EVENT_BUS.post(event)) break;
+	                    btn = event.getButton();
+	                    btn.playPressSound(mc.getSoundHandler());
+	                    btn.mouseReleased(mouseX, mouseY);
+	                    flag = true;
+	                    MinecraftForge.EVENT_BUS.post(new GuiScreenEvent.ActionPerformedEvent.Post(this, btn, this.btns));
+					}
+				}
+			}
+			if(flag) this.setVisible(false);
+			return flag;
+		}
+		@Override
+		public <T extends GuiButton> T addButton(T buttonIn) {
+			this.btns.add(buttonIn);
+			return buttonIn;
 		}
 	}
 }

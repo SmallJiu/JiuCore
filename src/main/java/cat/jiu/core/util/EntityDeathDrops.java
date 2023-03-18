@@ -19,7 +19,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import cat.jiu.core.CoreLoggers;
-import cat.jiu.core.api.events.iface.entity.IEntityDeathDropItems;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -31,11 +30,14 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public final class EntityDeathDrops implements IEntityDeathDropItems {
+@EventBusSubscriber
+public final class EntityDeathDrops {
 	static final Map<String, List<DropType>> Drop = Maps.newHashMap();
 	
 	public static void addDrops(ResourceLocation name, List<DropType> drops) {
@@ -47,9 +49,12 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 	
 	public static void addDrops(ResourceLocation name, DropType drop) {
 		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
-		if(entity == null) unknowEntity(name);
+		if(entity == null) {
+			unknowEntity(name);
+			return;
+		}
 		
-		String s = entity.getName();
+		String s = entity.getRegistryName().toString();
 		if(!Drop.containsKey(s)) {
 			Drop.put(s, Lists.newArrayList());
 		}
@@ -62,38 +67,47 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 			return;
 		}
 		
-		String s = EntityList.getEntityString(entity);
-		if(s == null) unknowEntity(entity);
-		
-		if(!Drop.containsKey(s)) {
-			Drop.put(s, Lists.newArrayList());
+		ResourceLocation s = EntityList.getKey(entity);
+		if(s == null) {
+			unknowEntity(entity);
+			return;
 		}
-		Drop.get(s).add(drop);
+		String type = s.toString();
+		if(Drop.containsKey(type)) {
+			Drop.put(type, Lists.newArrayList());
+		}
+		Drop.get(type).add(drop);
 	}
 	
 	public static List<DropType> getDrops(EntityLivingBase entity) {
-		String s = EntityList.getEntityString(entity);
-		if(s == null) unknowEntity(entity);
-
+		ResourceLocation s = EntityList.getKey(entity);
+		if(s == null) {
+			unknowEntity(entity);
+			return null;
+		}
+		String type = s.toString();
+		if(!Drop.containsKey(type)) return null;
+		return Drop.get(type);
+	}
+	
+	public static List<DropType> getDrops(ResourceLocation name) {
+		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
+		if(entity == null) {
+			unknowEntity(name);
+			return null;
+		}
+		
+		String s = entity.getRegistryName().toString();
 		if(!Drop.containsKey(s)) return null;
 		return Drop.get(s);
 	}
 	
 	private static void unknowEntity(ResourceLocation name) {
-		throw new RuntimeException("Can not find entity: " + name);
+		CoreLoggers.getLogOS().warning("Can not find entity: {}", name);
 	}
 	
 	private static void unknowEntity(EntityLivingBase entity) {
-		throw new RuntimeException("Can not find entity: EntityID: " + entity.getEntityId() + ", EntityName: " + entity.getName());
-	}
-	
-	public static List<DropType> getDrops(ResourceLocation name) {
-		EntityEntry entity = ForgeRegistries.ENTITIES.getValue(name);
-		if(entity == null) unknowEntity(name);
-		
-		String s = entity.getName();
-		if(!Drop.containsKey(s)) return null;
-		return Drop.get(s);
+		CoreLoggers.getLogOS().warning("Can not find entity: EntityID: {}, EntityName: ", entity.getEntityId(), entity.getName());
 	}
 	
 	public static boolean initJsonDrops(World world) {
@@ -168,8 +182,12 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 
 	static final JiuRandom rand = new JiuRandom();
 
-	@Override
-	public void onEntityDeathDropItems(EntityLivingBase entity, DamageSource source, List<EntityItem> drops, List<ItemStack> items, int lootingLevel, boolean recentlyHit) {
+	@SubscribeEvent
+	public static void onEntityDeathDropItems(LivingDropsEvent event) {
+		onEntityDeathDropItems(event.getEntityLiving(), event.getSource(), event.getDrops(), event.getLootingLevel(), event.isRecentlyHit());
+	}
+	
+	private static void onEntityDeathDropItems(EntityLivingBase entity, DamageSource source, List<EntityItem> drops, int lootingLevel, boolean recentlyHit) {
 		if(!entity.getEntityWorld().isRemote) {
 			List<DropType> otherDrops = getDrops(entity);
 			if(otherDrops != null) {
@@ -178,14 +196,14 @@ public final class EntityDeathDrops implements IEntityDeathDropItems {
 					stack.setCount(rand.nextIntFromRange(stackType.minCount, stackType.maxCount));
 					
 					if(rand.nextInt(1000) <= stackType.chance*1000) {
-						drops.add(this.createEntityItem(entity, stack));
+						drops.add(createEntityItem(entity, stack));
 					}
 				}
 			}
 		}
 	}
 
-	EntityItem createEntityItem(Entity e, ItemStack stack) {
+	static EntityItem createEntityItem(Entity e, ItemStack stack) {
 		BlockPos pos = e.getPosition();
 		return new EntityItem(e.getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(), stack);
 	}

@@ -84,7 +84,7 @@ public class Values {
 				String s = valueID.toUpperCase();
 				for(int i = 0; i < s.length(); i++) {
 					char letter = s.charAt(i);
-					if(!JiuCore.containsLetter(letter) && letter != '_' && letter != '-') {
+					if(!JiuUtils.other.containsLetter(letter) && letter != '_' && letter != '-') {
 						throw new RuntimeException("Value name must be ALL 'letter' or '_' or '-': " + valueID + " ==> " + letter);
 					}
 				}

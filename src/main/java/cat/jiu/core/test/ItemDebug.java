@@ -37,15 +37,16 @@ public class ItemDebug extends BaseItem.Normal {
 	
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote) return super.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
-		
-		BlockPos pPos = player.getPosition();
-		if(world.setBlockState(new BlockPos(pPos.getX(), -1, pPos.getZ()), Blocks.STONE.getDefaultState(), 3)) {
-			player.sendStatusMessage(JiuUtils.other.createTextComponent("True"), true);
+		if(world.isRemote) {
+			System.out.println(JiuUtils.item.getTexture(world.getBlockState(pos), facing));
 		}else {
-			player.sendStatusMessage(JiuUtils.other.createTextComponent("Flase"), true);
+			BlockPos pPos = player.getPosition();
+			if(world.setBlockState(new BlockPos(pPos.getX(), -1, pPos.getZ()), Blocks.STONE.getDefaultState(), 3)) {
+				player.sendStatusMessage(JiuUtils.other.createTextComponent("True"), true);
+			}else {
+				player.sendStatusMessage(JiuUtils.other.createTextComponent("Flase"), true);
+			}
 		}
-		
 		return super.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
 	}
 }

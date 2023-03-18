@@ -4,13 +4,11 @@ import java.math.BigInteger;
 import java.util.List;
 
 import cat.jiu.core.JiuCore;
-import cat.jiu.core.api.events.iface.item.IItemInPlayerHandTick;
-import cat.jiu.core.api.events.iface.item.IItemInPlayerInventoryTick;
-import cat.jiu.core.api.events.iface.item.IItemInWorldTickEvent;
+import cat.jiu.core.events.item.ItemInPlayerEvent;
+import cat.jiu.core.events.item.ItemInWorldEvent;
 import cat.jiu.core.capability.CapabilityJiuEnergy;
 import cat.jiu.core.capability.EnergyUtils;
 import cat.jiu.core.capability.JiuEnergyStorage;
-import cat.jiu.core.util.JiuCoreEvents;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.core.util.base.BaseItem;
 
@@ -28,16 +26,18 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInventoryTick, IItemInPlayerHandTick, IItemInWorldTickEvent{
+public class ItemSubTest extends BaseItem.Normal {
 	public final String energyName = "JiuE";
 	public ItemSubTest() {
 		super(JiuCore.MODID, "test_item", JiuCore.CORE, true);
 		this.setMaxMetadata(16);
-		JiuCoreEvents.addEvent(this);
+		MinecraftForge.EVENT_BUS.register(this);
 		Init.ITEMS.add(this);
 	}
 	
@@ -92,37 +92,34 @@ public class ItemSubTest extends BaseItem.Normal implements IItemInPlayerInvento
 		util.inputFEEnergy(stack, 1);
 	}
 	
-	@Override
-	public void onItemInPlayerInventoryTick(EntityPlayer player, ItemStack invStack, int slot) {
-		if(JiuUtils.item.equalsStack(invStack, new ItemStack(this), false, false)) {
-			NBTTagCompound nbt = invStack.getTagCompound() != null ? invStack.getTagCompound() : new NBTTagCompound();
+	@SubscribeEvent
+	public void onItemInPlayerInventoryTick(ItemInPlayerEvent.InInventory event) {
+		if(event.stack.getItem() == this) {
+			NBTTagCompound nbt = event.stack.getTagCompound() != null ? event.stack.getTagCompound() : new NBTTagCompound();
 			if(nbt.getBoolean("TestEnergy")) {
-				this.addEnergy(JiuUtils.energy, invStack);
+				this.addEnergy(JiuUtils.energy, event.stack);
 					
-				JiuUtils.entity.sendMessage(player, JiuUtils.energy.getFEEnergy(invStack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
+				JiuUtils.entity.sendMessage(event.getEntityPlayer(), JiuUtils.energy.getFEEnergy(event.stack) +  "/" +  Long.MAX_VALUE + ": Inv", TextFormatting.GREEN);
 			}
 		}
 	}
 	
-	@Override
-	public void onItemInPlayerHandTick(EntityPlayer player, ItemStack mainHand, ItemStack offHand) {
-		if(JiuUtils.item.equalsStack(mainHand, new ItemStack(this), false, false) || JiuUtils.item.equalsStack(offHand, new ItemStack(this), false, false)) {
-			NBTTagCompound mainnbt = mainHand.getTagCompound() != null ? mainHand.getTagCompound() : new NBTTagCompound();
-			NBTTagCompound offnbt = offHand.getTagCompound() != null ? offHand.getTagCompound() : new NBTTagCompound();
-			if(mainnbt.getBoolean("TestEnergy") || offnbt.getBoolean("TestEnergy")) {
-				if(mainHand.getItem() == this) {
-					this.addEnergy(JiuUtils.energy, mainHand);
-					JiuUtils.entity.sendMessage(player, JiuUtils.energy.getFEEnergy(mainHand)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
-				}else if(offHand.getItem() == this) {
-					this.addEnergy(JiuUtils.energy, offHand);
-					JiuUtils.entity.sendMessage(player, JiuUtils.energy.getFEEnergy(offHand)+ "/" +  Long.MAX_VALUE +" :OffHand", TextFormatting.GREEN);
-				}
+	@SubscribeEvent
+	public void onItemInPlayerHandTick(ItemInPlayerEvent.InHand event) {
+		EntityPlayer player = event.getEntityPlayer();
+		ItemStack stack = event.stack;
+		if(stack.getItem() == this) {
+			NBTTagCompound nbt = stack.getTagCompound() != null ? stack.getTagCompound() : new NBTTagCompound();
+			if(nbt.getBoolean("TestEnergy")) {
+				this.addEnergy(JiuUtils.energy, stack);
+				JiuUtils.entity.sendMessage(player, JiuUtils.energy.getFEEnergy(stack)+ "/" +  Long.MAX_VALUE +" :MainHand", TextFormatting.GREEN);
 			}
 		}
 	}
 	
-	@Override
-	public void onItemInWorldTick(EntityItem item) {
+	@SubscribeEvent
+	public void onItemInWorldTick(ItemInWorldEvent.InWorld event) {
+		EntityItem item = event.item;
 		World world = item.getEntityWorld();
 		BlockPos pos = item.getPosition();
 		if(item.getItem().getItem() == this) {

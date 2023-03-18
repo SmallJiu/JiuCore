@@ -1,8 +1,8 @@
 package cat.jiu.core.capability;
 
-import java.math.BigInteger;
-
 import cat.jiu.core.api.IJiuEnergyStorage;
+import cat.jiu.core.util.JiuUtils;
+
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.EnumFacing;
@@ -25,11 +25,7 @@ public class CapabilityJiuEnergy {
 			
 			@Override
 			public void readNBT(Capability<IJiuEnergyStorage> capability, IJiuEnergyStorage instance, EnumFacing side, NBTBase nbt) {
-				if(instance instanceof JiuEnergyStorage) {
-					((JiuEnergyStorage) instance).energy = new BigInteger(((NBTTagString)nbt).getString());
-				}else {
-					 throw new IllegalArgumentException("Can not deserialize to an instance that isn't the default implementation");
-				}
+				instance.setEnergy(JiuUtils.big_integer.create(((NBTTagString)nbt).getString()));
 			}
         }, () -> new JiuEnergyStorage(10000));
     }

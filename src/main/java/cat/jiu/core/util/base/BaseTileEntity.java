@@ -96,7 +96,7 @@ public class BaseTileEntity {
 		@Override
 		public final void readNBT(NBTTagCompound nbt) {
 			if(this.storage == null) this.storage = JiuEnergyStorage.empty();
-			this.storage.readFromNBT(nbt.getCompoundTag("energy"), false);
+			this.storage.readFrom(nbt.getCompoundTag("energy"));
 			this.energy = this.storage.getEnergyStoredWithLong();
 			this.readFromTeNBT(nbt);
 		}
@@ -104,7 +104,7 @@ public class BaseTileEntity {
 		
 		@Override
 		public final void writeNBT(NBTTagCompound nbt) {
-			nbt.setTag("energy", this.storage.writeToNBT(null, false));
+			nbt.setTag("energy", this.storage.writeTo(NBTTagCompound.class));
 			this.writeToTeNBT(nbt);
 		}
 		public abstract void writeToTeNBT(NBTTagCompound nbt);

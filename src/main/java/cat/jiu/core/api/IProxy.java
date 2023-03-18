@@ -7,8 +7,9 @@ import net.minecraftforge.fml.relauncher.Side;
 
 public interface IProxy<SP, CP extends SP> {
 	
+	default boolean isClient() {return false;}
 	default World getClientWorld() {return null;}
-	default Side getSide() {return Side.SERVER;}
+	default Side getSide() {return this.isClient() ? Side.CLIENT : Side.SERVER;}
 	default EntityPlayer getClientPlayer() {return null;}
 	default String getLanguageCode() {return "en_us";}
 	

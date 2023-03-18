@@ -7,16 +7,16 @@ import javax.annotation.Nullable;
 
 import cat.jiu.core.api.IJiuEnergyStorage;
 import cat.jiu.core.util.JiuUtils;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 
-public class JiuEnergyStorage implements IJiuEnergyStorage, ICapabilityProvider {
+public class JiuEnergyStorage implements IJiuEnergyStorage {
 	private static final JiuEnergyStorage EMPTY = new JiuEnergyStorage(0, 0, 0, 0);
 	public static JiuEnergyStorage empty() {return EMPTY.copy();}
 	protected BigInteger energy;
@@ -96,21 +96,31 @@ public class JiuEnergyStorage implements IJiuEnergyStorage, ICapabilityProvider 
 	public BigInteger getMaxEnergyStoredWithBigInteger() {
 		return this.maxEnergy;
 	}
+
+	@Override
+	public BigInteger getMaxExtractWithBigInteger() {
+		return maxExtract;
+	}
+	@Override
+	public BigInteger getMaxReceiveWithBigInteger() {
+		return maxReceive;
+	}
 	
 	@Override
 	public boolean canExtract() {
-		return !BigInteger.ZERO.equals(this.maxExtract);
+		return JiuUtils.big_integer.greater(this.maxExtract, BigInteger.ZERO);
 	}
 	
 	@Override
 	public boolean canReceive() {
-		return !BigInteger.ZERO.equals(this.maxReceive);
+		return JiuUtils.big_integer.greater(this.maxReceive, BigInteger.ZERO);
 	}
 	
 	public void setEnergy(long energy) {
 		this.setEnergy(BigInteger.valueOf(energy));
 	}
-	
+
+	@Override
 	public void setEnergy(BigInteger energy) {
 		this.energy = energy;
 		this.check();
@@ -119,7 +129,8 @@ public class JiuEnergyStorage implements IJiuEnergyStorage, ICapabilityProvider 
 	public void setMaxEnergy(long energy) {
 		this.setMaxEnergy(BigInteger.valueOf(energy));
 	}
-	
+
+	@Override
 	public void setMaxEnergy(BigInteger energy) {
 		this.maxEnergy = energy;
 		this.check();
@@ -128,23 +139,30 @@ public class JiuEnergyStorage implements IJiuEnergyStorage, ICapabilityProvider 
 	public void setMaxInput(long energy) {
 		this.maxReceive = BigInteger.valueOf(energy);
 	}
-	
-	public void setMaxInput(BigInteger energy) {
+
+	@Override
+	public void setMaxReceive(BigInteger energy) {
 		this.maxReceive = energy;
 	}
 	
 	public void setMaxOutput(long energy) {
 		this.maxExtract = BigInteger.valueOf(energy);
 	}
-	
-	public void setMaxOutput(BigInteger energy) {
+
+	@Override
+	public void setMaxExtract(BigInteger energy) {
 		this.maxExtract = energy;
 	}
 	
 	public int addEnergyToItemStack(ItemStack stack) {
 		if(stack.hasCapability(CapabilityEnergy.ENERGY, null)) {
 			IEnergyStorage storage = stack.getCapability(CapabilityEnergy.ENERGY, null);
-			return storage.receiveEnergy(this.extractEnergyWithBigInteger(BigInteger.valueOf(energy.intValue()), false).intValue(), false);
+			long i = 0;
+			int[] energys = JiuUtils.other.perseInt(this.getMaxEnergyStoredWithBigInteger());
+			for(int j = 0; j < energys.length; j++) {
+				i += storage.receiveEnergy((int) this.extractEnergyWithLong(energys[j], false), false);
+			}
+			return (int) i;
 		}
 		return 0;
 	}
@@ -162,45 +180,26 @@ public class JiuEnergyStorage implements IJiuEnergyStorage, ICapabilityProvider 
 		return new JiuEnergyStorage(this.maxEnergy, this.maxReceive, this.maxExtract, this.energy);
 	}
 	
+	@Deprecated
 	public void readFromNBT(@Nonnull NBTTagCompound nbt, boolean readAll) {
-		if(nbt != null) {
-			this.energy = JiuUtils.big_integer.create(nbt.getString("Energy"));
-			if(readAll) {
-				this.maxEnergy = JiuUtils.big_integer.create(nbt.getString("MaxEnergyStored"));
-				this.maxExtract = JiuUtils.big_integer.create(nbt.getString("MaxOutput"));
-				this.maxReceive = JiuUtils.big_integer.create(nbt.getString("MaxInput"));
-			}
-		}
+		this.read(nbt);
 	}
-	
+	@Deprecated
 	public NBTTagCompound writeToNBT(@Nullable NBTTagCompound nbt, boolean saveAll) {
-		if(nbt == null) {
-			nbt = new NBTTagCompound();
-		}
-		nbt.setString("Energy", this.energy.toString());
-		if(saveAll) {
-			nbt.setString("MaxEnergyStored", this.maxEnergy.toString());
-			nbt.setString("MaxOutput", this.maxExtract.toString());
-			nbt.setString("MaxInput", this.maxReceive.toString());
-		}
-		
-		return nbt;
+		return this.write(nbt);
 	}
 	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		if(capability == CapabilityEnergy.ENERGY
-		|| capability == CapabilityJiuEnergy.ENERGY) {
-			return true;
-		}
-		return false;
+		return IJiuEnergyStorage.super.hasCapability(capability, facing) || capability == CapabilityEnergy.ENERGY;
 	}
 	
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		if (capability == CapabilityEnergy.ENERGY) {
-            return CapabilityEnergy.ENERGY.cast(this.toFEStorage());
-        }
+		T result = IJiuEnergyStorage.super.getCapability(capability, facing);
+		if(result!=null) {
+			return result;
+		}
 		if(capability == CapabilityJiuEnergy.ENERGY) {
 			return CapabilityJiuEnergy.ENERGY.cast(this);
 		}

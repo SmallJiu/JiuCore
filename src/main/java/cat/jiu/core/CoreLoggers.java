@@ -15,12 +15,11 @@ public class CoreLoggers {
 		}
 		return logger;
 	}
-	
+
 	public static LogOS getLogOS() {
-		if(logos == null) {
-			logos = new LogOS(getLogger(), false);
-			logos.setLogFile("./logs/latest");
+		if(logos==null) {
+			logos = new LogOS(getLogger());
 		}
-		return logos; 
+		return logos;
 	}
 }

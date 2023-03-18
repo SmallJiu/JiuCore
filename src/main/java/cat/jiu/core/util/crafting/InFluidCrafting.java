@@ -5,8 +5,9 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import cat.jiu.core.api.events.iface.item.IItemInFluidTickEvent;
+import cat.jiu.core.events.item.ItemInWorldEvent;
 import cat.jiu.core.util.JiuUtils;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
@@ -14,9 +15,12 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @SuppressWarnings("unchecked")
-public class InFluidCrafting implements IItemInFluidTickEvent{
+@EventBusSubscriber
+public class InFluidCrafting {
 	
 	// recipe clazz, input
 	private static HashMap<Integer, ItemStack> recipe_map = new HashMap<Integer, ItemStack>();
@@ -119,8 +123,12 @@ public class InFluidCrafting implements IItemInFluidTickEvent{
 		return (HashMap<Integer, ItemStack>) recipe_map.clone();
 	}
 	
-	@Override
-	public void onItemInFluidTick(EntityItem item, IBlockState state) {
+	@SubscribeEvent
+	public static void onItemInFluidTick(ItemInWorldEvent.InFluid event) {
+		onItemInFluidTick(event.item, event.fluid);
+	}
+	
+	private static void onItemInFluidTick(EntityItem item, IBlockState state) {
 		ItemStack stack = item.getItem();
 		World world = item.getEntityWorld();
 		BlockPos pos = item.getPosition();

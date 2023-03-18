@@ -32,13 +32,13 @@ public class BlockTest extends BaseBlock.Sub<BlockTest.TestModSubtypes> {
 	}
 	
 	@Override
-	protected IProperty<?>[] addBlockOthersProperty() {
+	protected IProperty<?>[] addBlockOtherPropertys() {
 //		return new IProperty[] {BlockTNT.EXPLODE, BlockLog.LOG_AXIS, BlockStone.VARIANT, BlockPlanks.VARIANT, BlockSlab.HALF, BlockLeaves.CHECK_DECAY, BlockLeaves.DECAYABLE};
 		return null;
 	}
 	
 	@Override
-	protected PropertyEnum<BlockTest.TestModSubtypes> getPropertyEnum() {
+	protected PropertyEnum<BlockTest.TestModSubtypes> getBlockStateProperty() {
 		return PropertyEnum.create("level", BlockTest.TestModSubtypes.class);
 	}
 	

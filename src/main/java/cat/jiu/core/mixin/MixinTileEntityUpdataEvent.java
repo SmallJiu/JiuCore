@@ -1,17 +1,11 @@
 package cat.jiu.core.mixin;
 
-import java.util.List;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import cat.jiu.core.api.events.mixin.clazz.game.TileEntityUpdataEvent;
-import cat.jiu.core.api.events.mixin.iface.game.ITileEntityUpdataPost;
-import cat.jiu.core.api.events.mixin.iface.game.ITileEntityUpdataPre;
-import cat.jiu.core.util.JiuCoreEvents;
-
+import cat.jiu.core.events.game.TileEntityUpdataEvent;
 import net.minecraft.tileentity.TileEntity;
 
 import net.minecraftforge.common.MinecraftForge;
@@ -29,10 +23,7 @@ public class MixinTileEntityUpdataEvent<T> {
 	)
 	private void mixin_onPre(T t, CallbackInfo ci) {
 		if(t instanceof TileEntity) {
-			TileEntity tile = (TileEntity) t;
-			MinecraftForge.EVENT_BUS.post(new TileEntityUpdataEvent.Pre(tile));
-			List<ITileEntityUpdataPre> l = JiuCoreEvents.getEvents(ITileEntityUpdataPre.class);
-			if(l != null) l.stream().forEach(e -> e.onPre(tile));
+			MinecraftForge.EVENT_BUS.post(new TileEntityUpdataEvent.Pre((TileEntity) t));
 		}
 	}
 	
@@ -42,10 +33,7 @@ public class MixinTileEntityUpdataEvent<T> {
 	)
 	private void mixin_onPost(T t, CallbackInfo ci) {
 		if(t instanceof TileEntity) {
-			TileEntity tile = (TileEntity) t;
-			MinecraftForge.EVENT_BUS.post(new TileEntityUpdataEvent.Post(tile));
-			List<ITileEntityUpdataPost> l = JiuCoreEvents.getEvents(ITileEntityUpdataPost.class);
-			if(l != null) l.stream().forEach(e -> e.onPost(tile));
+			MinecraftForge.EVENT_BUS.post(new TileEntityUpdataEvent.Post((TileEntity) t));
 		}
 	}
 	

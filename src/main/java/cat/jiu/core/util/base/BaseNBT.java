@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.Nonnull;
+
 import com.google.common.collect.Maps;
 
 import net.minecraft.nbt.*;
@@ -23,7 +25,7 @@ public abstract class BaseNBT extends NBTBase {
 	 * @param type nbt type, like 'TAG_Null', use for {@link NBTBase#getTagTypeName(int)}
 	 * @param name nbt name, like 'NULL', use for {@link NBTBase#NBT_TYPES}
 	 */
-	public static void register(int id, Class<? extends BaseNBT> clazz, String type, String name) {
+	public static void register(int id, @Nonnull Class<? extends BaseNBT> clazz, String type, String name) {
 		if(registrys==null) registrys = Maps.newHashMap();
 		if(getTypeID(clazz) == null && "UNKNOWN".equals(getTypeName(clazz))) {
 			registrys.put(id, new NBTInfo(clazz, type, name));

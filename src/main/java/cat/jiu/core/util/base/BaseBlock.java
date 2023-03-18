@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.api.IHasModel;
 import cat.jiu.core.api.IMetaName;
 import cat.jiu.core.api.ISubBlockSerializable;
@@ -18,7 +19,6 @@ import net.minecraft.block.SoundType;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -292,14 +292,14 @@ public class BaseBlock {
 		}
 	}
 	
-	public static abstract class Sub<T extends Enum<T> & ISubBlockSerializable> extends Base implements IHasModel, IMetaName{
+	public static abstract class Sub<T extends Comparable<T> & ISubBlockSerializable> extends Base implements IHasModel, IMetaName{
 		private final StackCaches stackCaches;
 		public Sub(String modid, String nameIn, Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
 			super(modid, nameIn, materialIn, soundIn, tabIn, hardnessIn, true);
-			this.stackCaches = new StackCaches(this, this.getEnumArray().length);
+			this.stackCaches = new StackCaches(this, this.getPropertyArray().length);
 			
 			RegisterModel.addNeedRegistryModel(modid, this);
-			this.setDefaultState(this.blockState.getBaseState().withProperty(this.getPropertyEnum(), this.propertyEnumArray[0]));
+			this.setDefaultState(this.blockState.getBaseState().withProperty(this.getBlockStateProperty(), this.getPropertyArray()[0]));
 		}
 		
 		private String[] model_res = null;
@@ -322,42 +322,47 @@ public class BaseBlock {
 		 * 
 		 * @author small_jiu
 		 */
-		protected abstract PropertyEnum<T> getPropertyEnum();
+		protected abstract IProperty<T> getBlockStateProperty();
 		
-		protected IProperty<?>[] addBlockOthersProperty() {
+		protected IProperty<?>[] addBlockOtherPropertys() {
 			return null;
 		}
 		
-		private T[] propertyEnumArray;
-		protected T[] getEnumArray() {
-			if(this.propertyEnumArray==null) {
-				this.propertyEnumArray = this.getPropertyEnum().getValueClass().getEnumConstants();
+		private T[] propertyArray = null;
+		// if you property is not enum, you must override this method
+		protected T[] getPropertyArray() {
+			if(this.propertyArray==null) {
+				if(Enum.class.isAssignableFrom(this.getBlockStateProperty().getValueClass())) {
+					this.propertyArray = this.getBlockStateProperty().getValueClass().getEnumConstants();
+				}else {
+					CoreLoggers.getLogOS().warning("property is not enum, it will CRASH the game! block: '{}'  property class: {}", this.getClass(), this.getBlockStateProperty().getValueClass());
+				}
 			}
-			return this.propertyEnumArray;
+			return this.propertyArray;
 		}
 		
 		@Override
 		public int getMetaFromState(IBlockState state) {
-			return state.getValue((IProperty<T>) this.getPropertyEnum()).getMeta();
+			return state.getValue((IProperty<T>) this.getBlockStateProperty()).getMeta();
 		}
 		
 		@Override
 		public IBlockState getStateFromMeta(int meta) {
-			return this.getDefaultState().withProperty(this.getPropertyEnum(), this.getEnumArray()[meta]);
+			return this.getDefaultState().withProperty(this.getBlockStateProperty(), this.getPropertyArray()[meta]);
 		}
 		
 		@Override
 		public String getName(ItemStack stack) {
-			return this.getEnumArray()[stack.getMetadata()].getName();
+			return this.getPropertyArray()[stack.getMetadata()].getName();
 		}
 		
 		@Override
 		protected BlockStateContainer createBlockState() {
 			ArrayList<IProperty<?>> pros = new ArrayList<IProperty<?>>();
 			
-			pros.add(this.getPropertyEnum());
-			if(this.addBlockOthersProperty() != null && this.addBlockOthersProperty().length != 0) {
-				for(IProperty<?> pro : this.addBlockOthersProperty()) {
+			pros.add(this.getBlockStateProperty());
+			if(this.addBlockOtherPropertys() != null && this.addBlockOtherPropertys().length != 0) {
+				for(IProperty<?> pro : this.addBlockOtherPropertys()) {
 					if(pro!=null) pros.add(pro);
 				}
 			}
@@ -367,11 +372,11 @@ public class BaseBlock {
 		@Override
 		public void getItemModel(RegisterModel util) {
 			if(this.model_res != null) {
-				for(int i = 0; i < this.getEnumArray().length; ++i) {
+				for(int i = 0; i < this.getPropertyArray().length; ++i) {
 					util.registerItemModel(this, i, this.model_res[0], this.name + "." + i);
 				}
 			}else {
-				for(int i = 0; i < this.getEnumArray().length; ++i) {
+				for(int i = 0; i < this.getPropertyArray().length; ++i) {
 					util.registerItemModel(this, i, "block/sub/" + this.name, this.name + "." + i);
 				}
 			}
@@ -380,7 +385,7 @@ public class BaseBlock {
 		@Override
 		public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
 			if(this.getHasSubtypes()){
-				for(int i = 0; i < this.getEnumArray().length; ++i) {
+				for(int i = 0; i < this.getPropertyArray().length; ++i) {
 					items.add(new ItemStack(this, 1, i));
 				}
 			}else{
