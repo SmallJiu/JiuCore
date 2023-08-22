@@ -220,6 +220,7 @@ public class BaseBlock {
 	}
 	
 	public static abstract class Normal extends Base implements IHasModel {
+		@Deprecated
 		protected final RegisterModel model = new RegisterModel(this.modid);
 		
 		public Normal(String modid, String nameIn,  Material materialIn, SoundType soundIn, CreativeTabs tabIn, float hardnessIn) {
@@ -280,10 +281,11 @@ public class BaseBlock {
 		@SideOnly(Side.CLIENT)
 		@Override
 		public void getItemModel(RegisterModel util) {
+			util.setBlockStateMapper(this, true, "normal/"+this.name);
 			if(this.model_res != null) {
 				util.registerItemModel(this, this.model_res[0], this.model_res[1]);
 			}else {
-				util.registerItemModel(this, "block/normal/" + this.name, this.name);
+				util.registerItemModel(this, "block/normal/", this.name);
 			}
 		}
 		
@@ -368,16 +370,22 @@ public class BaseBlock {
 			}
 			return new BlockStateContainer(this, pros.toArray(new IProperty[0]));
 		}
+		protected boolean useStateName;
+		public BaseBlock.Sub<T> useStateNameToSetItemStackModel() {
+			this.useStateName = true;
+			return this;
+		}
 		
 		@Override
 		public void getItemModel(RegisterModel util) {
+			util.setBlockStateMapper(this, false, "sub/"+this.name);
 			if(this.model_res != null) {
-				for(int i = 0; i < this.getPropertyArray().length; ++i) {
-					util.registerItemModel(this, i, this.model_res[0], this.name + "." + i);
+				for(T t : this.getPropertyArray()) {
+					util.registerItemModel(this, t.getMeta(), this.model_res[0], this.name + "." + (this.useStateName ? t.getName() : t.getMeta()));
 				}
 			}else {
-				for(int i = 0; i < this.getPropertyArray().length; ++i) {
-					util.registerItemModel(this, i, "block/sub/" + this.name, this.name + "." + i);
+				for(T t : this.getPropertyArray()) {
+					util.registerItemModel(this, t.getMeta(), "block/sub/" + this.name, this.name + "." + (this.useStateName ? t.getName() : t.getMeta()));
 				}
 			}
 		}

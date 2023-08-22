@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import cat.jiu.core.api.IExecuteable;
 import cat.jiu.core.util.JiuUtils;
 
 import net.minecraft.item.ItemStack;
@@ -34,12 +35,30 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public final class OtherUtils {
+	public int tryExecute(IExecuteable executeable, int maxRetry) {
+		int tryCount = 0;
+		boolean isSuccess = false;
+		Throwable lastException = null;
+		do {
+			try {
+				isSuccess = executeable.execute(tryCount, lastException);
+				if(!isSuccess) {
+					lastException = null;
+				}
+			}catch(Exception e) {
+				lastException = e;
+			}
+			if(!isSuccess) {
+				tryCount++;
+			}
+		}while(!isSuccess && tryCount <= maxRetry);
+		return tryCount;
+	}
 	
 	public int[] perseInt(long value) {
 		int[] result;
 		if(value <= Integer.MAX_VALUE) {
-			result = new int[1];
-			result[0] = (int)value;
+			result = new int[] {(int) value};
 		}else {
 			int intNum = (int) (value / Integer.MAX_VALUE);
 			if(value % Integer.MAX_VALUE > 0) {

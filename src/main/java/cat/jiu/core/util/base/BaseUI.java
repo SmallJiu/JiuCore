@@ -9,6 +9,7 @@ import org.lwjgl.input.Keyboard;
 import com.google.common.collect.Lists;
 
 import cat.jiu.core.api.handler.IBuilder;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -26,6 +27,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
@@ -35,23 +37,51 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
-@SideOnly(Side.CLIENT)
 public class BaseUI {
+	@Deprecated
 	@SideOnly(Side.CLIENT)
-	public static class BaseGui<CONTAINER extends Container, TILEENTITY extends TileEntity> extends GuiContainer{
+	public static class BaseGui<CONTAINER extends Container, TILEENTITY extends TileEntity> extends BaseTitleEntityGui<CONTAINER, TILEENTITY> {
+		public BaseGui(CONTAINER container, EntityPlayer player, TILEENTITY te, ResourceLocation background, int xSize, int ySize) {
+			super(container, player, te, background, xSize, ySize);
+		}
+
+		public BaseGui(CONTAINER container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
+			super(container, player, world, pos, background, xSize, ySize);
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static class BaseTitleEntityGui<CONTAINER extends Container, TILEENTITY extends TileEntity> extends BaseGuiNormal<CONTAINER> {
+		public BaseTitleEntityGui(CONTAINER container, EntityPlayer player, TILEENTITY te, ResourceLocation background, int xSize, int ySize) {
+			super(container, player, te.getWorld(), te.getPos(), background, xSize, ySize);
+		}
+
+		public BaseTitleEntityGui(CONTAINER container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
+			super(container, player, world, pos, background, xSize, ySize);
+		}
+
+		@SuppressWarnings("unchecked")
+		protected TILEENTITY getTileEntity() {
+			if(this.getContainer() instanceof BaseTileEntityContainer) {
+				return ((BaseTileEntityContainer<TILEENTITY>) this.getContainer()).getTileEntity();
+			}
+			return (TILEENTITY) this.world.getTileEntity(this.pos);
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static class BaseGuiNormal<CONTAINER extends Container> extends GuiContainer {
 		public final ResourceLocation background;
 		protected final EntityPlayer player;
 		protected final World world;
 		protected final BlockPos pos;
 		protected final CONTAINER container;
-		protected final TILEENTITY te;
-		
-		public BaseGui(CONTAINER container, EntityPlayer player, TILEENTITY te, ResourceLocation background, int xSize, int ySize) {
-			this(container, player, te.getWorld(), te.getPos(), background, ySize, ySize);
+
+		public BaseGuiNormal(CONTAINER container, EntityPlayer player, ResourceLocation background, int xSize, int ySize) {
+			this(container, player, player.world, player.getPosition(), background, xSize, ySize);
 		}
-		
-		@SuppressWarnings("unchecked")
-		public BaseGui(CONTAINER container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
+
+		public BaseGuiNormal(CONTAINER container, EntityPlayer player, World world, BlockPos pos, ResourceLocation background, int xSize, int ySize) {
 			super(container);
 			this.background = background;
 			this.xSize = xSize;
@@ -59,59 +89,161 @@ public class BaseUI {
 			this.player = player;
 			this.world = world;
 			this.pos = pos;
-			this.te = (TILEENTITY) this.world.getTileEntity(pos);
 			this.container = container;
 		}
 
-		protected void init() {}
+		protected void init() {
+		}
+
 		public final void initGui() {
 			super.initGui();
 			this.init();
 		}
-		
+
 		@Override
 		protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
 			int x = (this.width - this.xSize) / 2;
 			int y = (this.height - this.ySize) / 2;
-			
+
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			this.mc.getTextureManager().bindTexture(this.background);
 			this.drawTexturedModalRect(x, y, 0, 0, this.xSize, this.ySize);
 		}
-		
-		protected void drawGuiScreen(int mouseX, int mouseY, float partialTicks) {}
+
+		protected void drawGuiScreen(int mouseX, int mouseY, float partialTicks) {
+		}
+
 		public final void drawScreen(int mouseX, int mouseY, float partialTicks) {
 			super.drawDefaultBackground();
 			super.drawScreen(mouseX, mouseY, partialTicks);
 			super.renderHoveredToolTip(mouseX, mouseY);
 			this.drawGuiScreen(mouseX, mouseY, partialTicks);
 		}
-		
-		protected TILEENTITY getTileEntity() {
-			return this.te;
-		}
+
 		protected CONTAINER getContainer() {
 			return this.container;
 		}
-		
-		public static boolean isInRange(int mouseX, int mouseY, int minX, int minY, int width, int height) {
-			int maxX = minX + width;
-			int maxY = minY + height;
-			return (mouseX >= minX && mouseY >= minY) && (mouseX <= maxX && mouseY <= maxY);
+
+		public static boolean isInRange(int mouseX, int mouseY, int x, int y, int width, int height) {
+			return (mouseX >= x && mouseY >= y) && (mouseX <= x + width && mouseY <= y + height);
 		}
 	}
-	
+
+	@SideOnly(Side.CLIENT)
+	public static class GuiDecimalNumberTextField extends GuiTextField {
+		protected double min = Double.MIN_NORMAL, max = Double.MAX_VALUE;
+		public GuiDecimalNumberTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height) {
+			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
+			this.setText("0");
+		}
+		public GuiDecimalNumberTextField setNumberRange(double min, double max) {
+			this.min = min;
+			this.max = max;
+			return this;
+		}
+		
+		@Override
+		public boolean textboxKeyTyped(char typedChar, int keyCode) {
+			boolean f = false;
+			if("0123456789.".contains(String.valueOf(typedChar))) {
+				f = true;
+			}
+			if(typedChar == '.' && !this.getText().contains(".")) {
+				f = true;
+			}
+			switch(keyCode) {
+				case Keyboard.KEY_UP:
+				case Keyboard.KEY_DOWN:
+				case Keyboard.KEY_LEFT:
+				case Keyboard.KEY_RETURN:
+				case Keyboard.KEY_BACK: f = true; break;
+			}
+			if(f) {
+				boolean flag = super.textboxKeyTyped(typedChar, keyCode);
+				double num = this.getNumber();
+				if(num > this.max) {
+					this.setText(String.valueOf(this.max));
+				}
+				if(num < this.min) {
+					this.setText(String.valueOf(this.min));
+				}
+				return flag;
+			}
+			return false;
+		}
+		public double getNumber() {
+			if(this.getText().isEmpty()) {
+				this.setText("0");
+			}
+			if(this.getText().endsWith(".")) {
+				this.setText(this.getText()+"0");
+			}
+			return Double.parseDouble(this.getText());
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static class GuiNumberTextField extends GuiTextField {
+		protected long min = Long.MIN_VALUE, max = Long.MAX_VALUE;
+		public GuiNumberTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height) {
+			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
+		}
+		public GuiNumberTextField setNumberRange(long min, long max) {
+			this.min = min;
+			this.max = max;
+			return this;
+		}
+		
+		@Override
+		public boolean textboxKeyTyped(char typedChar, int keyCode) {
+			boolean f = false;
+			if("0123456789".contains(String.valueOf(typedChar))) {
+				f = true;
+			}
+			switch(keyCode) {
+				case Keyboard.KEY_UP:
+				case Keyboard.KEY_DOWN:
+				case Keyboard.KEY_LEFT:
+				case Keyboard.KEY_RETURN:
+				case Keyboard.KEY_BACK: f = true; break;
+			}
+			if(f) {
+				boolean flag = super.textboxKeyTyped(typedChar, keyCode);
+				long num = this.getNumber();
+				if(num > this.max) {
+					this.setText(String.valueOf(this.max));
+				}
+				if(num < this.min) {
+					this.setText(String.valueOf(this.min));
+				}
+				return flag;
+			}
+			return false;
+		}
+		public long getNumber() {
+			if(this.getText().isEmpty()) {
+				this.setText("0");
+			}
+			return Long.parseLong(this.getText());
+		}
+	}
+
 	/**
 	 * player use Keyboard key_tab on text field, can fast input player name
+	 * 
 	 * @author small_jiu
 	 */
+	@SideOnly(Side.CLIENT)
 	public static class GuiNameTextField extends GuiTextField {
-		private final boolean canSelectedSelf;
+		protected final boolean canSelectedSelf;
+
 		public GuiNameTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height, boolean canSelectedSelf) {
 			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
 			this.canSelectedSelf = canSelectedSelf;
 		}
+
 		private int index = 0;
+
 		@Override
 		public boolean textboxKeyTyped(char typedChar, int keyCode) {
 			boolean lag = super.textboxKeyTyped(typedChar, keyCode);
@@ -139,69 +271,114 @@ public class BaseUI {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public static class BaseContainer<TILEENTITY extends TileEntity> extends Container {
+	@Deprecated
+	public static class BaseContainer<TILEENTITY extends TileEntity> extends BaseTileEntityContainer<TILEENTITY> {
+		public BaseContainer(EntityPlayer player, World world, BlockPos pos) {
+			super(player, world, pos);
+		}
+
+		public BaseContainer(TILEENTITY te, EntityPlayer player, World world, BlockPos pos) {
+			super(player, te);
+		}
+	}
+
+	public static class BaseTileEntityContainer<TILEENTITY extends TileEntity> extends BaseContainerNormal {
+		public BaseTileEntityContainer(EntityPlayer player, TILEENTITY te) {
+			super(player, te.getWorld(), te.getPos());
+		}
+
+		public BaseTileEntityContainer(EntityPlayer player, World world, BlockPos pos) {
+			super(player, world, pos);
+		}
+
+		@SuppressWarnings("unchecked")
+		public TILEENTITY getTileEntity() {
+			return (TILEENTITY) this.world.getTileEntity(this.pos);
+		}
+	}
+
+	public static class BaseContainerNormal extends Container {
 		protected final BlockPos pos;
 		protected final EntityPlayer player;
 		protected final InventoryPlayer inventory;
 		protected final World world;
-		protected TILEENTITY te = null;
-		
-		public BaseContainer(EntityPlayer player, World world, BlockPos pos) {
-			this((TILEENTITY) world.getTileEntity(pos), player, world, pos);
+
+		public BaseContainerNormal(EntityPlayer player, World world) {
+			this(player, world, player.getPosition());
 		}
-		public BaseContainer(TILEENTITY te, EntityPlayer player, World world, BlockPos pos) {
+
+		public BaseContainerNormal(EntityPlayer player, World world, BlockPos pos) {
 			this.player = player;
 			this.inventory = player.inventory;
 			this.world = world;
 			this.pos = pos;
-			this.te = te;
 		}
-		
-		protected void sendChanges() {}
+
+		protected void sendChanges() {
+		}
+
 		public final void detectAndSendChanges() {
 			super.detectAndSendChanges();
-			this.te = (TILEENTITY) this.world.getTileEntity(this.pos);
 			this.sendChanges();
 		}
-		
+
 		@SideOnly(Side.CLIENT)
-		protected void updateChanges(int id, int data) {}
+		protected void updateChanges(int id, int data) {
+		}
+
 		@SideOnly(Side.CLIENT)
 		@Override
 		public final void updateProgressBar(int id, int data) {
 			this.updateChanges(id, data);
 		}
 
-		protected boolean canSeeUI(EntityPlayer player) {return true;};
+		protected boolean canSeeUI(EntityPlayer player) {
+			return true;
+		};
+
 		public boolean canInteractWith(EntityPlayer player) {
 			boolean hasBlock = player.world.getBlockState(this.pos).getBlock() != Blocks.AIR;
 			return player.dimension == this.player.dimension && player.getDistanceSq(this.pos) <= 32.0 && hasBlock && this.canSeeUI(player);
 		}
-		
+
 		/**
-		 * @param slot custom slot, 
-		 * @param slot_args itemHandler, slotIndex, slotX, slotY
+		 * @param slot
+		 *            custom slot,
+		 * @param slot_args
+		 *            itemHandler, slotIndex, slotX, slotY
 		 * @author small_jiu
 		 */
 		protected void addHandlerSlot(ItemStackHandler handler, int x, int y, int slotWidth, int slotHeight, IBuilder<Slot> slot) {
 			int slotIndex = 0;
 			for(int slotY = 0; slotY < slotHeight; slotY++) {
 				for(int slotX = 0; slotX < slotWidth; slotX++) {
-					if(slotIndex >= handler.getSlots()) return;
+					if(slotIndex >= handler.getSlots())
+						return;
 					this.addSlotToContainer(slot.builder(handler, slotIndex, x + (18 * slotX), y + (18 * slotY)));
 					slotIndex += 1;
-				}	
+				}
 			}
 		}
-		
+
+		protected void addHandlerSlot(ItemStackHandler handler, int x, int y, int slotWidth, int slotHeight) {
+			int slotIndex = 0;
+			for(int slotY = 0; slotY < slotHeight; slotY++) {
+				for(int slotX = 0; slotX < slotWidth; slotX++) {
+					if(slotIndex >= handler.getSlots())
+						return;
+					this.addSlotToContainer(new SlotItemHandler(handler, slotIndex, x + (18 * slotX), y + (18 * slotY)));
+					slotIndex += 1;
+				}
+			}
+		}
+
 		protected void addPlayerInventorySlot(int x, int y) {
 			int slotIndex = 0;
 			for(int slotX = 0; slotX < 9; slotX++) {
 				this.addSlotToContainer(new Slot(this.inventory, slotIndex, x + 18 * slotX, y + (18 * 2) + 22));
 				slotIndex += 1;
 			}
-			
+
 			for(int slotY = 0; slotY < 3; slotY++) {
 				for(int slotX = 0; slotX < 9; slotX++) {
 					this.addSlotToContainer(new Slot(this.inventory, slotIndex, x + 18 * slotX, y + (18 * slotY)));
@@ -209,11 +386,7 @@ public class BaseUI {
 				}
 			}
 		}
-		
-		public TILEENTITY getTileEntity() {
-			return this.te;
-		}
-		
+
 		protected boolean mergeItemStack(IItemHandlerModifiable handler, ItemStack stack, int startIndex, int endIndex, boolean reverseDirection) {
 			boolean flag = false;
 			int i = startIndex;
@@ -297,24 +470,49 @@ public class BaseUI {
 			return flag;
 		}
 	}
-	
+
 	public static final class ContainerNull extends Container {
-		public boolean canInteractWith(EntityPlayer entityplayer){return false;}
+		public boolean canInteractWith(EntityPlayer entityplayer) {
+			return false;
+		}
 	}
-	
+
+	@SideOnly(Side.CLIENT)
+	public static class GuiClickButton extends GuiButton {
+		protected final IButtonClickEvent event;
+
+		public GuiClickButton(int buttonId, int x, int y, int widthIn, int heightIn, String buttonText, IButtonClickEvent event) {
+			super(buttonId, x, y, widthIn, heightIn, buttonText);
+			this.event = event;
+		}
+
+		public GuiClickButton(int buttonId, int x, int y, String buttonText, IButtonClickEvent event) {
+			super(buttonId, x, y, buttonText);
+			this.event = event;
+		}
+
+		@Override
+		public void mouseReleased(int mouseX, int mouseY) {
+			if(this.event != null)
+				this.event.click(mouseX, mouseY);
+		}
+
+		public static interface IButtonClickEvent {
+			void click(int mouseX, int mouseY);
+		}
+	}
+
 	public static class UndefinedIndexSlot extends SlotItemHandler {
 		protected int index;
-		
+
 		public UndefinedIndexSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
 			super(itemHandler, index, xPosition, yPosition);
 			this.index = index;
 		}
-		
+
 		@Override
 		public boolean isItemValid(@Nonnull ItemStack stack) {
-			if(stack.isEmpty()
-			|| !getItemHandler().isItemValid(this.index, stack)
-			|| this.index >= this.getItemHandler().getSlots()) {
+			if(stack.isEmpty() || !getItemHandler().isItemValid(this.index, stack) || this.index >= this.getItemHandler().getSlots()) {
 				return false;
 			}
 
@@ -406,37 +604,42 @@ public class BaseUI {
 			}
 			return this.getItemHandler().getStackInSlot(this.index);
 		}
-		
+
 		@Override
 		public int getSlotIndex() {
 			return this.index;
 		}
 
-		public void setIndex(int index) {
+		public UndefinedIndexSlot setIndex(int index) {
 			this.index = index;
+			return this;
 		}
 	}
-	
+
+	@SideOnly(Side.CLIENT)
 	public static class GuiPopupMenu extends GuiScreen {
 		protected final List<GuiButton> btns;
 		protected boolean visible = false;
+
 		public GuiPopupMenu() {
 			this(Lists.newArrayList());
 		}
+
 		public GuiPopupMenu(List<GuiButton> btns) {
 			this.btns = btns;
 		}
-		
+
 		public void setVisible(boolean visible) {
 			this.visible = visible;
 			for(int i = 0; i < btns.size(); i++) {
 				this.btns.get(i).visible = visible;
 			}
 		}
+
 		public boolean isVisible() {
 			return visible;
 		}
-		
+
 		public void drawPopupMenu(Minecraft mc, int x, int y, float partialTicks) {
 			if(this.visible) {
 				for(int i = 0; i < btns.size(); i++) {
@@ -448,25 +651,28 @@ public class BaseUI {
 				}
 			}
 		}
-		
+
 		public boolean mouseClicked(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
 			boolean flag = false;
 			if(mouseButton == 0) {
 				for(GuiButton btn : this.btns) {
 					if(btn.mousePressed(mc, mouseX, mouseY)) {
 						GuiScreenEvent.ActionPerformedEvent.Pre event = new GuiScreenEvent.ActionPerformedEvent.Pre(this, btn, this.btns);
-	                    if (MinecraftForge.EVENT_BUS.post(event)) break;
-	                    btn = event.getButton();
-	                    btn.playPressSound(mc.getSoundHandler());
-	                    btn.mouseReleased(mouseX, mouseY);
-	                    flag = true;
-	                    MinecraftForge.EVENT_BUS.post(new GuiScreenEvent.ActionPerformedEvent.Post(this, btn, this.btns));
+						if(MinecraftForge.EVENT_BUS.post(event))
+							break;
+						btn = event.getButton();
+						btn.playPressSound(mc.getSoundHandler());
+						btn.mouseReleased(mouseX, mouseY);
+						flag = true;
+						MinecraftForge.EVENT_BUS.post(new GuiScreenEvent.ActionPerformedEvent.Post(this, btn, this.btns));
 					}
 				}
 			}
-			if(flag) this.setVisible(false);
+			if(flag)
+				this.setVisible(false);
 			return flag;
 		}
+
 		@Override
 		public <T extends GuiButton> T addButton(T buttonIn) {
 			this.btns.add(buttonIn);

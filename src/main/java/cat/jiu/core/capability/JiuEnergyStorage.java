@@ -5,14 +5,14 @@ import java.math.BigInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.google.gson.JsonObject;
+
 import cat.jiu.core.api.IJiuEnergyStorage;
 import cat.jiu.core.util.JiuUtils;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
 
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 
@@ -23,6 +23,8 @@ public class JiuEnergyStorage implements IJiuEnergyStorage {
     protected BigInteger maxEnergy;
     protected BigInteger maxReceive;
     protected BigInteger maxExtract;
+    protected ItemStack stack;
+    protected boolean isInfinite;
 	
 	public JiuEnergyStorage(long maxEnergy) {
 		this(maxEnergy, 1000, 1000, 0);
@@ -60,15 +62,28 @@ public class JiuEnergyStorage implements IJiuEnergyStorage {
 		this.energy = BigInteger.ZERO.max(maxEnergy.min(energy));
 	}
 	
+	public JiuEnergyStorage setItemStack(ItemStack stack) {
+		this.stack = stack;
+		if(JiuUtils.nbt.hasNBT(stack, "Energy")) {
+			this.readFrom(stack.getTagCompound().getCompoundTag("Energy"));
+		}
+		return this;
+	}
+	public JiuEnergyStorage setIsInfinite(boolean isInfinite) {
+		this.isInfinite = isInfinite;
+		return this;
+	}
+	
 	@Override
 	public BigInteger receiveEnergyWithBigInteger(BigInteger maxReceive, boolean simulate) {
-		if (!this.canReceive()) {
+		if (!this.canReceive() || this.isInfinite) {
 			return BigInteger.ZERO;
 		}
 		
 		BigInteger energyReceived = this.maxEnergy.subtract(this.energy).min(this.maxReceive.min(maxReceive));
         if(!simulate) {
         	this.energy = this.energy.add(energyReceived);
+        	this.setEnergyToStack();
         }
         
         return energyReceived;
@@ -79,10 +94,13 @@ public class JiuEnergyStorage implements IJiuEnergyStorage {
 		if(!this.canExtract()) {
 			return BigInteger.ZERO;
 		}
-		
+		if(this.isInfinite) {
+			return maxExtract;
+		}
 		BigInteger energyExtracted = this.energy.min(this.maxExtract.min(maxExtract));
         if(!simulate) {
         	this.energy = this.energy.subtract(energyExtracted);
+        	this.setEnergyToStack();
         }
         return energyExtracted;
 	}
@@ -96,7 +114,7 @@ public class JiuEnergyStorage implements IJiuEnergyStorage {
 	public BigInteger getMaxEnergyStoredWithBigInteger() {
 		return this.maxEnergy;
 	}
-
+	
 	@Override
 	public BigInteger getMaxExtractWithBigInteger() {
 		return maxExtract;
@@ -154,6 +172,14 @@ public class JiuEnergyStorage implements IJiuEnergyStorage {
 		this.maxExtract = energy;
 	}
 	
+	public void setEnergyToStack() {
+		if(this.stack!=null) {
+			NBTTagCompound nbt = JiuUtils.nbt.getItemNBT(stack);
+			nbt.setTag("Energy", this.writeTo(NBTTagCompound.class));
+			this.stack.setTagCompound(nbt);
+		}
+	}
+	
 	public int addEnergyToItemStack(ItemStack stack) {
 		if(stack.hasCapability(CapabilityEnergy.ENERGY, null)) {
 			IEnergyStorage storage = stack.getCapability(CapabilityEnergy.ENERGY, null);
@@ -175,11 +201,59 @@ public class JiuEnergyStorage implements IJiuEnergyStorage {
 		}
 	}
 	
+	protected IEnergyStorage feStorage;
 	@Override
-	public JiuEnergyStorage copy() {
-		return new JiuEnergyStorage(this.maxEnergy, this.maxReceive, this.maxExtract, this.energy);
+	public IEnergyStorage toFEStorage() {
+		if(this.feStorage==null) {
+			this.feStorage = IJiuEnergyStorage.super.toFEStorage();
+		}
+		return this.feStorage;
 	}
 	
+	@Override
+	public JiuEnergyStorage copy() {
+		return new JiuEnergyStorage(this.maxEnergy, this.maxReceive, this.maxExtract, this.energy).setItemStack(stack).setIsInfinite(isInfinite);
+	}
+	
+	
+	@Override
+	public void read(JsonObject json) {
+		IJiuEnergyStorage.super.read(json);
+		if(json.has("stack")) {
+			this.stack = JiuUtils.item.toStack(json.get("stack"));
+		}
+		this.isInfinite = json.get("infinite").getAsBoolean();
+	}
+
+	@Override
+	public JsonObject write(JsonObject json) {
+		json = IJiuEnergyStorage.super.write(json);
+		if(this.stack!=null && !this.stack.isEmpty()) {
+			json.add("stack", JiuUtils.item.toJson(this.stack));
+		}
+		json.addProperty("infinite", this.isInfinite);
+		return json;
+	}
+
+	@Override
+	public void read(NBTTagCompound nbt) {
+		IJiuEnergyStorage.super.read(nbt);
+		if(nbt.hasKey("stack")) {
+			this.stack = new ItemStack(nbt.getCompoundTag("stack"));
+		}
+		this.isInfinite = nbt.getBoolean("infinite");
+	}
+
+	@Override
+	public NBTTagCompound write(NBTTagCompound nbt) {
+		nbt = IJiuEnergyStorage.super.write(nbt);
+		if(this.stack!=null && !this.stack.isEmpty()) {
+			nbt.setTag("stack", this.stack.serializeNBT());
+		}
+		nbt.setBoolean("infinite", this.isInfinite);
+		return nbt;
+	}
+
 	@Deprecated
 	public void readFromNBT(@Nonnull NBTTagCompound nbt, boolean readAll) {
 		this.read(nbt);
@@ -187,22 +261,5 @@ public class JiuEnergyStorage implements IJiuEnergyStorage {
 	@Deprecated
 	public NBTTagCompound writeToNBT(@Nullable NBTTagCompound nbt, boolean saveAll) {
 		return this.write(nbt);
-	}
-	
-	@Override
-	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		return IJiuEnergyStorage.super.hasCapability(capability, facing) || capability == CapabilityEnergy.ENERGY;
-	}
-	
-	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		T result = IJiuEnergyStorage.super.getCapability(capability, facing);
-		if(result!=null) {
-			return result;
-		}
-		if(capability == CapabilityJiuEnergy.ENERGY) {
-			return CapabilityJiuEnergy.ENERGY.cast(this);
-		}
-		return null;
 	}
 }

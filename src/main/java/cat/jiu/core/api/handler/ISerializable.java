@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import com.google.gson.JsonObject;
 
 import cat.jiu.sql.SQLValues;
-
 import net.minecraft.nbt.NBTTagCompound;
 
 public interface ISerializable extends IJsonSerializable, INBTSerializable, ISQLSerializable {
@@ -21,16 +20,17 @@ public interface ISerializable extends IJsonSerializable, INBTSerializable, ISQL
 		}
 		return null;
 	}
-	default <T> void readFrom(T t) {
-		if(t instanceof NBTTagCompound) {
-			this.read((NBTTagCompound)t);
-		}else if(t instanceof JsonObject) {
-			this.read((JsonObject)t);
-		}else if(t instanceof ResultSet) {
+	
+	default <T> void readFrom(T e) {
+		if(e instanceof NBTTagCompound) {
+			this.read((NBTTagCompound)e);
+		}else if(e instanceof JsonObject) {
+			this.read((JsonObject)e);
+		}else if(e instanceof ResultSet) {
 			try {
-				this.read((ResultSet)t);
-			}catch(SQLException e) {
-				e.printStackTrace();
+				this.read((ResultSet)e);
+			}catch(SQLException e1) {
+				e1.printStackTrace();
 			}
 		}
 	}

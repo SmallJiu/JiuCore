@@ -19,7 +19,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
 
-version = "1.12.2-1.1.6-a0"
+version = "1.12.2-1.1.6-a1"
 group = "cat.jiu.core" 
 archivesBaseName = "JiuCore"
 
@@ -31,9 +31,8 @@ compileJava {
 minecraft {
     version = "1.12.2-14.23.5.2847"
     runDir = "run"
-    
     mappings = "snapshot_20171003"
-    // makeObfSourceJar = false
+	//makeObfSourceJar = false
 }
 
 jar {
@@ -65,9 +64,6 @@ repositories {
         name "CoFH Maven"
         url "https://maven.covers1624.net"
     }
-	maven {
-        url "https://maven.cleanroommc.com"
-    }
 	maven { 
 		url 'https://repo.spongepowered.org/maven'
 	}
@@ -76,7 +72,7 @@ repositories {
 dependencies {
 	deobfCompile 'cofh:RedstoneFlux:1.12-2.1.0.7:universal'
 	deobfCompile "curse.maven:Hwyla-253449:2568751" // 1.8.26-B41
-	deobfCompile ("zone.rong:mixinbooter:4.2")
+//	deobfCompile ("zone.rong:mixinbooter:4.2")
 	provided('org.spongepowered:mixin:0.8') {
         exclude module: 'guava'
         exclude module: 'commons-io'

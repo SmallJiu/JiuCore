@@ -1,6 +1,7 @@
 package cat.jiu.core.util.helpers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -299,17 +300,17 @@ public final class ItemUtils {
 	private JsonArray getNumberArray(NBTTagString str) {
 		JsonArray num_array = null;
 		String s = str.getString();
-		if(s.contains("short_array") && s.contains("@") && s.contains(",")) {
+		if(s.contains("short_array@") && s.contains(",")) {
 			num_array = new JsonArray();
 			for (Short num : JiuUtils.other.toNumberArray(Short.class, JiuUtils.other.custemSplitString(",", JiuUtils.other.custemSplitString("@", s)[1]))) {
 				num_array.add(num);
 			}
-		}else if(s.contains("double_array") && s.contains("@") && s.contains(",")) {
+		}else if(s.contains("double_array@") && s.contains(",")) {
 			num_array = new JsonArray();
 			for (Double num : JiuUtils.other.toNumberArray(Double.class, JiuUtils.other.custemSplitString(",", JiuUtils.other.custemSplitString("@", s)[1]))) {
 				num_array.add(num);
 			}
-		}else if(s.contains("float_array") && s.contains("@") && s.contains(",")) {
+		}else if(s.contains("float_array@") && s.contains(",")) {
 			num_array = new JsonArray();
 			for (Float num : JiuUtils.other.toNumberArray(Float.class, JiuUtils.other.custemSplitString(",", JiuUtils.other.custemSplitString("@", s)[1]))) {
 				num_array.add(num);
@@ -547,7 +548,7 @@ public final class ItemUtils {
 		}else {
 			return new ItemStack(Item.getByNameOrId(stack));
 		}
-		return null;
+		return ItemStack.EMPTY;
 	}
 	
 	public List<ItemStack> toStacks(JsonElement e) {
@@ -572,7 +573,7 @@ public final class ItemUtils {
 				}
 			}
 		});
-		if(stacks.isEmpty()) return null;
+		if(stacks.isEmpty()) return Collections.emptyList();
 		return stacks;
 	}
 	
@@ -590,7 +591,7 @@ public final class ItemUtils {
 				}
 			}
 		});
-		if(stacks.isEmpty()) return null;
+		if(stacks.isEmpty()) return Collections.emptyList();
 		return stacks;
 	}
 	

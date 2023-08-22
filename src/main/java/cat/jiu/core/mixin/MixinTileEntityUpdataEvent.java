@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import cat.jiu.core.events.game.TileEntityUpdataEvent;
+import cat.jiu.core.events.game.TileEntityUpdateEvent;
 import net.minecraft.tileentity.TileEntity;
 
 import net.minecraftforge.common.MinecraftForge;
@@ -23,7 +23,7 @@ public class MixinTileEntityUpdataEvent<T> {
 	)
 	private void mixin_onPre(T t, CallbackInfo ci) {
 		if(t instanceof TileEntity) {
-			MinecraftForge.EVENT_BUS.post(new TileEntityUpdataEvent.Pre((TileEntity) t));
+			MinecraftForge.EVENT_BUS.post(new TileEntityUpdateEvent.Pre((TileEntity) t));
 		}
 	}
 	
@@ -33,7 +33,7 @@ public class MixinTileEntityUpdataEvent<T> {
 	)
 	private void mixin_onPost(T t, CallbackInfo ci) {
 		if(t instanceof TileEntity) {
-			MinecraftForge.EVENT_BUS.post(new TileEntityUpdataEvent.Post((TileEntity) t));
+			MinecraftForge.EVENT_BUS.post(new TileEntityUpdateEvent.Post((TileEntity) t));
 		}
 	}
 	

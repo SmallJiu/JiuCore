@@ -1,7 +1,7 @@
 package cat.jiu.core.capability;
 
 import cat.jiu.core.JiuCore;
-
+import cat.jiu.core.api.IJiuEnergyStorage;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -29,6 +29,23 @@ public final class EnergyUtils {
 		}
 		if(te.hasCapability(CapabilityEnergy.ENERGY, side)) {
 			return te.getCapability(CapabilityEnergy.ENERGY, side);
+		}
+		return null;
+	}
+	
+	public IJiuEnergyStorage getJiuEnergyStorage(ItemStack stack) {
+		if(stack.hasCapability(CapabilityEnergy.ENERGY, null)) {
+			return stack.getCapability(CapabilityJiuEnergy.ENERGY, null);
+		}
+		return null;
+	}
+	
+	public IJiuEnergyStorage getJiuEnergyStorage(TileEntity te, EnumFacing side) {
+		if(te == null) {
+			return null;
+		}
+		if(te.hasCapability(CapabilityJiuEnergy.ENERGY, side)) {
+			return te.getCapability(CapabilityJiuEnergy.ENERGY, side);
 		}
 		return null;
 	}
@@ -100,25 +117,19 @@ public final class EnergyUtils {
 	}
 	
 	public boolean hasFEStorage(ItemStack stack) {
-		return this.getFEStorage(stack) != null;
+		return stack!=null && !stack.isEmpty() ? stack.hasCapability(CapabilityEnergy.ENERGY, null) : false;
 	}
 	
 	public boolean hasFEStorage(TileEntity te, EnumFacing side) {
 		return this.getFEStorage(te, side) != null;
 	}
 	
-	public boolean hasFEEnergy(ItemStack stack) {
-		if(this.getFEStorage(stack) != null) {
-			return this.getFEEnergy(stack) > 0;
-		}
-		return false;
+	public boolean hasJiuEnergyStorage(ItemStack stack) {
+		return stack!=null && !stack.isEmpty() ? stack.hasCapability(CapabilityJiuEnergy.ENERGY, null) : false;
 	}
 	
-	public boolean hasFEEnergy(TileEntity te, EnumFacing side) {
-		if(this.getFEStorage(te, side) != null) {
-			return this.getFEEnergy(te, side) > 0;
-		}
-		return false;
+	public boolean hasJiuEnergyStorage(TileEntity te, EnumFacing side) {
+		return this.getJiuEnergyStorage(te, side) != null;
 	}
 	
 	public int sendFEEnergyTo(ItemStack stack, int energy, boolean simulate) {

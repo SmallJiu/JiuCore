@@ -1,15 +1,13 @@
 package cat.jiu.core.util.timer;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import cat.jiu.core.api.ITime;
 import cat.jiu.core.api.ITimer;
-import cat.jiu.core.util.JiuUtils;
 
-@SuppressWarnings("deprecation")
-public class Timer implements ITimer, ITime {
+public class Timer implements ITimer {
 	protected long day;
 	protected long hour;
 	protected long minute;
@@ -124,11 +122,9 @@ public class Timer implements ITimer, ITime {
 	@Override
 	public Timer add(ITimer time) {
 		long ticks = 0;
-		if(time instanceof BigTimer) {
-			ticks = this.ticks + ((BigTimer)time).ticks.longValue();
-		}else {
-			ticks = this.ticks + time.getTicks();
-		}
+		
+		ticks = this.ticks + time.getTicks();
+		
 		this.format(ticks);
 		return this;
 	}
@@ -136,11 +132,9 @@ public class Timer implements ITimer, ITime {
 	@Override
 	public Timer subtract(ITimer time) {
 		long ticks = 0;
-		if(time instanceof BigTimer) {
-			ticks = this.ticks - ((BigTimer)time).ticks.longValue();
-		}else {
-			ticks = this.ticks - time.getTicks();
-		}
+		
+		ticks = this.ticks - time.getTicks();
+		
 		this.format(ticks);
 		return this;
 	}
@@ -246,7 +240,7 @@ public class Timer implements ITimer, ITime {
 		long sec = 0;
 		long tick = 0;
 		if(time.contains(":")) {
-			String[] times = JiuUtils.other.custemSplitString(":", time);
+			String[] times = time.split("\\:");
 			switch(times.length) {
 				case 5: day = Long.parseLong(times[4]);
 				case 4: hour = Long.parseLong(times[3]);
@@ -273,11 +267,60 @@ public class Timer implements ITimer, ITime {
 	}
 	
 	private static long time(JsonObject obj, String... keys) {
-		JsonPrimitive pri = JiuUtils.json.getElement(JsonPrimitive.class, obj, keys);
+		JsonPrimitive pri = getElement(JsonPrimitive.class, obj, keys);
 		if(pri != null && pri.isNumber()) {
 			return pri.getAsLong();
 		}
 		return 0;
+	}
+	
+	@SuppressWarnings({"unchecked"})
+	public static <T extends JsonElement> T getElement(Class<T> type, JsonObject obj, String... keys) {
+		JsonType jsonType = JsonType.getType(type);
+		T result = null;
+		
+		lable: for(String key : keys) {
+			if(obj.has(key)) {
+				JsonElement e = obj.get(key);
+				if(e != null) {
+					switch(jsonType) {
+						case Object:
+							if(e.isJsonObject()) {
+								result = (T) e.getAsJsonObject();
+								break lable;
+							}
+						case Array:
+							if(e.isJsonArray()) {
+								result = (T) e.getAsJsonArray();
+								break lable;
+							}
+						case Primitive:
+							if(e.isJsonPrimitive()) {
+								result = (T) e.getAsJsonPrimitive();
+								break lable;
+							}
+						case Element:
+								result = (T) e;
+								break lable;
+					}
+				}
+			}
+		}
+		return result;
+	}
+	
+	static enum JsonType {
+		Object, Array, Primitive, Element;
+		static <T extends JsonElement> JsonType getType(Class<T> type) {
+			if(type == JsonObject.class) {
+				return JsonType.Object;
+			}else if(type == JsonArray.class) {
+				return JsonType.Array;
+			}else if(type == JsonPrimitive.class) {
+				return JsonType.Primitive;
+			}
+			return JsonType.Element;
+		}
 	}
 	
 	public static long parseTick(long s, long tick) {

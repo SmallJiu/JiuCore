@@ -21,14 +21,13 @@ public abstract class BaseNBT extends NBTBase {
 	/**
 	 * the new nbt must has a public empty arguments constructor
 	 * @param id nbt id, use for {@link NBTBase#getTagTypeName(int)} and {@link NBTBase#createNewByType(byte)}
-	 * @param clazz nbt class, use for {@link NBTBase#createNewByType(byte)} crete new Instance
-	 * @param type nbt type, like 'TAG_Null', use for {@link NBTBase#getTagTypeName(int)}
+	 * @param clazz nbt class, use for {@link NBTBase#createNewByType(byte)} to crete a new Instance
+	 * @param type nbt type, like 'TAG_NULL', use for {@link NBTBase#getTagTypeName(int)}
 	 * @param name nbt name, like 'NULL', use for {@link NBTBase#NBT_TYPES}
 	 */
 	public static void register(int id, @Nonnull Class<? extends BaseNBT> clazz, String type, String name) {
 		if(registrys==null) registrys = Maps.newHashMap();
-		if(getTypeID(clazz) == null && "UNKNOWN".equals(getTypeName(clazz))) {
-			registrys.put(id, new NBTInfo(clazz, type, name));
+		if(!hasNBT(clazz)) {
 			
 			String[] old = NBTBase.NBT_TYPES;
 			NBTBase.NBT_TYPES = new String[NBTBase.NBT_TYPES.length+1];
@@ -36,6 +35,8 @@ public abstract class BaseNBT extends NBTBase {
 				NBTBase.NBT_TYPES[i] = old[i];
 			}
 			NBT_TYPES[old.length] = name;
+			
+			registrys.put(id, new NBTInfo(clazz, type, name));
 		}
 	}
 	
@@ -82,8 +83,7 @@ public abstract class BaseNBT extends NBTBase {
 		if(NBTTagLongArray.class.isAssignableFrom(tagClazz)) return 12;
 		
 		if(registrys!=null) for(Entry<Integer, NBTInfo> nbt : registrys.entrySet()) {
-			NBTInfo info = nbt.getValue();
-			if(info.clazz.isAssignableFrom(tagClazz)) {
+			if(nbt.getValue().clazz.isAssignableFrom(tagClazz)) {
 				return nbt.getKey();
 			}
 		}
@@ -107,9 +107,8 @@ public abstract class BaseNBT extends NBTBase {
 		if(NBTBase.class == tagClazz) return "Any Numeric Tag";
 		
 		if(registrys!=null) for(Entry<Integer, NBTInfo> nbt : registrys.entrySet()) {
-			NBTInfo info = nbt.getValue();
-			if(info.clazz.isAssignableFrom(tagClazz)) {
-				return info.type;
+			if(nbt.getValue().clazz.isAssignableFrom(tagClazz)) {
+				return nbt.getValue().type;
 			}
 		}
 		return "UNKNOWN";

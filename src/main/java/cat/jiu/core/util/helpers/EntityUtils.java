@@ -1,10 +1,7 @@
 package cat.jiu.core.util.helpers;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.Map.Entry;
@@ -17,6 +14,8 @@ import com.google.gson.JsonObject;
 
 import cat.jiu.core.CoreLoggers;
 import cat.jiu.core.api.ITimer;
+import cat.jiu.core.util.JsonParser;
+
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.EntityLivingBase;
@@ -67,7 +66,7 @@ public final class EntityUtils {
 	 * @author small_jiu
 	 */
 	public boolean isVaguePlayer(String name, EntityPlayer player) {
-		return player.getName().indexOf(name) != -1;
+		return player.getName().contains(name);
 	}
 	
 	/**
@@ -140,17 +139,16 @@ public final class EntityUtils {
 			server.getPlayerProfileCache().save();
 			server.getPlayerProfileCache().load();
 		}
-		File file = MinecraftServer.USER_CACHE_FILE;
-		if(file.exists()) {
-			NameToUUID.clear();
-			UUIDToName.clear();
-			
-			UUID init = new UUID(0,0);
-			NameToUUID.put("Initialization", init);
-			UUIDToName.put(init, "Initialization");
-			
-			try(FileInputStream in = new FileInputStream(file)) {
-				JsonArray array = JsonUtil.parser.parse(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonArray();
+		if(MinecraftServer.USER_CACHE_FILE.exists()) {
+			try(FileInputStream in = new FileInputStream(MinecraftServer.USER_CACHE_FILE)) {
+				JsonArray array = JsonParser.parse(MinecraftServer.USER_CACHE_FILE);
+				NameToUUID.clear();
+				UUIDToName.clear();
+				
+				UUID init = new UUID(0,0);
+				NameToUUID.put("Initialization", init);
+				UUIDToName.put(init, "Initialization");
+				
 				for(int i = 0; i < array.size(); i++) {
 					JsonObject player = array.get(i).getAsJsonObject();
 					

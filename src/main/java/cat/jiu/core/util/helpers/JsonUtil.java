@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,10 +33,8 @@ public final class JsonUtil {
 			Method method = json.getClass().getDeclaredMethod("deepCopy");
 			method.setAccessible(true);
 			return (T) method.invoke(json);
-		}catch(NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e0) {
-			e0.printStackTrace();
-			throw new RuntimeException(e0);
-		}
+		}catch(NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e0) {}
+		return null;
 	}
 	
 	@SuppressWarnings({"unchecked"})
@@ -165,15 +164,11 @@ public final class JsonUtil {
 	 * If it looks like {@code ItemStack} or other, please write your own method
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public <V> JsonArray toJsonArray(List<V> list) {
+	public <V> JsonArray toJsonArray(Collection<V> list) {
 		JsonArray array = new JsonArray();
-		
-		for (int i = 0; i < list.size(); i++) {
-			V value = list.get(i);
-			if(value instanceof List) {
-				array.add(this.toJsonArray((List)value));
-			}if(value instanceof Set) {
-				array.add(this.toJsonArray((Set)value));
+		list.forEach(value->{
+			if(value instanceof Collection) {
+				array.add(this.toJsonArray((Collection)value));
 			}else if(value instanceof Map) {
 				array.add(this.toJsonObject((Map)value));
 			}else {
@@ -185,35 +180,7 @@ public final class JsonUtil {
 					array.add(String.valueOf(value));
 				}
 			}
-		}
-		return array;
-	}
-	
-	/**
-	 * This method only deserializes Number, Boolean, and String.<p> 
-	 * If it looks like {@code ItemStack} or other, please write your own method
-	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public <V> JsonArray toJsonArray(Set<V> list) {
-		JsonArray array = new JsonArray();
-		
-		for (V value : list) {
-			if(value instanceof List) {
-				array.add(this.toJsonArray((List)value));
-			}if(value instanceof Set) {
-				array.add(this.toJsonArray((Set)value));
-			}else if(value instanceof Map) {
-				array.add(this.toJsonObject((Map)value));
-			}else {
-				if(value instanceof Number) {
-					array.add((Number)value);
-				}else if(value instanceof Boolean) {
-					array.add((Boolean)value);
-				}else {
-					array.add(String.valueOf(value));
-				}
-			}
-		}
+		});
 		return array;
 	}
 	

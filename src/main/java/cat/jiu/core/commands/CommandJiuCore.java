@@ -19,10 +19,6 @@ public class CommandJiuCore extends BaseCommand.CommandTree {
 	private static List<ICommand> getCMDs(boolean canAddCommand, int level) {
 		List<ICommand> cmds = Lists.newArrayList();
 		
-		cmds.add(new BaseCommand.CommandTree(new ICommand[] {
-				new CommandInFluidCrafting()		
-		}, "craft", JiuCore.MODID, canAddCommand, level));
-		
 		cmds.add(new CommandValue("coin", JiuCore.MODID, "coin", canAddCommand, level));
 		for (String value : unRegisterValue) {
 			cmds.add(new CommandValue(value, JiuCore.MODID, value, canAddCommand, level));

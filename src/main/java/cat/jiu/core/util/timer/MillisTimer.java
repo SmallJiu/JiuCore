@@ -2,7 +2,6 @@ package cat.jiu.core.util.timer;
 
 import com.google.gson.JsonObject;
 
-import cat.jiu.core.api.ITime;
 import cat.jiu.core.api.ITimer;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -13,8 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
  * but you don't use {@link #update()} or {@link #update(int)} to update timer
  * @author small_jiu
  */
-@SuppressWarnings("deprecation")
-public class MillisTimer implements ITimer, ITime {
+public class MillisTimer implements ITimer {
 	protected long millis;
 	protected long sysMillis;
 	protected long currentMillis;
@@ -51,7 +49,7 @@ public class MillisTimer implements ITimer, ITime {
 	
 	@Override
 	public boolean isDone() {
-		return this.isStarted() ? this.getLastMillis() <= 0 : false;
+		return this.isStarted() ? System.currentTimeMillis() >= this.currentMillis : false;
 	}
 	
 	public long getLastMillis() {
@@ -60,7 +58,20 @@ public class MillisTimer implements ITimer, ITime {
 		if(ms <= 0) return 0; 
 		return ms;
 	}
-
+	
+	public void setNotStartedMillis(long millis) {
+		this.millis = millis;
+	}
+	public long getNotStartedMillis() {
+		return millis;
+	}
+	public long getStartedCurrentMillis() {
+		return currentMillis;
+	}
+	public long getStartedSystemMillis() {
+		return sysMillis;
+	}
+	
 	@Override
 	public long getTicks() {
 		if(!this.isStarted()) return 0;
@@ -74,8 +85,8 @@ public class MillisTimer implements ITimer, ITime {
 	}
 
 	@Override
-	public MillisTimer setAllTicks(long millis) {
-		this.currentMillis = this.sysMillis + (this.millis = millis);
+	public MillisTimer setAllTicks(long ticks) {
+		this.currentMillis = this.sysMillis + (this.millis = ticks*50);
 		return this;
 	}
 
@@ -122,28 +133,36 @@ public class MillisTimer implements ITimer, ITime {
 	}
 	
 	@Override
-	public void read(NBTTagCompound nbt) {
-		this.millis = nbt.getLong("ms");
-	}
-	
-	@Override
 	public NBTTagCompound write(NBTTagCompound nbt) {
 		if(nbt==null) nbt = new NBTTagCompound();
 		nbt.setLong("ms", this.millis);
+		nbt.setLong("sysMillis", this.sysMillis);
+		nbt.setLong("current", this.currentMillis);
 		nbt.setBoolean("isSys", true);
 		return nbt;
+	}
+	
+	@Override
+	public void read(NBTTagCompound nbt) {
+		this.millis = nbt.getLong("ms");
+		this.sysMillis = nbt.getLong("sysMillis");
+		this.currentMillis = nbt.getLong("current");
 	}
 	
 	@Override
 	public JsonObject write(JsonObject json) {
 		if(json==null) json = new JsonObject();
 		json.addProperty("ms", this.millis);
+		json.addProperty("sysMillis", this.sysMillis);
+		json.addProperty("current", this.currentMillis);
 		json.addProperty("isSys", true);
 		return json;
 	}
 	@Override
 	public void read(JsonObject json) {
 		this.millis = json.get("ms").getAsLong();
+		this.sysMillis = json.get("sysMillis").getAsLong();
+		this.currentMillis = json.get("current").getAsLong();
 	}
 	
 	public void format(long ms) {}

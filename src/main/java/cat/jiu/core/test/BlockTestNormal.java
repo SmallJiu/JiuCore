@@ -4,6 +4,7 @@ import java.util.List;
 
 import cat.jiu.core.JiuCore;
 import cat.jiu.core.util.JiuUtils;
+import cat.jiu.core.util.RegisterModel;
 import cat.jiu.core.util.base.BaseBlock;
 import cat.jiu.core.util.base.BaseBlock.BaseBlockItem;
 import net.minecraft.block.ITileEntityProvider;
@@ -44,9 +45,9 @@ public class BlockTestNormal extends BaseBlock.Normal implements ITileEntityProv
 	
 	@SideOnly(Side.CLIENT)
 	@Override
-	public void getItemModel() {
-		this.model.setBlockStateMapper(this, !this.getHasSubtypes(), "test/test_block");
-		this.model.registerItemModel(this, "block/sub/" + "test_block", "test_block" + "." + 0);
+	public void getItemModel(RegisterModel util) {
+		util.setBlockStateMapper(this, !this.getHasSubtypes(), "test/test_block");
+		util.registerItemModel(this, "block/sub/" + "test_block", "test_block" + "." + 0);
 	}
 	
 	@Override

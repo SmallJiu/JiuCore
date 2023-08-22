@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fluids.BlockFluidBase;
@@ -24,7 +25,6 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 @EventBusSubscriber
 public class RegisterModel {
@@ -128,14 +128,14 @@ public class RegisterModel {
 	
 	/**
 	 * @param block the block
-	 * @param isNormalBlock if the block meta only has zero(0), set to true
+	 * @param noSubtypes if the block meta only has zero(0), set to true
 	 * @param statePath the state mapper path
 	 */
 	@SideOnly(Side.CLIENT)
-	public void setBlockStateMapper(Block block, boolean isNormalBlock, String statePath) {
+	public void setBlockStateMapper(Block block, boolean noSubtypes, String statePath) {
 		ModelLoader.setCustomStateMapper(block, new StateMapperBase() {
 			protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-				String variant = isNormalBlock ? "normal" : JiuUtils.other.custemSplitString(JiuUtils.other.custemSplitString(state.toString(), "[")[1], "]")[0];
+				String variant = noSubtypes ? "normal" : JiuUtils.other.custemSplitString(JiuUtils.other.custemSplitString(state.toString(), "[")[1], "]")[0];
 				return new ModelResourceLocation(modid + ":" + statePath, variant);
 			}
 		});
@@ -185,10 +185,7 @@ public class RegisterModel {
 		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(new ResourceLocation(file), variant));
 	}
 	
-	@Deprecated
-	public static final List<IHasModel> NeedToRegistryModel = Lists.newArrayList();
 	private static final Map<String, List<IHasModel>> NeedToRegistryModelMap = Maps.newHashMap();
-	
 	public static void addNeedRegistryModel(String modid, IHasModel entry) {
 		if(!NeedToRegistryModelMap.containsKey(modid)) {
 			NeedToRegistryModelMap.put(modid, Lists.newArrayList());
@@ -197,7 +194,6 @@ public class RegisterModel {
 		NeedToRegistryModelMap.get(modid).add(entry);
 	}
 	
-	@SuppressWarnings({"rawtypes", "deprecation"})
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public static void onModelRegister(ModelRegistryEvent event) {
@@ -216,20 +212,12 @@ public class RegisterModel {
 			}
 		}
 
-		RegisterModel util = new RegisterModel("jc");
+		RegisterModel util = new RegisterModel("");
 		NeedToRegistryModelMap.forEach((modid, value) -> {
 			util.setModID(modid);
 			value.forEach(e->{
 				e.getItemModel(util);
 			});
-		});
-		
-		NeedToRegistryModel.stream().forEach(e -> {
-			if(e instanceof IForgeRegistryEntry) {
-				e.getItemModel(new RegisterModel(((IForgeRegistryEntry)e).getRegistryName().getResourceDomain()));
-			}else {
-				e.getItemModel();
-			}
 		});
 	}
 }

@@ -29,7 +29,11 @@ public class SQLValues {
 		return this;
 	}
 	public SQLValues put(String key, Object value) {
-        this.values.put(key, value);
+        if(value instanceof String) {
+        	this.values.put(key, "'" + value + "'");
+        }else {
+        	this.values.put(key, value);
+        }
 		return this;
 	}
 	

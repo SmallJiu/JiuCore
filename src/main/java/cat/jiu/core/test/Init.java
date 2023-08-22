@@ -14,9 +14,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-@EventBusSubscriber
 public class Init {
 	public static final List<Block> BLOCKS = new ArrayList<Block>();
 	public static final List<Item> ITEMS = new ArrayList<Item>();

@@ -3,8 +3,6 @@ package cat.jiu.core.util.helpers;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import cat.jiu.core.util.JiuUtils;
-
 public class BigIntegerUtils {
 	public static final BigIntegerUtils INSTANCE = new BigIntegerUtils();
 	
@@ -12,7 +10,15 @@ public class BigIntegerUtils {
 		if(value == null || value.isEmpty()) {
 			return BigInteger.ZERO;
 		}
-		return BigInteger.valueOf(JiuUtils.other.getLong(value));
+		StringBuilder sb = new StringBuilder("0");
+		for(int i = 0; i < value.length(); i++) {
+			try {
+				sb.append(Long.parseLong(String.valueOf(value.charAt(i))));
+			}catch(Exception e) {
+				sb.append(value.charAt(i));
+			}
+		}
+		return new BigInteger(sb.toString());
 	}
 	
 	public BigInteger copy(BigInteger other) {

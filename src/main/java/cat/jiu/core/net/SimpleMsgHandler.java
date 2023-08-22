@@ -4,15 +4,20 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
+import cat.jiu.core.util.base.BaseMessage;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
+
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class SimpleMsgHandler {
 	private static Map<String, SimpleNetworkWrapper> channels;
+	private static Map<String, Integer> ids;
 	public static SimpleNetworkWrapper register(String channelID) {
 		if(channels==null) channels=Maps.newHashMap();
 		channels.put(channelID, NetworkRegistry.INSTANCE.newSimpleChannel(channelID));
@@ -20,6 +25,13 @@ public class SimpleMsgHandler {
 	}
 	
 	public static SimpleNetworkWrapper getChannel(String channelID) {return channels.get(channelID);}
+	
+	public static <T extends BaseMessage> void register(String channelID, Class<T> msgClass, Side sendTo) {
+		if(ids==null) ids = Maps.newHashMap();
+		int id = ids.getOrDefault(channelID, -1)+1;
+		ids.put(channelID, id);
+		getChannel(channelID).registerMessage(T::handler, msgClass, id, sendTo);
+	}
 	
 	/** 向某个维度发包（服务器到客户端）
 	 * server to client

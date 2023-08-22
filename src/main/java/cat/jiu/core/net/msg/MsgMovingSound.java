@@ -1,9 +1,8 @@
 package cat.jiu.core.net.msg;
 
-import cat.jiu.core.types.MovingSoundElement;
 import cat.jiu.core.util.FollowPlayerSound;
 import cat.jiu.core.util.base.BaseMessage;
-
+import cat.jiu.core.util.element.Sound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -11,9 +10,9 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MsgMovingSound extends BaseMessage {
-	protected MovingSoundElement element;
+	protected Sound element;
 	public MsgMovingSound() {}
-	public MsgMovingSound(MovingSoundElement element) {
+	public MsgMovingSound(Sound element) {
 		this.element = element;
 	}
 	
@@ -26,13 +25,13 @@ public class MsgMovingSound extends BaseMessage {
 	}
 
 	@Override
-	protected NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-		nbt.setTag("element", this.element.writeToNBT(null));
+	public NBTTagCompound write(NBTTagCompound nbt) {
+		nbt.setTag("element", this.element.writeTo(NBTTagCompound.class));
 		return nbt;
 	}
 
 	@Override
-	protected void readFromNBT(NBTTagCompound nbt) {
-		this.element = MovingSoundElement.readFromeNBT(nbt.getCompoundTag("element"));
+	public void read(NBTTagCompound nbt) {
+		this.element = new Sound(nbt.getCompoundTag("element"));
 	}
 }

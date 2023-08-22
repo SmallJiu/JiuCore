@@ -16,6 +16,6 @@ public final class JiuUtils {
 	public static final OtherUtils other = new OtherUtils();
 	public static final ItemNBTUtils nbt = new ItemNBTUtils();
 	public static final EnergyUtils energy = new EnergyUtils();
-	public static final BigIntegerUtils big_integer = new BigIntegerUtils();
+	public static final BigIntegerUtils big_integer = BigIntegerUtils.INSTANCE;
 	public static final JsonUtil json = new JsonUtil();
 }

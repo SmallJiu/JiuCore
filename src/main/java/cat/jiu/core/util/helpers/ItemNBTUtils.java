@@ -3,6 +3,9 @@ package cat.jiu.core.util.helpers;
 import java.math.BigInteger;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
 public final class ItemNBTUtils extends NBTTagCompoundUtils {
 	public ItemStack setItemNBT(ItemStack stack, String nbtName, String value) {
@@ -174,5 +177,16 @@ public final class ItemNBTUtils extends NBTTagCompoundUtils {
 	public String[] getItemNBTStringArray(ItemStack stack, String nbtName) {
 		return super.getNBTStringArray(super.getItemNBT(stack), nbtName);
 	}
+	//=================================================================================================//
+	public <T extends NBTBase> ItemStack setItemNBT(ItemStack stack, String nbtName, T value) {
+		stack.setTagCompound(super.setNBT(super.getItemNBT(stack), nbtName, value));
+		return stack;
+	}
+	public NBTTagCompound getItemNBTTag(ItemStack stack, String nbtName) {
+		return super.getItemNBTTag(super.getItemNBT(stack), nbtName);
+	}
 	
+	public NBTTagList getItemNBTTagList(ItemStack stack, String nbtName, Class<? extends NBTBase> clazz) {
+		return super.getItemNBTTagList(super.getItemNBT(stack), nbtName, clazz);
+	}
 }

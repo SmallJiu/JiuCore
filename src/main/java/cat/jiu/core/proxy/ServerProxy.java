@@ -8,21 +8,21 @@ import com.google.common.collect.Maps;
 
 import cat.jiu.core.api.IProxy;
 import cat.jiu.core.api.IResourceStream;
-
 import net.minecraft.util.ResourceLocation;
 
-public class ServerProxy implements IProxy<ServerProxy, ClientProxy>{
-	private static Map<ResourceLocation, IResourceStream> custom_resource;
+public class ServerProxy implements IProxy<ServerProxy, ClientProxy> {
+	protected Map<ResourceLocation, IResourceStream> resources;
+	
 	public void addCustomResource(ResourceLocation loc, IResourceStream stream) {
-		if(custom_resource==null) custom_resource = Maps.newHashMap();
-		custom_resource.put(loc, stream);
+		if(this.resources==null) this.resources = Maps.newHashMap();
+		this.resources.put(loc, stream);
 	}
 	public boolean hasCustomResource(ResourceLocation loc) {
-		if(custom_resource==null) return false;
-		return custom_resource.containsKey(loc);
+		if(this.resources==null) return false;
+		return this.resources.containsKey(loc);
 	}
 	public InputStream getCustomResource(ResourceLocation loc) throws IOException {
-		if(custom_resource==null || !custom_resource.containsKey(loc)) return null;
-		return custom_resource.get(loc).get(loc);
+		if(this.resources==null || !this.hasCustomResource(loc)) return null;
+		return this.resources.get(loc).get();
 	}
 }

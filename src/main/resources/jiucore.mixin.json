@@ -6,8 +6,8 @@
 	"refmap": "jiucore.mixin.refmap.json",
 	"mixins": [
 		"MixinTileEntityUpdataEvent",
-		"MixinWorldInfo",
-		"MixinNBTBase"
+		"MixinWorldInfo"
+//		"MixinNBTBase"
 	],
 	"client": [
 		"MixinFallbackResourceManager",

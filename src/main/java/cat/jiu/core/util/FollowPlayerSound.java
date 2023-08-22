@@ -1,7 +1,7 @@
 package cat.jiu.core.util;
 
 import cat.jiu.core.api.ITimer;
-import cat.jiu.core.types.MovingSoundElement;
+import cat.jiu.core.util.element.Sound;
 
 import net.minecraft.client.audio.MovingSound;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class FollowPlayerSound extends MovingSound {
 	protected final ITimer time;
 	protected final EntityPlayer player;
-	public FollowPlayerSound(EntityPlayer player, MovingSoundElement element) {
+	public FollowPlayerSound(EntityPlayer player, Sound element) {
 		super(element.getSound(), element.getSoundCategory());
 		this.volume = element.getSoundVolume();
 		this.pitch = element.getSoundPitch();

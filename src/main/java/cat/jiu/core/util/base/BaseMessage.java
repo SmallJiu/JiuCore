@@ -2,6 +2,7 @@ package cat.jiu.core.util.base;
 
 import java.io.IOException;
 
+import cat.jiu.core.api.handler.INBTSerializable;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 
@@ -13,10 +14,13 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public abstract class BaseMessage implements IMessage {
+public abstract class BaseMessage implements IMessage, INBTSerializable {
 	public abstract IMessage handler(MessageContext ctx);
-	protected abstract NBTTagCompound writeToNBT(NBTTagCompound nbt);
-	protected abstract void readFromNBT(NBTTagCompound nbt);
+	
+	@Deprecated
+	protected NBTTagCompound writeToNBT(NBTTagCompound nbt) {return nbt;};
+	@Deprecated
+	protected void readFromNBT(NBTTagCompound nbt) {}
 
 	protected long getNBTMaxSize() {
 		return 2097152L;
@@ -24,14 +28,23 @@ public abstract class BaseMessage implements IMessage {
 
 	public final void fromBytes(ByteBuf buf) {
 		try {
-			this.readFromNBT(this.readCompundTag(buf));
+			NBTTagCompound nbt = this.readCompundTag(buf);
+			this.read(nbt);
+			this.readFromNBT(nbt);
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public final void toBytes(ByteBuf buf) {
-		new PacketBuffer(buf).writeCompoundTag(this.writeToNBT(new NBTTagCompound()));
+		NBTTagCompound nbt = new NBTTagCompound();
+		
+		this.write(nbt);
+		if(nbt.getSize() <= 0) {
+			this.writeToNBT(nbt);
+		}
+		
+		new PacketBuffer(buf).writeCompoundTag(nbt);
 	}
 
 	private NBTTagCompound readCompundTag(ByteBuf buf) throws IOException {

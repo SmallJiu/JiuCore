@@ -66,28 +66,57 @@ public class FileDownload {
 	static final DecimalFormat df = new DecimalFormat("0.000");
 	public static boolean download(String url, File savePath, IProgress call) {
 		if(savePath.exists()) return true;
-		if(savePath.getParentFile()!=null) savePath.getParentFile().mkdirs();
+		if(savePath.getParentFile() != null && !savePath.getParentFile().exists()) savePath.getParentFile().mkdirs();
 		
 		try(Auto conn = new Auto(new URL(url).openConnection()).connect();
 			InputStream net = conn.connection.getInputStream();
 			OutputStream localOut = new FileOutputStream(savePath)) {
 			
 			final long fileTotalLength = conn.connection.getContentLengthLong();
-			long currentLength=0;
+			long currentLength = 0;
 			
 			byte[] buf = new byte[8192];
 			int read = 0;
+			
+			SpeedPer second = new SpeedPer();
+			startCheckSpeed(second, 1000);
+			
+			SpeedPer tick = new SpeedPer();
+			startCheckSpeed(tick, 50);
+			
 			while((read = net.read(buf)) != -1) {
 				localOut.write(buf, 0, read);
 				currentLength += read;
 				double progress = Double.parseDouble(df.format(Math.ceil((double)currentLength / conn.connection.getContentLengthLong()*100000) / 100000 * 100));
-				call.call(currentLength, fileTotalLength, progress);
+				second.current = currentLength;
+				tick.current = currentLength;
+				call.call(currentLength, fileTotalLength, progress, second.speed, tick.speed);
 			}
+			second.done = true;
 			return true;
 		}catch(Exception e) {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	static class SpeedPer {
+		boolean done = false;
+		long current = 0;
+		long speed = 0;
+	}
+	
+	static void startCheckSpeed(SpeedPer per, long ms) {
+		new Thread(()->{
+			long l = 0;
+			while(!per.done) {
+				try {
+					Thread.sleep(ms);
+					per.speed = per.current - l;
+					l = per.current;
+				}catch(InterruptedException e) {}
+			}
+		}).start();
 	}
 	
 	private static class Auto implements AutoCloseable {

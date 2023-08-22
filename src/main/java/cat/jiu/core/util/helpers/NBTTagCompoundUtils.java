@@ -3,9 +3,11 @@ package cat.jiu.core.util.helpers;
 import java.math.BigInteger;
 
 import cat.jiu.core.util.JiuUtils;
+import cat.jiu.core.util.base.BaseNBT;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLongArray;
 
 public class NBTTagCompoundUtils {
@@ -15,8 +17,15 @@ public class NBTTagCompoundUtils {
 	}
 	
 	public NBTTagCompound getItemNBT(ItemStack stack) {
+		if(stack==null || stack.isEmpty()) {
+			return new NBTTagCompound();
+		}
 		NBTTagCompound nbt = stack.getTagCompound();
-		return nbt != null ? nbt : new NBTTagCompound();
+		if(nbt == null) {
+			nbt = new NBTTagCompound();
+			stack.setTagCompound(nbt);
+		}
+		return nbt;
 	}
 	
 	public ItemStack removeItemNBT(ItemStack stack, String nbtName) {
@@ -279,5 +288,19 @@ public class NBTTagCompoundUtils {
 			}
 		}
 		return new float[0];
+	}
+
+	//==============================================================
+	public <T extends NBTBase> NBTTagCompound setNBT(NBTTagCompound nbt, String nbtName, T value) {
+		nbt.setTag(nbtName, value);
+		return nbt;
+	}
+
+	public NBTTagCompound getItemNBTTag(NBTTagCompound nbt, String nbtName) {
+		return nbt.getCompoundTag(nbtName);
+	}
+
+	public NBTTagList getItemNBTTagList(NBTTagCompound nbt, String nbtName, Class<? extends NBTBase> clazz) {
+		return nbt.getTagList(nbtName, BaseNBT.getTypeID(clazz));
 	}
 }

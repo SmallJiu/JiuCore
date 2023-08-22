@@ -10,16 +10,16 @@ import cat.jiu.core.api.handler.ISerializable;
 import cat.jiu.core.capability.CapabilityJiuEnergy;
 import cat.jiu.core.util.JiuUtils;
 import cat.jiu.sql.SQLValues;
-
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fml.common.Optional;
 
-public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider {
+public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider, net.minecraftforge.common.util.INBTSerializable<NBTBase> {
 	BigInteger receiveEnergyWithBigInteger(BigInteger maxReceive, boolean simulate);
     BigInteger extractEnergyWithBigInteger(BigInteger maxExtract, boolean simulate);
     
@@ -110,6 +110,13 @@ public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider {
 	    	}
 	    }
 	    @Override
+	    default void deserializeNBT(NBTBase nbt) {
+	    	if(nbt instanceof NBTTagCompound) {
+	    		this.read((NBTTagCompound)nbt);
+	    	}
+	    }
+	    
+	    @Override
 	    default NBTTagCompound write(NBTTagCompound nbt) {
 	    	if(nbt==null) nbt = new NBTTagCompound();
 	    	nbt.setString("Energy", this.getEnergyStoredWithBigInteger().toString());
@@ -117,6 +124,10 @@ public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider {
 			nbt.setString("MaxOutput", this.getMaxExtractWithBigInteger().toString());
 			nbt.setString("MaxInput", this.getMaxReceiveWithBigInteger().toString());
 	    	return nbt;
+	    }
+	    @Override
+	    default NBTBase serializeNBT() {
+	    	return this.write(new NBTTagCompound());
 	    }
 	    
 	    @Override
@@ -139,17 +150,6 @@ public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider {
 	    }
 	    
 	    
-	    @Optional.Method(modid = "redstoneflux")
-	    default cofh.redstoneflux.api.IEnergyStorage toRFStorage() {
-	    	final IJiuEnergyStorage storage = this;
-	    	return new cofh.redstoneflux.api.IEnergyStorage() {
-	    		public int receiveEnergy(int maxReceive, boolean simulate) {return storage.receiveEnergyWithBigInteger(BigInteger.valueOf(maxReceive), simulate).intValue();}
-				public int extractEnergy(int maxExtract, boolean simulate) {return storage.extractEnergyWithBigInteger(BigInteger.valueOf(maxExtract), simulate).intValue();}
-				public int getEnergyStored() {return storage.getEnergyStoredWithBigInteger().intValue();}
-				public int getMaxEnergyStored() {return storage.getMaxEnergyStoredWithBigInteger().intValue();}
-	    	};
-	    }
-	    
 	    default net.minecraftforge.energy.IEnergyStorage toFEStorage() {
 	    	final IJiuEnergyStorage storage = this;
 	    	return new net.minecraftforge.energy.IEnergyStorage() {
@@ -163,13 +163,16 @@ public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider {
 	    }
 	    
 	    @Override
-	    default boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-	    	return capability == CapabilityJiuEnergy.ENERGY;
+	    default boolean hasCapability(Capability<?> cap, EnumFacing facing) {
+	    	return cap == CapabilityJiuEnergy.ENERGY || cap == CapabilityEnergy.ENERGY;
 	    }
 	    @Override
-	    default <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-	    	if(this.hasCapability(capability, facing)) {
+	    default <T> T getCapability(Capability<T> cap, EnumFacing facing) {
+	    	if(cap == CapabilityJiuEnergy.ENERGY) {
 	    		return CapabilityJiuEnergy.ENERGY.cast(this);
+	    	}
+	    	if(cap == CapabilityEnergy.ENERGY) {
+	    		return CapabilityEnergy.ENERGY.cast(this.toFEStorage());
 	    	}
 	    	return null;
 	    }

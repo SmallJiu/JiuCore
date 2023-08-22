@@ -26,13 +26,11 @@ public class BaseItem {
 		protected final String name;
 		protected final CreativeTabs tab;
 		protected final String modid;
-		protected final RegisterModel model;
 		
 		public Normal(String modid, String name, CreativeTabs tab, boolean hasSubtypes) {
 			this.name = name;
 			this.tab = tab;
 			this.modid = modid;
-			this.model = new RegisterModel(this.modid);
 			this.setHasSubtypes(hasSubtypes);
 			this.setUnlocalizedName(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
@@ -103,22 +101,21 @@ public class BaseItem {
 		
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
 					if(this.modelRes != null) {
-						this.model.registerItemModel(this, i, this.modelRes[0], this.modelRes[1]);
+						util.registerItemModel(this, i, this.modelRes[0], this.modelRes[1]);
 					}else {
-						this.model.registerItemModel(this, i, "normal/" + this.name, this.name);
+						util.registerItemModel(this, i, "normal/" + this.name, this.name);
 					}
 				}
 			}else {
 				if(this.modelRes != null) {
-					this.model.registerItemModel(this, this.modelRes[0], this.modelRes[1]);
+					util.registerItemModel(this, this.modelRes[0], this.modelRes[1]);
 				}else {
-					this.model.registerItemModel(this, "normal", this.name);
+					util.registerItemModel(this, "normal", this.name);
 				}
-				
 			}
 		}
 		
@@ -136,14 +133,12 @@ public class BaseItem {
 		protected final String name;
 		protected final CreativeTabs tab;
 		protected final String modid;
-		protected final RegisterModel model;
 		
 		public Food(String modid, String name, int amount, float saturation, boolean isWolfFood, CreativeTabs tab, boolean hasSubtypes) {
 			super(amount, saturation, isWolfFood);
 			this.name = name;
 			this.tab = tab;
 			this.modid = modid;
-			this.model = new RegisterModel(this.modid);
 			this.setHasSubtypes(hasSubtypes);
 			this.setUnlocalizedName(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
@@ -215,13 +210,13 @@ public class BaseItem {
 		
 		@Override
 		@SideOnly(Side.CLIENT)
-		public void getItemModel() {
+		public void getItemModel(RegisterModel util) {
 			if(this.meta > 1) {
 				for(int i = 0; i < this.meta; ++i) {
-					this.model.registerItemModel(this, i, "foods/" + this.name, this.name + "." + i);
+					util.registerItemModel(this, i, "foods/" + this.name, this.name + "." + i);
 				}
 			}else {
-				this.model.registerItemModel(this, "foods", this.name);
+				util.registerItemModel(this, "foods", this.name);
 			}
 		}
 		
