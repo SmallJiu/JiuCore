@@ -1,13 +1,13 @@
  [
 	{
-	 	"modid": "jiucore",
-	 	"name": "JiuCore",
-	 	"description": "love of small_jiu",
-	 	"version": "${version}",
-	 	"mcversion": "${mcversion}",
+	 	"modid": "${mod_id}",
+	 	"name": "${mod_name}",
+	 	"description": "${mod_description}",
+	 	"version": "${mod_version}",
+	 	"mcversion": "${minecraft_version}",
 	 	"url": "https://github.com/SmallJiu/JiuCore",
 	 	"updateUrl": "",
-	 	"authorList": ["small_jiu"],
+	 	"authorList": ["${mod_authors}"],
 	 	"logoFile": "assets/jiucore/mod_logo.png",
 	 	"screenshots": [],
 	 	"dependencies": []

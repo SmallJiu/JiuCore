@@ -1,51 +1,73 @@
-buildscript {
-    repositories {
-        jcenter()
-        maven {
-            name = "forge"
-            url = "https://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sponge"
-            url = "https://repo.spongepowered.org/maven"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-		classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
-    }
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
 
-version = "1.12.2-1.1.6-a1"
-group = "cat.jiu.core" 
-archivesBaseName = "JiuCore"
+version = mod_version
+group = mod_group_id
+archivesBaseName = mod_id
 
-sourceCompatibility = targetCompatibility = '1.8'
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(8)
+}
+
+repositories {
+    maven {
+        url 'https://www.cursemaven.com'
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        url "https://maven.covers1624.net"
+        content {
+            includeModule "cofh", "RedstoneFlux"
+        }
+    }
+    maven {
+        url "https://maven.cleanroommc.com"
+        content {
+            includeModule "zone.rong", "mixinbooter"
+        }
+    }
 }
 
 minecraft {
-    version = "1.12.2-14.23.5.2847"
-    runDir = "run"
-    mappings = "snapshot_20171003"
-	//makeObfSourceJar = false
-}
+    mappings channel: mapping_channel, version: mapping_version
 
-jar {
-	manifest {
-        attributes([
-			"FMLAT": "jc_at.cfg",
-			
-			"FMLCorePluginContainsFMLMod": 'false',
-			"ForceLoadAsMod": 'true',
-            "FMLCorePlugin": "cat.jiu.core.mixin.Configuration",
-            "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
-			"MixinConfigs": "jiucore.mixin.json"
-        ])
+    runs {
+        // applies to all the run configs below
+        configureEach {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        server {
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '--nogui'
+        }
+
+        data {
+            workingDirectory project.file('run-data')
+
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        }
     }
 }
 
@@ -53,41 +75,52 @@ mixin {
     add sourceSets.main, "jiucore.mixin.refmap.json"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-	maven {
-        name 'CurseMaven'
-        url 'https://www.cursemaven.com/'
-    }
-	maven {
-        name "CoFH Maven"
-        url "https://maven.covers1624.net"
-    }
-	maven { 
-		url 'https://repo.spongepowered.org/maven'
-	}
-}
-
 dependencies {
-	deobfCompile 'cofh:RedstoneFlux:1.12-2.1.0.7:universal'
-	deobfCompile "curse.maven:Hwyla-253449:2568751" // 1.8.26-B41
-//	deobfCompile ("zone.rong:mixinbooter:4.2")
-	provided('org.spongepowered:mixin:0.8') {
-        exclude module: 'guava'
-        exclude module: 'commons-io'
-        exclude module: 'gson'
-    }
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    compileOnly fg.deobf("cofh:RedstoneFlux:1.12-2.1.0.7:universal")
+    compileOnly fg.deobf("curse.maven:Hwyla-253449:2568751")
+    compileOnly fg.deobf("zone.rong:mixinbooter:4.2")
+
+    compileOnly "org.spongepowered:mixin:0.8.5"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
-processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                "Specification-Title": mod_id,
+                "Specification-Vendor": mod_authors,
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.jar.archiveVersion,
+                "Implementation-Vendor": mod_authors,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+
+                "FMLAT": "jc_at.cfg",
+                "FMLCorePluginContainsFMLMod": 'false',
+                "ForceLoadAsMod": 'true',
+                "FMLCorePlugin": "cat.jiu.core.mixin.Configuration",
+                "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
+                "MixinConfigs": "jiucore.mixin.json"
+        ])
     }
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+
+    // This is the preferred method to reobfuscate your jar file
+    finalizedBy 'reobfJar'
 }
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+    ]
+
+    inputs.properties replaceProperties
+
+    filesMatching(['mcmod.info']) {
+        expand replaceProperties + [project: project]
+    }}
