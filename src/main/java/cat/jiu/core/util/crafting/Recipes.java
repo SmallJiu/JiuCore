@@ -190,12 +190,12 @@ public class Recipes {
 	
 	protected ResourceLocation getNameForRecipe(ItemStack output) {
 		ModContainer con = Loader.instance().activeModContainer();
-		ResourceLocation t = new ResourceLocation(con.getModId(), output.getItem().getRegistryName().getResourcePath());
+		ResourceLocation t = new ResourceLocation(con.getModId(), output.getItem().getRegistryName().getPath());
 		ResourceLocation recipe = t;
 		int i = 0;
 		while (CraftingManager.REGISTRY.containsKey(recipe)) {
 			i++;
-			recipe = new ResourceLocation(this.modid, t.getResourcePath() + "." + i);
+			recipe = new ResourceLocation(this.modid, t.getPath() + "." + i);
 		}
 		return recipe;
 	}

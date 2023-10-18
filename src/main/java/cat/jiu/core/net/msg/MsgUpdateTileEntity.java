@@ -22,8 +22,12 @@ public class MsgUpdateTileEntity extends BaseMessage {
 			this.nbt = ((ITileEntityUpdate) te).getTileEntityUpdatePacket(new NBTTagCompound());
 		}else {
 			TileEntityUpdateEvent.Packet.Getter event = new TileEntityUpdateEvent.Packet.Getter(te);
-			MinecraftForge.EVENT_BUS.post(event);
-			this.nbt = event.getPacket();
+			if (!MinecraftForge.EVENT_BUS.post(event) && event.getPacket()!=null){
+				this.nbt = event.getPacket();
+			}else {
+				this.nbt = te.serializeNBT();
+			}
+
 		}
 		this.pos = te.getPos();
 	}

@@ -32,7 +32,7 @@ public class BaseItem {
 			this.tab = tab;
 			this.modid = modid;
 			this.setHasSubtypes(hasSubtypes);
-			this.setUnlocalizedName(this.modid + "." + this.name);
+			this.setTranslationKey(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 			this.setNoRepair();
@@ -140,7 +140,7 @@ public class BaseItem {
 			this.tab = tab;
 			this.modid = modid;
 			this.setHasSubtypes(hasSubtypes);
-			this.setUnlocalizedName(this.modid + "." + this.name);
+			this.setTranslationKey(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 			this.setNoRepair();

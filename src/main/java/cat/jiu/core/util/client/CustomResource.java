@@ -36,7 +36,7 @@ public class CustomResource {
 	 */
 	public static void register(ResourceLocation loc) {
 		if(resources==null)resources = Maps.newHashMap();
-		String domain = loc.getResourceDomain();
+		String domain = loc.getNamespace();
 		if(!resources.containsKey(domain)) resources.put(domain, Maps.newHashMap());
 		resources.get(domain).put(loc, new File(JiuUtils.other.toStringPath(loc)));
 	}
@@ -60,7 +60,7 @@ public class CustomResource {
 				ModContainer mod = Loader.instance().getIndexedModList().get(domain);
 				this.original = mod.getSource().isDirectory() ? new FMLFolderResourcePack(mod) : new FMLFileResourcePack(mod); // for dev
 			}else {
-				this.original = Minecraft.getMinecraft().mcDefaultResourcePack;
+				this.original = Minecraft.getMinecraft().defaultResourcePack;
 			}
 		}
 

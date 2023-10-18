@@ -164,7 +164,7 @@ public final class OtherUtils {
 	}
 	
 	public String toStringPath(ResourceLocation loc) {
-		return "./assets/" + loc.getResourceDomain() + "/" + loc.getResourcePath();
+		return "./assets/" + loc.getNamespace() + "/" + loc.getPath();
 	}
 	
 	public String formatTextColor(String str, char formatChar) {
@@ -190,7 +190,7 @@ public final class OtherUtils {
 	
 	@Nullable
 	public File getFileFromResourceLocation(ResourceLocation rl) {
-		return new File(".assets" + File.pathSeparator + rl.getResourceDomain() + File.pathSeparator + rl.getResourcePath().replace('/', File.pathSeparatorChar));
+		return new File(".assets" + File.pathSeparator + rl.getNamespace() + File.pathSeparator + rl.getPath().replace('/', File.pathSeparatorChar));
 	}
 	
 	public boolean resourceFileExistsInAssets(ResourceLocation location) {

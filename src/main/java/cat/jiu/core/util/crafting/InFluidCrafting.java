@@ -222,7 +222,7 @@ public class InFluidCrafting {
 			for(ItemStack stack : this.outputs) {
 				name += stack + ",";
 			}
-			return "[" + this.fluid + ",{" + this.inputAmout + "x" + this.input.getUnlocalizedName() + "}" + "[ " + name + " ]" + this.consumeFluid + "]";
+			return "[" + this.fluid + ",{" + this.inputAmout + "x" + this.input.getTranslationKey() + "}" + "[ " + name + " ]" + this.consumeFluid + "]";
 		}
 	}
 }

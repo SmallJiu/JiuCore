@@ -25,8 +25,8 @@ public class DownloadResource {
 	
 	public static void register(String link, ResourceLocation loc) {
 		if(urls==null) urls = Maps.newHashMap();
-		if(!urls.containsKey(loc.getResourceDomain())) urls.put(loc.getResourceDomain(), Maps.newHashMap());
-		urls.get(loc.getResourceDomain()).put(loc, link);
+		if(!urls.containsKey(loc.getNamespace())) urls.put(loc.getNamespace(), Maps.newHashMap());
+		urls.get(loc.getNamespace()).put(loc, link);
 	}
 	
 	public static File getFile(ResourceLocation loc) {
@@ -39,7 +39,7 @@ public class DownloadResource {
 		
 		Map<ResourceLocation, File> files = Maps.newHashMap();
 		for(Entry<ResourceLocation, File> file : DownloadResource.files.entrySet()) {
-			if(file.getKey().getResourceDomain().equals(domain)) {
+			if(file.getKey().getNamespace().equals(domain)) {
 				files.put(file.getKey(), file.getValue());
 			}
 		}

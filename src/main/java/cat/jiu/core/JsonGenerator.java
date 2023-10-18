@@ -9,7 +9,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 public class JsonGenerator {
-	public static void main(String[] args) {
+	public static void main(String... args) {
 		JsonObject json = new JsonObject();
 		{
 			// 添加解析为json的代码

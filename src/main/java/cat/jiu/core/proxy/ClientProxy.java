@@ -22,13 +22,10 @@ public class ClientProxy extends ServerProxy {
 		super.preInit(event);
 		CustomResource.registerResource();
 		if(packs!=null&&!packs.isEmpty()) {
-			List<IResourcePack> resourcePackList = Minecraft.getMinecraft().defaultResourcePacks;
-			
-			if(resourcePackList != null && Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager) {
+			if(Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager) {
 				SimpleReloadableResourceManager manger = ((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager());
-				
 				for(IResourcePack pack : packs) {
-					resourcePackList.add(pack);
+					Minecraft.getMinecraft().defaultResourcePacks.add(pack);
 					manger.reloadResourcePack(pack);
 				}
 			}

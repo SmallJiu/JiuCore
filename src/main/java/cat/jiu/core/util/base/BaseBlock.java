@@ -59,7 +59,7 @@ public class BaseBlock {
 			this.tab = tab;
 			this.hasSubtypes = hasSubType;
 			this.setSoundType(soundType);
-			this.setUnlocalizedName(this.modid + "." + this.name);
+			this.setTranslationKey(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 			if(hardness < 0) {
@@ -191,10 +191,10 @@ public class BaseBlock {
 			}
 			super.getDrops(drops, world, pos, state, fortune);
 		}
-		
+
 		@Override
 		@SideOnly(Side.CLIENT)
-		public BlockRenderLayer getBlockLayer() {
+		public BlockRenderLayer getRenderLayer() {
 			return BlockRenderLayer.TRANSLUCENT;
 		}
 		
@@ -252,7 +252,7 @@ public class BaseBlock {
 		}
 		
 		/**
-		 * if you add more BlockState, you must override {@link #getMetaFromState(IBlockState)} and {@link #getStateFromMeta(Integer)}}
+		 * if you add more BlockState, you must override {@link #getMetaFromState(IBlockState)} and {@link #getStateFromMeta(int)}}
 		 */
 		protected IProperty<?>[] addBlockOthersProperty() {
 			return null;
@@ -443,7 +443,7 @@ public class BaseBlock {
 	    	RegisterModel.addNeedRegistryModel(modid, this);
 	    	this.modid = modid;
 	    	this.name = name;
-	    	this.setUnlocalizedName(modid + "." + name);
+	    	this.setTranslationKey(modid + "." + name);
 	    	if(tab != null) {
 	    		this.setCreativeTab(tab);
 	    	}
@@ -487,9 +487,9 @@ public class BaseBlock {
 		public String getItemStackDisplayName(ItemStack stack) {
 			ResourceLocation res = this.block.getRegistryName();
 			if(this.hasSubtypes) {
-				return I18n.format("tile." + res.getResourceDomain() + "." + res.getResourcePath()  + "." + stack.getItemDamage() + ".name");
+				return I18n.format("tile." + res.getNamespace() + "." + res.getPath()  + "." + stack.getItemDamage() + ".name");
 			}else {
-				return I18n.format("tile." + res.getResourceDomain() + "." + res.getResourcePath() + ".name");
+				return I18n.format("tile." + res.getNamespace() + "." + res.getPath() + ".name");
 			}
 		}
 	}

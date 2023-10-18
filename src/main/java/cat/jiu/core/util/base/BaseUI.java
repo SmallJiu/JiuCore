@@ -1,9 +1,15 @@
 package cat.jiu.core.util.base;
 
+import java.awt.*;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import cat.jiu.core.api.IMenuComponent;
+import cat.jiu.core.events.client.MenuComponentEvent;
+import net.minecraft.client.gui.*;
 import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
@@ -11,10 +17,6 @@ import com.google.common.collect.Lists;
 import cat.jiu.core.api.handler.IBuilder;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -132,8 +134,8 @@ public class BaseUI {
 	@SideOnly(Side.CLIENT)
 	public static class GuiDecimalNumberTextField extends GuiTextField {
 		protected double min = Double.MIN_NORMAL, max = Double.MAX_VALUE;
-		public GuiDecimalNumberTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height) {
-			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
+		public GuiDecimalNumberTextField(int componentId, FontRenderer fontRenderer, int x, int y, int par5Width, int par6Height) {
+			super(componentId, fontRenderer, x, y, par5Width, par6Height);
 			this.setText("0");
 		}
 		public GuiDecimalNumberTextField setNumberRange(double min, double max) {
@@ -185,8 +187,8 @@ public class BaseUI {
 	@SideOnly(Side.CLIENT)
 	public static class GuiNumberTextField extends GuiTextField {
 		protected long min = Long.MIN_VALUE, max = Long.MAX_VALUE;
-		public GuiNumberTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height) {
-			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
+		public GuiNumberTextField(int componentId, FontRenderer fontRenderer, int x, int y, int par5Width, int par6Height) {
+			super(componentId, fontRenderer, x, y, par5Width, par6Height);
 		}
 		public GuiNumberTextField setNumberRange(long min, long max) {
 			this.min = min;
@@ -237,8 +239,8 @@ public class BaseUI {
 	public static class GuiNameTextField extends GuiTextField {
 		protected final boolean canSelectedSelf;
 
-		public GuiNameTextField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height, boolean canSelectedSelf) {
-			super(componentId, fontrendererObj, x, y, par5Width, par6Height);
+		public GuiNameTextField(int componentId, FontRenderer fontRenderer, int x, int y, int par5Width, int par6Height, boolean canSelectedSelf) {
+			super(componentId, fontRenderer, x, y, par5Width, par6Height);
 			this.canSelectedSelf = canSelectedSelf;
 		}
 
@@ -334,7 +336,7 @@ public class BaseUI {
 
 		protected boolean canSeeUI(EntityPlayer player) {
 			return true;
-		};
+		}
 
 		public boolean canInteractWith(EntityPlayer player) {
 			boolean hasBlock = player.world.getBlockState(this.pos).getBlock() != Blocks.AIR;
@@ -344,8 +346,7 @@ public class BaseUI {
 		/**
 		 * @param slot
 		 *            custom slot,
-		 * @param slot_args
-		 *            itemHandler, slotIndex, slotX, slotY
+		 *            args: itemHandler, slotIndex, slotX, slotY
 		 * @author small_jiu
 		 */
 		protected void addHandlerSlot(ItemStackHandler handler, int x, int y, int slotWidth, int slotHeight, IBuilder<Slot> slot) {
@@ -466,14 +467,13 @@ public class BaseUI {
 					}
 				}
 			}
-
 			return flag;
 		}
 	}
 
 	public static final class ContainerNull extends Container {
 		public boolean canInteractWith(EntityPlayer entityplayer) {
-			return false;
+			return true;
 		}
 	}
 
@@ -617,22 +617,155 @@ public class BaseUI {
 	}
 
 	@SideOnly(Side.CLIENT)
-	public static class GuiPopupMenu extends GuiScreen {
-		protected final List<GuiButton> btns;
-		protected boolean visible = false;
+	public static class GuiImageButton extends GuiButton {
+		protected static final Color HOVERED_COLOR = new Color(0, 255, 255, 85);
+		protected final GuiScreen gui;
+		protected final ResourceLocation background;
+		protected int u, v = 0;
+		protected final int uWidth, vHeight, tileWidth, tileHeight;
+		protected int hoveredColor = HOVERED_COLOR.getRGB();
 
-		public GuiPopupMenu() {
+		public GuiImageButton(GuiScreen gui, int buttonId, int x, int y, int widthIn, int heightIn, String hoveringText, ResourceLocation background, int tileWidth, int tileHeight, int uWidth, int vHeight) {
+			super(buttonId, x, y, widthIn, heightIn, hoveringText);
+			this.gui = gui;
+			this.background = background;
+			this.tileWidth = tileWidth;
+			this.tileHeight = tileHeight;
+			this.uWidth = uWidth;
+			this.vHeight = vHeight;
+			this.width = this.uWidth;
+			this.height = this.vHeight;
+		}
+
+		public GuiImageButton(GuiScreen gui, int buttonId, int x, int y, String hoveringText, ResourceLocation background, int tileWidth, int tileHeight, int uWidth, int vHeight) {
+			super(buttonId, x, y, hoveringText);
+			this.gui = gui;
+			this.background = background;
+			this.tileWidth = tileWidth;
+			this.tileHeight = tileHeight;
+			this.uWidth = uWidth;
+			this.vHeight = vHeight;
+			this.width = this.uWidth;
+			this.height = this.vHeight;
+		}
+
+		public GuiImageButton(GuiScreen gui, int buttonId, int x, int y, int widthIn, int heightIn, String hoveringText, ResourceLocation background, int tileWidth, int tileHeight, int u, int v, int uWidth, int vHeight) {
+			super(buttonId, x, y, widthIn, heightIn, hoveringText);
+			this.gui = gui;
+			this.background = background;
+			this.tileWidth = tileWidth;
+			this.tileHeight = tileHeight;
+			this.u = u;
+			this.v = v;
+			this.uWidth = uWidth;
+			this.vHeight = vHeight;
+			this.width = this.uWidth;
+			this.height = this.vHeight;
+		}
+
+		public GuiImageButton(GuiScreen gui, int buttonId, int x, int y, String hoveringText, ResourceLocation background, int tileWidth, int tileHeight, int u, int v, int uWidth, int vHeight) {
+			super(buttonId, x, y, hoveringText);
+			this.gui = gui;
+			this.background = background;
+			this.tileWidth = tileWidth;
+			this.tileHeight = tileHeight;
+			this.u = u;
+			this.v = v;
+			this.uWidth = uWidth;
+			this.vHeight = vHeight;
+			this.width = this.uWidth;
+			this.height = this.vHeight;
+		}
+
+		public GuiImageButton setImageX(int u) {
+			this.u = u;
+			return this;
+		}
+		public GuiImageButton setImageY(int v) {
+			this.v = v;
+			return this;
+		}
+		public GuiImageButton setImageWidth(int drawWidth) {
+			this.width = drawWidth;
+			return this;
+		}
+		public GuiImageButton setImageHeight(int drawHeight) {
+			this.height = drawHeight;
+			return this;
+		}
+
+		public GuiImageButton setHoveredColor(int hoveredColor) {
+			this.hoveredColor = hoveredColor;
+			return this;
+		}
+		public GuiImageButton setHoveredColor(Color hoveredColor) {
+			this.hoveredColor = hoveredColor.getRGB();
+			return this;
+		}
+
+		@Override
+		public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+			if(this.visible) {
+				this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+
+				GlStateManager.pushMatrix();
+				GlStateManager.enableAlpha();
+				GlStateManager.color(1.0F, 1.0F, 1.0F);
+				mc.getTextureManager().bindTexture(this.background);
+				Gui.drawScaledCustomSizeModalRect(this.x, this.y, this.u, this.v, this.uWidth, this.vHeight, this.width, this.height, this.tileWidth, this.tileHeight);
+				GlStateManager.disableAlpha();
+				GlStateManager.popMatrix();
+
+				if(this.isMouseOver()) {
+					this.drawGradientRect(this.x, this.y, this.x + this.width, this.y + this.height, this.hoveredColor, this.hoveredColor);
+					if(this.displayString!=null) this.gui.drawHoveringText(this.displayString, mouseX, mouseY);
+				}
+			}
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static class GuiButtonPopupMenu extends GuiScreen {
+		public final List<GuiButton> buttons;
+		protected boolean visible = false;
+		public final Scroll scroll;
+		private IDrawEvent event;
+
+		public GuiButtonPopupMenu() {
 			this(Lists.newArrayList());
 		}
 
-		public GuiPopupMenu(List<GuiButton> btns) {
-			this.btns = btns;
+		public GuiButtonPopupMenu(List<GuiButton> buttons) {
+			this.buttons = buttons;
+			this.scroll = new Scroll(this.buttons);
+		}
+
+		public GuiButtonPopupMenu setDrawEvent(IDrawEvent event) {
+			this.event = event;
+			return this;
+		}
+
+		int createX = 0;
+		int createY = 0;
+
+		public void setCreatePoint(int createX, int createY) {
+			this.createX = createX;
+			this.createY = createY;
 		}
 
 		public void setVisible(boolean visible) {
 			this.visible = visible;
-			for(int i = 0; i < btns.size(); i++) {
-				this.btns.get(i).visible = visible;
+
+			int btnY = this.createY;
+			int width = getWidth();
+			for (GuiButton btn : buttons) {
+				btn.visible = visible;
+				if (visible) {
+					btn.width = width;
+					btn.x = this.createX;
+					btn.y = btnY;
+					btnY += btn.height;
+				}
 			}
 		}
 
@@ -641,42 +774,493 @@ public class BaseUI {
 		}
 
 		public void drawPopupMenu(Minecraft mc, int x, int y, float partialTicks) {
-			if(this.visible) {
-				for(int i = 0; i < btns.size(); i++) {
-					GuiButton btn = this.btns.get(i);
-					btn.x = x;
-					btn.y = y;
+			if (this.visible) {
+				int btnY = this.createY;
+				for (int i : this.scroll.getShows()) {
+					GuiButton btn = this.buttons.get(i);
+					btn.y = btnY;
 					btn.drawButton(mc, x, y, partialTicks);
-					y += btn.height;
+					if (this.event != null) {
+						this.event.draw(btn);
+					}
+					btnY += btn.height;
 				}
+				GuiButton btn = this.buttons.get(this.scroll.getShows()[this.scroll.getShows().length - 1]);
+				this.drawHorizontalLine(btn.x, btn.x + btn.width - 1, btn.y + btn.height, Color.BLACK.getRGB());
 			}
+		}
+
+		public int getHeight() {
+			int height = 0;
+			for (int show : this.scroll.getShows()) {
+				height += this.buttons.get(show).height;
+			}
+			return height;
+		}
+
+		public int getWidth() {
+			int width = 0;
+			for (GuiButton btn : this.buttons) {
+				width = Math.max(width, btn.width);
+			}
+			return width;
 		}
 
 		public boolean mouseClicked(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
 			boolean flag = false;
-			if(mouseButton == 0) {
-				for(GuiButton btn : this.btns) {
-					if(btn.mousePressed(mc, mouseX, mouseY)) {
-						GuiScreenEvent.ActionPerformedEvent.Pre event = new GuiScreenEvent.ActionPerformedEvent.Pre(this, btn, this.btns);
-						if(MinecraftForge.EVENT_BUS.post(event))
+			if (mouseButton == 0) {
+				for (GuiButton btn : this.buttons) {
+					if (btn.mousePressed(mc, mouseX, mouseY)) {
+						GuiScreenEvent.ActionPerformedEvent.Pre event = new GuiScreenEvent.ActionPerformedEvent.Pre(this, btn, this.buttons);
+						if (MinecraftForge.EVENT_BUS.post(event))
 							break;
 						btn = event.getButton();
 						btn.playPressSound(mc.getSoundHandler());
 						btn.mouseReleased(mouseX, mouseY);
 						flag = true;
-						MinecraftForge.EVENT_BUS.post(new GuiScreenEvent.ActionPerformedEvent.Post(this, btn, this.btns));
+						MinecraftForge.EVENT_BUS.post(new GuiScreenEvent.ActionPerformedEvent.Post(this, btn, this.buttons));
 					}
 				}
 			}
-			if(flag)
+			if (flag)
 				this.setVisible(false);
 			return flag;
 		}
 
 		@Override
 		public <T extends GuiButton> T addButton(T buttonIn) {
-			this.btns.add(buttonIn);
+			this.buttons.add(buttonIn);
+			this.scroll.init();
 			return buttonIn;
+		}
+
+		public boolean scroll(int mouseX, int mouseY, int key) {
+			if (this.visible && isInRange(mouseX, mouseY, this.createX, this.createY, this.getWidth(), this.getHeight())) {
+				int page = 0;
+
+				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+					page += 2;
+				}
+				if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) {
+					page += 1;
+				}
+				if (key == 120) {
+					this.scroll.go(-1 - page);
+					return true;
+				} else if (key == -120) {
+					this.scroll.go(1 + page);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		static boolean isInRange(int mouseX, int mouseY, int x, int y, int width, int height) {
+			return (mouseX >= x && mouseY >= y) && (mouseX <= x + width && mouseY <= y + height);
+		}
+
+		public static interface IDrawEvent {
+			void draw(GuiButton button);
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static abstract class MenuComponentBase implements IMenuComponent {
+		protected int x, y, width, height;
+		protected boolean visible;
+
+		public MenuComponentBase(int width, int height) {
+			this(0,0,width, height);
+		}
+		public MenuComponentBase(int x, int y, int width, int height) {
+			this.x = x;
+			this.y = y;
+			this.width = width;
+			this.height = height;
+		}
+
+		@Override
+		public boolean handMouseInput() {
+			return false;
+		}
+
+		@Override
+		public boolean handleInput() {
+			return false;
+		}
+
+		@Override
+		public boolean handleKeyboardInput() {
+			return false;
+		}
+
+		@Override
+		public boolean mouseClicked(int mouseX, int mouseY, int mouseButton) {
+			return false;
+		}
+
+		@Override
+		public boolean keyTyped(char typedChar, int keyCode) {
+			return false;
+		}
+
+		@Override
+		public int getX() {
+			return this.x;
+		}
+
+		@Override
+		public int getY() {
+			return this.y;
+		}
+
+		@Override
+		public MenuComponentBase setX(int x) {
+			this.x = x;
+			return this;
+		}
+
+		@Override
+		public MenuComponentBase setY(int y) {
+			this.y = y;
+			return this;
+		}
+
+		@Override
+		public int getWidth() {
+			return this.width;
+		}
+
+		@Override
+		public int getHeight() {
+			return this.height;
+		}
+
+		@Override
+		public MenuComponentBase setWidth(int width) {
+			this.width = width;
+			return this;
+		}
+
+		@Override
+		public MenuComponentBase setHeight(int height) {
+			this.height = height;
+			return this;
+		}
+
+		@Override
+		public boolean isVisible() {
+			return visible;
+		}
+
+		@Override
+		public MenuComponentBase setVisible(boolean visible) {
+			this.visible = visible;
+			return this;
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static class GuiVisibleButtonPopupMenu extends GuiButtonPopupMenu {
+
+		public GuiVisibleButtonPopupMenu() {
+			this(Lists.newArrayList());
+		}
+
+		public GuiVisibleButtonPopupMenu(List<GuiButton> components) {
+			super(components);
+			super.setVisible(true);
+		}
+
+		@Override
+		public void setVisible(boolean visible) {
+			super.setVisible(true);
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static class GuiVisibleComponentPopupMenu extends GuiComponentPopupMenu {
+
+		public GuiVisibleComponentPopupMenu(GuiScreen gui) {
+			this(gui, Lists.newArrayList());
+		}
+
+		public GuiVisibleComponentPopupMenu(GuiScreen gui, List<IMenuComponent> components) {
+			super(gui, components);
+			super.setVisible(true);
+		}
+
+		@Override
+		public void setVisible(boolean visible) {
+			super.setVisible(true);
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static class GuiComponentPopupMenu extends Gui {
+		public final GuiScreen gui;
+		public final List<IMenuComponent> components;
+		protected boolean visible = false;
+		public final Scroll scroll;
+		private IMenuComponent.IDrawEvent event;
+
+		public GuiComponentPopupMenu(GuiScreen gui) {
+			this(gui, Lists.newArrayList());
+		}
+
+		public GuiComponentPopupMenu(GuiScreen gui, List<IMenuComponent> components) {
+			this.gui = gui;
+			this.components = components;
+			this.scroll = new Scroll(this.components);
+		}
+
+		public GuiComponentPopupMenu setDrawEvent(IMenuComponent.IDrawEvent event) {
+			this.event = event;
+			return this;
+		}
+
+		int createX = 0;
+		int createY = 0;
+
+		public void setCreatePoint(int createX, int createY) {
+			this.createX = createX;
+			this.createY = createY;
+		}
+
+		public void setVisible(boolean visible) {
+			this.visible = visible;
+
+			int btnY = this.createY;
+			int width = getWidth();
+			for (IMenuComponent component : this.components) {
+				component.setVisible(visible);
+				if (visible) {
+					component.setWidth(width)
+							.setX(this.createX)
+							.setY(btnY);
+					btnY += component.getHeight();
+				}
+			}
+		}
+
+		public boolean isVisible() {
+			return visible;
+		}
+
+		public void drawPopupMenu(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+			if (this.visible) {
+				int btnY = this.createY;
+				for (int i : this.scroll.getShows()) {
+					IMenuComponent component = this.components.get(i);
+					component.setY(btnY)
+							.draw(this.gui, mouseX, mouseY);
+					if (this.event != null) {
+						this.event.draw(component);
+					}
+					btnY += component.getHeight();
+				}
+			}
+		}
+
+		public int getHeight() {
+			int height = 0;
+			for (int show : this.scroll.getShows()) {
+				height += this.components.get(show).getHeight();
+			}
+			return height;
+		}
+
+		public int getWidth() {
+			int width = 0;
+			for (IMenuComponent btn : this.components) {
+				width = Math.max(width, btn.getWidth());
+			}
+			return width;
+		}
+
+		public boolean mouseClicked(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
+			if (this.visible) {
+				for (int show : this.scroll.getShows()) {
+					if (this.components.get(show).mouseClicked(mouseX, mouseY, mouseButton)) {
+						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentClicked(this.components.get(show), mouseX, mouseY, mouseButton));
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public boolean keyTyped(char typedChar, int keyCode) {
+			if (this.visible) {
+				for (int show : this.scroll.getShows()) {
+					if (this.components.get(show).keyTyped(typedChar, keyCode)) {
+						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentKeyTyped(this.components.get(show), typedChar, keyCode));
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public boolean handleInput() {
+			if (this.visible) {
+				for (int show : this.scroll.getShows()) {
+					if (this.components.get(show).handleInput()) {
+						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentInput.All(this.components.get(show)));
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public boolean handMouseInput() {
+			if (this.visible) {
+				for (int show : this.scroll.getShows()) {
+					if (this.components.get(show).handMouseInput()) {
+						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentInput.Mouse(this.components.get(show)));
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public boolean handleKeyboardInput() {
+			if (this.visible) {
+				for (int show : this.scroll.getShows()) {
+					if (this.components.get(show).handleKeyboardInput()) {
+						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentInput.Keyboard(this.components.get(show)));
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public <T extends IMenuComponent> T addComponent(T buttonIn) {
+			this.components.add(buttonIn);
+			this.scroll.init();
+			return buttonIn;
+		}
+
+		public boolean scroll(int mouseX, int mouseY, int key) {
+			if (this.visible && isInRange(mouseX, mouseY, this.createX, this.createY, this.getWidth(), this.getHeight())) {
+				int page = 0;
+
+				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+					page += 2;
+				}
+				if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) {
+					page += 1;
+				}
+				if (key == 120) {
+					this.scroll.go(-1 - page);
+					return true;
+				} else if (key == -120) {
+					this.scroll.go(1 + page);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		static boolean isInRange(int mouseX, int mouseY, int x, int y, int width, int height) {
+			return (mouseX >= x && mouseY >= y) && (mouseX <= x + width && mouseY <= y + height);
+		}
+	}
+
+	public static class Scroll {
+		public final Collection<?> collection;
+		protected int size = -1;
+		protected int[] shows = null;
+		protected int[] ids = null;
+		protected int page = 0;
+		protected int showCount = 5;
+
+		public Scroll(Collection<?> collection) {
+			this.collection = collection;
+		}
+
+		public int[] getShows() {
+			return shows;
+		}
+		public int getPage() {
+			return page;
+		}
+
+		public int getShowCount() {
+			return showCount;
+		}
+
+		public Scroll setShowCount(int showCount) {
+			this.showCount = showCount;
+			return this;
+		}
+
+		public boolean go(int page) {
+			if(this.ids == null) return false;
+			if(this.ids.length > this.getShowCount()) {
+				this.page += page;
+
+				if(this.page < 0) {
+					this.page = 0;
+				}
+				if(this.page > this.ids.length - this.getShowCount()) {
+					this.page = this.ids.length - this.getShowCount();
+				}
+				int[] shows = Arrays.copyOfRange(this.ids, this.page, this.page + this.getShowCount());
+				if (!Arrays.equals(this.shows, shows)) {
+					this.shows = shows;
+					return true;
+				}
+				return false;
+			}else {
+				this.shows = this.ids;
+			}
+			return false;
+		}
+
+		public void init() {
+			if(this.size == -1) this.size = collection.size();
+			if(this.ids == null && this.size > 0) {
+				this.ids = toArray(collection.size());
+				this.page = 0;
+				this.go(0);
+			}
+			if(this.size != collection.size()) {
+				this.size = collection.size();
+				this.ids = toArray(collection.size());
+				this.go(0);
+			}
+		}
+
+		public boolean scroll(int key){
+			int page = 0;
+
+			if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+				page += 2;
+			}
+			if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) {
+				page += 1;
+			}
+
+			if(key == 120) {
+				this.go(-1 - page);
+				return true;
+			}else if (key == -120){
+				this.go(1 + page);
+				return true;
+			}
+			return false;
+		}
+
+		static int[] toArray(int size){
+			int[] array = new int[size];
+			for (int i = 0; i < size; i++) {
+				array[i] = i;
+			}
+			return array;
 		}
 	}
 }

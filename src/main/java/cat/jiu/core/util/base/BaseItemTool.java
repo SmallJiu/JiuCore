@@ -63,7 +63,7 @@ public class BaseItemTool {
 			this.modid = modid;
 			this.model = new RegisterModel(this.modid);
 			this.setHasSubtypes(hasSubtypes);
-			this.setUnlocalizedName(this.modid + "." + this.name);
+			this.setTranslationKey(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 			RegisterModel.addNeedRegistryModel(modid, this);
@@ -151,7 +151,7 @@ public class BaseItemTool {
 			this.model = new RegisterModel(this.modid);
 
 			this.setHasSubtypes(hasSubtypes);
-			this.setUnlocalizedName(this.modid + "." + this.name);
+			this.setTranslationKey(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 			RegisterModel.addNeedRegistryModel(modid, this);
@@ -345,7 +345,7 @@ public class BaseItemTool {
 			this.model = new RegisterModel(this.modid);
 			this.setMaxMetadata(material.length);
 			this.setHasSubtypes(hasSubtypes);
-			this.setUnlocalizedName(this.modid + "." + this.name);
+			this.setTranslationKey(this.modid + "." + this.name);
 			this.setCreativeTab(this.tab);
 			this.setRegistryName(this.modid, this.name);
 

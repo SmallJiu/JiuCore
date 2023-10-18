@@ -11,7 +11,8 @@
 	],
 	"client": [
 		"MixinFallbackResourceManager",
-		"MixinSimpleReloadableResourceManager"
+		"MixinSimpleReloadableResourceManager",
+		"MixinLocale"
 	],
 	"server": [
 		

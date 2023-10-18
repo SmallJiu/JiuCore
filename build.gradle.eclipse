@@ -1,0 +1,100 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "https://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sponge"
+            url = "https://repo.spongepowered.org/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+		classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'org.spongepowered.mixin'
+
+version = "1.12.2-1.1.6-a1"
+group = "cat.jiu.core" 
+archivesBaseName = "JiuCore"
+
+sourceCompatibility = targetCompatibility = '1.8'
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+minecraft {
+    version = "1.12.2-14.23.5.2847"
+    runDir = "run"
+    //mappings = "snapshot_20171003"
+    mappings = "stable_39"
+	//makeObfSourceJar = false
+	
+    //runClient.setWorkingDir("./run/client")
+    //runServer.setWorkingDir("./run/server")
+    
+    //runClient.jvmArgs("--username small_jiu")
+    //runServer.jvmArgs("-nogui")
+}
+
+jar {
+	manifest {
+        attributes([
+			"FMLAT": "jc_at.cfg",
+			
+			"FMLCorePluginContainsFMLMod": 'false',
+			"ForceLoadAsMod": 'true',
+            "FMLCorePlugin": "cat.jiu.core.mixin.Configuration",
+            "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
+			"MixinConfigs": "jiucore.mixin.json"
+        ])
+    }
+}
+
+mixin {
+    add sourceSets.main, "jiucore.mixin.refmap.json"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+	maven {
+        name 'CurseMaven'
+        url 'https://www.cursemaven.com/'
+    }
+	maven {
+        name "CoFH Maven"
+        url "https://maven.covers1624.net"
+    }
+	maven { 
+		url 'https://repo.spongepowered.org/maven'
+	}
+}
+
+dependencies {
+	deobfCompile 'cofh:RedstoneFlux:1.12-2.1.0.7:universal'
+	deobfCompile "curse.maven:Hwyla-253449:2568751" // 1.8.26-B41
+//	deobfCompile ("zone.rong:mixinbooter:4.2")
+	provided('org.spongepowered:mixin:0.8') {
+        exclude module: 'guava'
+        exclude module: 'commons-io'
+        exclude module: 'gson'
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}

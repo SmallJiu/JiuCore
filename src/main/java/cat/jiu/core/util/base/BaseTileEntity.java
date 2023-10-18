@@ -31,14 +31,14 @@ public class BaseTileEntity {
 	public static class Normal extends TileEntity implements ITickable, ITileEntityUpdate {
 		private long tick;
 		private long lastUpdateTick;
-		private int updateIntervalTick = 20;
+		private int updateIntervalTick = 5;
 		private boolean needUpdate = false;
 		/**请重写以下方法，以获得更新数据<p>
 		 * {@link #getTileEntityUpdatePacket(NBTTagCompound)}<p>
 		 * {@link #onTileEntityUpdatePacket(NBTTagCompound)}
 		 * @param tick 更新间隔，以Tick为单位
 		 */
-		public BaseTileEntity.Normal setUpdataIntervalTick(int tick) {
+		public final BaseTileEntity.Normal setUpdataIntervalTick(int tick) {
 			this.updateIntervalTick = tick;
 			return this;
 		}
@@ -47,7 +47,7 @@ public class BaseTileEntity {
 		 * {@link #onTileEntityUpdatePacket(NBTTagCompound)}
 		 * @param needUpdate 是否需要更新此TileEntity
 		 */
-		public BaseTileEntity.Normal setNeedUpdate(boolean needUpdate) {
+		public final BaseTileEntity.Normal setNeedUpdate(boolean needUpdate) {
 			this.needUpdate = needUpdate;
 			return this;
 		}
@@ -117,11 +117,12 @@ public class BaseTileEntity {
 	
 	public static class Energy extends Normal {
 		public final JiuEnergyStorage storage;
-		public long energy = 0;
+		public long energy;
 		
 		public Energy(JiuEnergyStorage storage) {
 			this.storage = storage;
 			this.energy = this.storage.getEnergyStoredWithLong();
+			this.setNeedUpdate(true);
 		}
 		
 		@Override

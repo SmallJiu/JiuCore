@@ -93,7 +93,13 @@ public interface IText extends ISerializable {
 	}
 
 	default TextComponentTranslation toTextComponent() {
-		return new TextComponentTranslation(this.getText(), this.getParameters());
+		Object[] objs = this.getParameters();
+		for(int i = 0; i < objs.length; i++) {
+			if(objs[i] instanceof IText) {
+				objs[i] = ((IText)objs[i]).toTextComponent();
+			}
+		}
+		return new TextComponentTranslation(this.getText(), objs);
 	}
 
 	@ZenMethod

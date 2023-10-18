@@ -56,8 +56,8 @@ public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider, n
 	    default BigInteger extractEnergy(IEnergyStorage capability, BigInteger maxExtract, boolean simulate) {
 	    	int[] extracts = JiuUtils.other.perseInt(maxExtract);
 	    	BigInteger extract = BigInteger.ZERO;
-	    	for(int i = 0; i < extracts.length; i++) {
-	    		extract = extract.add(BigInteger.valueOf(capability.receiveEnergy(this.extractEnergyWithBigInteger(BigInteger.valueOf(extracts[i]), simulate).intValue(), simulate)));
+			for (int j : extracts) {
+				extract = extract.add(BigInteger.valueOf(capability.receiveEnergy(this.extractEnergyWithBigInteger(BigInteger.valueOf(j), simulate).intValue(), simulate)));
 			}
 	    	return extract;
 	    }
@@ -76,8 +76,7 @@ public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider, n
 	    	return this.extractEnergyWithBigInteger(maxExtract, simulate);
 	    }
 	    default String toStringInfo() {
-	    	return "MaxEnergy:" + this.getMaxEnergyStoredWithBigInteger()
-	    		 + ", Energy:" + this.getEnergyStoredWithBigInteger();
+	    	return String.format("%s / %s", this.getMaxEnergyStoredWithBigInteger(), this.getEnergyStoredWithBigInteger());
 	    }
 	    
 	    
@@ -127,7 +126,7 @@ public interface IJiuEnergyStorage extends ISerializable, ICapabilityProvider, n
 	    }
 	    @Override
 	    default NBTBase serializeNBT() {
-	    	return this.write(new NBTTagCompound());
+	    	return this.writeTo(NBTTagCompound.class);
 	    }
 	    
 	    @Override

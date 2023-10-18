@@ -16,7 +16,7 @@ public class MixinNBTBase {
 	}
 	@Inject(
 		at = {@At(value = "HEAD")},
-		method = {"createNewByType(B)Lnet/minecraft/nbt/NBTBase;"},
+		method = {"create(B)Lnet/minecraft/nbt/NBTBase;"},
 		cancellable = true
 	)
 	private static void mixin_createNewByType(byte id, CallbackInfoReturnable<NBTBase> cir) {
@@ -31,10 +31,10 @@ public class MixinNBTBase {
 	
 	@Inject(
 		at = {@At(value = "HEAD")},
-		method = {"getTagTypeName(I)Ljava/lang/String;"},
+		method = {"getTypeName(I)Ljava/lang/String;"},
 		cancellable = true
 	)
-	private static void mixin_getTagTypeName(int id, CallbackInfoReturnable<String> cir) {
+	private static void mixin_getTypeName(int id, CallbackInfoReturnable<String> cir) {
 		if(BaseNBT.hasNBT(id)) {
 			cir.setReturnValue(BaseNBT.getNBTInfo(id).type);
 		}

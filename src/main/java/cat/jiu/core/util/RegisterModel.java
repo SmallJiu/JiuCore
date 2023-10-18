@@ -120,10 +120,10 @@ public class RegisterModel {
 	 */
 	@SideOnly(Side.CLIENT)
 	public void registerFluidModel(BlockFluidBase block, String statePath) {
-		String location = statePath + block.getRegistryName().getResourcePath();
-		ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(block), stack -> new ModelResourceLocation(this.modid + ":" + location, block.getRegistryName().getResourcePath()));
+		String location = statePath + block.getRegistryName().getPath();
+		ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(block), stack -> new ModelResourceLocation(this.modid + ":" + location, block.getRegistryName().getPath()));
 		ModelBakery.registerItemVariants(Item.getItemFromBlock(block));
-		this.setBlockStateMapper(block, false, location, block.getRegistryName().getResourcePath());
+		this.setBlockStateMapper(block, false, location, block.getRegistryName().getPath());
 	}
 	
 	/**
@@ -167,7 +167,7 @@ public class RegisterModel {
 	/**
 	 * @param item the item
 	 * @param meta the meta
-	 * @param resname the model name
+	 * @param variant the model name
 	 */
 	@SideOnly(Side.CLIENT)
 	public void register(Item item, int meta, String variant) {

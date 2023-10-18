@@ -115,7 +115,7 @@ public interface ISound extends ISerializable {
 	@ZenMethod
 	default NBTTagCompound write(NBTTagCompound nbt) {
 		if(nbt==null) nbt = new NBTTagCompound();
-		nbt.setString("sound", SoundEvent.REGISTRY.getNameForObject(this.getSound()).toString());
+		nbt.setString("sound", this.getSound().soundName.toString());
 		nbt.setFloat("volume", this.getSoundVolume());
 		nbt.setFloat("pitch", this.getSoundPitch());
 		nbt.setLong("millis", this.getTime().getAllTicks());
@@ -142,7 +142,7 @@ public interface ISound extends ISerializable {
 	@ZenMethod
 	default JsonObject write(JsonObject json) {
 		if(json==null) json = new JsonObject();
-		json.addProperty("id", SoundEvent.REGISTRY.getNameForObject(this.getSound()).toString());
+		json.addProperty("id", this.getSound().soundName.toString());
 		json.addProperty("pitch", this.getSoundPitch());
 		json.addProperty("volume", this.getSoundVolume());
 		json.addProperty("millis", this.getTime().getAllTicks());

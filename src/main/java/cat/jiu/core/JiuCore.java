@@ -46,7 +46,7 @@ public class JiuCore implements IMod {
 	public static final String MODID = "jiucore";
 	public static final String NAME = "JiuCore";
 	public static final String OWNER = "small_jiu";
-	public static final String VERSION = "1.1.6-a1";
+	public static final String VERSION = "1.1.6-a2";
 
 	private static Boolean isDev; // if is IDE, you can set to 'true' to enable some test stuff
 	public static boolean dev() {
@@ -107,7 +107,6 @@ public class JiuCore implements IMod {
 	public void onPreInit(FMLPreInitializationEvent event) {
 		IMod.super.onPreInit(event);
 		CoreLoggers.getLogOS().info("PreInit start.");
-		CapabilityJiuEnergy.register();
 		JiuUtils.entity.initNameAndUUID(null);
 
 		Values.loadFromFile();
