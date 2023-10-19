@@ -77,6 +77,11 @@ public interface ITimer extends ISerializable {
 	@ZenMethod
 	ITimer copy();
 
+	@SuppressWarnings("unchecked")
+	default <T extends ITimer> T getAs(){
+		return (T) this;
+	}
+
 	@ZenMethod("allTicks")
 	default ITimer setAllTicks(long s, long tick) {
 		return this.setAllTicks(Timer.parseTick(s, tick));

@@ -13,9 +13,10 @@ import net.minecraft.nbt.NBTTagCompound;
  * @author small_jiu
  */
 public class MillisTimer implements ITimer {
-	protected long millis;
-	protected long sysMillis;
-	protected long currentMillis;
+	protected long millis, sysMillis, currentMillis,
+					residualMillis = 0;
+	protected boolean pause,
+					  start = false;
 	
 	public MillisTimer() {
 		this(1000);
@@ -35,8 +36,6 @@ public class MillisTimer implements ITimer {
 	public MillisTimer(long millis) {
 		this.millis = millis;
 	}
-	
-	protected boolean start = false;
 	public boolean isStarted() {return start;}
 	public MillisTimer start() {
 		if(!this.isStarted()) {
@@ -44,19 +43,37 @@ public class MillisTimer implements ITimer {
 			this.currentMillis = this.sysMillis + this.millis;
 			this.start = true;
 		}
+		if (this.isPause()) {
+			this.pause(false);
+		}
 		return this;
 	}
 	
 	@Override
 	public boolean isDone() {
-		return this.isStarted() ? System.currentTimeMillis() >= this.currentMillis : false;
+		boolean result = !this.isStarted() || System.currentTimeMillis() >= this.currentMillis;
+		if (result) {
+			this.start = false;
+		}
+		return result;
 	}
-	
-	public long getLastMillis() {
+
+	public boolean isPause() {
+		return pause;
+	}
+
+	public long getResidualMillis() {
 		if(!this.isStarted()) return 0;
-		long ms = this.currentMillis - System.currentTimeMillis();
-		if(ms <= 0) return 0; 
-		return ms;
+		if (this.isPause()) {
+			return this.residualMillis;
+		}
+		this.residualMillis = this.currentMillis - System.currentTimeMillis();
+		return this.residualMillis <= 0 ? 0 : this.residualMillis;
+	}
+
+	@Deprecated
+	public long getLastMillis() {
+		return this.getResidualMillis();
 	}
 	
 	public void setNotStartedMillis(long millis) {
@@ -75,7 +92,7 @@ public class MillisTimer implements ITimer {
 	@Override
 	public long getTicks() {
 		if(!this.isStarted()) return 0;
-		return this.getLastMillis() / 50;
+		return this.getResidualMillis() / 50;
 	}
 
 	@Override
@@ -92,8 +109,22 @@ public class MillisTimer implements ITimer {
 
 	@Override
 	public MillisTimer reset() {
-		this.start=false;
-		return this.start();
+		this.start = false;
+		this.start();
+		return this;
+	}
+
+	public MillisTimer stop(){
+		this.start = false;
+		return this;
+	}
+
+	public MillisTimer pause(boolean pause){
+		this.pause = pause;
+		if (!pause) {
+			this.currentMillis = System.currentTimeMillis() + this.residualMillis;
+		}
+		return this;
 	}
 
 	@Override
@@ -109,29 +140,34 @@ public class MillisTimer implements ITimer {
 	@Override
 	public long getDay() {
 		if(!this.isStarted()) return -1;
-		return this.getLastMillis() / 1000 / 60 / 60 / 24;
+		return this.getResidualMillis() / 1000 / 60 / 60 / 24;
 	}
 	@Override
 	public long getHour() {
 		if(!this.isStarted()) return -1;
-		return this.getLastMillis() / 1000 / 60 / 60 % 24;
+		return this.getResidualMillis() / 1000 / 60 / 60 % 24;
 	}
 	@Override
 	public long getMinute() {
 		if(!this.isStarted()) return -1;
-		return this.getLastMillis() / 1000 / 60 % 60;
+		return this.getResidualMillis() / 1000 / 60 % 60;
 	}
 	@Override
 	public long getSecond() {
 		if(!this.isStarted()) return -1;
-		return this.getLastMillis() / 1000 % 60;
+		return this.getResidualMillis() / 1000 % 60;
 	}
 	@Override
 	public long getTick() {
 		if(!this.isStarted()) return -1;
-		return this.getLastMillis() % 1000 / 50;
+		return this.getResidualMillis() % 1000 / 50;
 	}
-	
+
+	public long getMillis() {
+		if(!this.isStarted()) return -1;
+		return this.getResidualMillis() % 50;
+	}
+
 	@Override
 	public NBTTagCompound write(NBTTagCompound nbt) {
 		if(nbt==null) nbt = new NBTTagCompound();
