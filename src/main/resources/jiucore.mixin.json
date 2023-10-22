@@ -3,7 +3,7 @@
 	"minVersion": "0.7.11",
 	"package": "cat.jiu.core.mixin",
 	"compatibilityLevel": "JAVA_8",
-	"refmap": "jiucore.mixin.refmap.json",
+	"refmap": "mixins.jiucore.refmap.json",
 	"mixins": [
 		"MixinTileEntityUpdataEvent",
 		"MixinWorldInfo"
@@ -11,7 +11,7 @@
 	],
 	"client": [
 		"MixinFallbackResourceManager",
-		"MixinSimpleReloadableResourceManager",
+      	"MixinMinecraft",
 		"MixinLocale"
 	],
 	"server": [

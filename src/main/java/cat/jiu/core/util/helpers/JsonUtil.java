@@ -5,6 +5,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -86,25 +89,28 @@ public final class JsonUtil {
 		}
 	}
 	
-	public boolean toJsonFile(String path, Object src, boolean format) {
+	public boolean toJsonFile(String path, Object src, Charset cs, boolean format) {
 		String json = src instanceof JsonElement ? String.valueOf(src) : gson.toJson(src);
-		
+
 		try {
 			File file = new File(path);
-	        if (!file.getParentFile().exists()) { // 如果父目录不存在，创建父目录
-	            file.getParentFile().mkdirs();
-	        }
-	        if (file.exists()) { // 如果已存在,删除旧文件
-	            file.delete();
-	        }
-	        
-	        file.createNewFile();
-	        OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file));
-            write.write(format ? this.formatJson(json) : json);
-            write.flush();
-            write.close();
-	        return true;
+			if (!file.getParentFile().exists()) { // 如果父目录不存在，创建父目录
+				file.getParentFile().mkdirs();
+			}
+			if (file.exists()) { // 如果已存在,删除旧文件
+				file.delete();
+			}
+
+			file.createNewFile();
+			OutputStreamWriter write = new OutputStreamWriter(Files.newOutputStream(file.toPath()), cs);
+			write.write(format ? this.formatJson(json) : json);
+			write.flush();
+			write.close();
+			return true;
 		} catch (Exception e) {e.printStackTrace();return false;}
+	}
+	public boolean toJsonFile(String path, Object src, boolean format) {
+		return toJsonFile(path, src, StandardCharsets.UTF_8, format);
 	}
 	
 	/**

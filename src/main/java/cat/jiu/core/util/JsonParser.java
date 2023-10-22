@@ -1,13 +1,9 @@
 package cat.jiu.core.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
@@ -25,13 +21,22 @@ public class JsonParser {
 		return parser.parse(json);
 	}
 	
-	public static <T extends JsonElement> T parse(File file) throws FileNotFoundException {
+	public static <T extends JsonElement> T parse(File file) throws IOException {
 		if(file==null || !file.exists()) return null;
-		return parse(new FileInputStream(file));
+		return parse(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
+	}
+	public static <T extends JsonElement> T parse(File path, String charsetName) throws IOException {
+		return parse(Files.newInputStream(path.toPath()), charsetName);
+	}
+	/**
+	 * @param cs see {@link java.nio.charset.StandardCharsets}
+	 */
+	public static <T extends JsonElement> T parse(File path, Charset cs) throws IOException {
+		return parse(Files.newInputStream(path.toPath()), cs);
 	}
 	
 	public static <T extends JsonElement> T parse(InputStream path) {
-		return (T) parse(new InputStreamReader(path));
+		return (T) parse(new InputStreamReader(path, StandardCharsets.UTF_8));
 	}
 	public static <T extends JsonElement> T parse(InputStream path, String charsetName) throws UnsupportedEncodingException {
 		return (T) parse(new InputStreamReader(path, charsetName));

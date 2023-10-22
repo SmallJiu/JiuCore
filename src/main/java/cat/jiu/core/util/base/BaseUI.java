@@ -490,15 +490,34 @@ public class BaseUI {
 			super(buttonId, x, y, buttonText);
 			this.event = event;
 		}
+		@Deprecated
+		public GuiClickButton(int buttonId, int x, int y, int widthIn, int heightIn, String buttonText, IButtonClickEvent_Old event) {
+			super(buttonId, x, y, widthIn, heightIn, buttonText);
+			this.event = event;
+		}
+
+		@Deprecated
+		public GuiClickButton(int buttonId, int x, int y, String buttonText, IButtonClickEvent_Old event) {
+			super(buttonId, x, y, buttonText);
+			this.event = event;
+		}
 
 		@Override
 		public void mouseReleased(int mouseX, int mouseY) {
 			if(this.event != null)
-				this.event.click(mouseX, mouseY);
+				this.event.click(this, mouseX, mouseY);
 		}
 
-		public static interface IButtonClickEvent {
+		public static interface IButtonClickEvent_Old extends IButtonClickEvent {
 			void click(int mouseX, int mouseY);
+
+			@Override
+			default void click(GuiClickButton button, int mouseX, int mouseY){
+				this.click(mouseX, mouseY);
+			}
+		}
+		public static interface IButtonClickEvent {
+			void click(GuiClickButton button, int mouseX, int mouseY);
 		}
 	}
 
@@ -728,7 +747,7 @@ public class BaseUI {
 	public static class GuiButtonPopupMenu extends GuiScreen {
 		public final List<GuiButton> buttons;
 		protected boolean visible = false;
-		public final Scroll scroll;
+		public final Scroll<List<GuiButton>> scroll;
 		private IDrawEvent event;
 
 		public GuiButtonPopupMenu() {
@@ -737,7 +756,7 @@ public class BaseUI {
 
 		public GuiButtonPopupMenu(List<GuiButton> buttons) {
 			this.buttons = buttons;
-			this.scroll = new Scroll(this.buttons);
+			this.scroll = new Scroll<>(this.buttons);
 		}
 
 		public GuiButtonPopupMenu setDrawEvent(IDrawEvent event) {
@@ -808,7 +827,7 @@ public class BaseUI {
 
 		public boolean mouseClicked(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
 			boolean flag = false;
-			if (mouseButton == 0) {
+			if (mouseButton == 0 && this.isVisible()) {
 				for (GuiButton btn : this.buttons) {
 					if (btn.mousePressed(mc, mouseX, mouseY)) {
 						GuiScreenEvent.ActionPerformedEvent.Pre event = new GuiScreenEvent.ActionPerformedEvent.Pre(this, btn, this.buttons);
@@ -822,8 +841,7 @@ public class BaseUI {
 					}
 				}
 			}
-			if (flag)
-				this.setVisible(false);
+//			this.setVisible(false);
 			return flag;
 		}
 
@@ -1001,7 +1019,7 @@ public class BaseUI {
 		public final GuiScreen gui;
 		public final List<IMenuComponent> components;
 		protected boolean visible = false;
-		public final Scroll scroll;
+		public final Scroll<List<IMenuComponent>> scroll;
 		private IMenuComponent.IDrawEvent event;
 
 		public GuiComponentPopupMenu(GuiScreen gui) {
@@ -1011,7 +1029,7 @@ public class BaseUI {
 		public GuiComponentPopupMenu(GuiScreen gui, List<IMenuComponent> components) {
 			this.gui = gui;
 			this.components = components;
-			this.scroll = new Scroll(this.components);
+			this.scroll = new Scroll<>(this.components);
 		}
 
 		public GuiComponentPopupMenu setDrawEvent(IMenuComponent.IDrawEvent event) {
@@ -1052,12 +1070,14 @@ public class BaseUI {
 				int btnY = this.createY;
 				for (int i : this.scroll.getShows()) {
 					IMenuComponent component = this.components.get(i);
-					component.setY(btnY)
-							.draw(this.gui, mouseX, mouseY);
-					if (this.event != null) {
-						this.event.draw(component);
+					if (component.isVisible()) {
+						component.setY(btnY)
+								.draw(this.gui, mouseX, mouseY);
+						if (this.event != null) {
+							this.event.draw(component);
+						}
+						btnY += component.getHeight();
 					}
-					btnY += component.getHeight();
 				}
 			}
 		}
@@ -1081,7 +1101,7 @@ public class BaseUI {
 		public boolean mouseClicked(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
 			if (this.visible) {
 				for (int show : this.scroll.getShows()) {
-					if (this.components.get(show).mouseClicked(mouseX, mouseY, mouseButton)) {
+					if (this.components.get(show).isVisible() && this.components.get(show).mouseClicked(mouseX, mouseY, mouseButton)) {
 						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentClicked(this.components.get(show), mouseX, mouseY, mouseButton));
 						return true;
 					}
@@ -1093,7 +1113,7 @@ public class BaseUI {
 		public boolean keyTyped(char typedChar, int keyCode) {
 			if (this.visible) {
 				for (int show : this.scroll.getShows()) {
-					if (this.components.get(show).keyTyped(typedChar, keyCode)) {
+					if (this.components.get(show).isVisible() && this.components.get(show).keyTyped(typedChar, keyCode)) {
 						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentKeyTyped(this.components.get(show), typedChar, keyCode));
 						return true;
 					}
@@ -1105,7 +1125,7 @@ public class BaseUI {
 		public boolean handleInput() {
 			if (this.visible) {
 				for (int show : this.scroll.getShows()) {
-					if (this.components.get(show).handleInput()) {
+					if (this.components.get(show).isVisible() && this.components.get(show).handleInput()) {
 						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentInput.All(this.components.get(show)));
 						return true;
 					}
@@ -1117,7 +1137,7 @@ public class BaseUI {
 		public boolean handMouseInput() {
 			if (this.visible) {
 				for (int show : this.scroll.getShows()) {
-					if (this.components.get(show).handMouseInput()) {
+					if (this.components.get(show).isVisible() && this.components.get(show).handMouseInput()) {
 						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentInput.Mouse(this.components.get(show)));
 						return true;
 					}
@@ -1129,7 +1149,7 @@ public class BaseUI {
 		public boolean handleKeyboardInput() {
 			if (this.visible) {
 				for (int show : this.scroll.getShows()) {
-					if (this.components.get(show).handleKeyboardInput()) {
+					if (this.components.get(show).isVisible() && this.components.get(show).handleKeyboardInput()) {
 						MinecraftForge.EVENT_BUS.post(new MenuComponentEvent.ComponentInput.Keyboard(this.components.get(show)));
 						return true;
 					}
@@ -1170,15 +1190,15 @@ public class BaseUI {
 		}
 	}
 
-	public static class Scroll {
-		public final Collection<?> collection;
+	public static class Scroll<T extends Collection<?>> {
+		public final T collection;
 		protected int size = -1;
 		protected int[] shows = null;
 		protected int[] ids = null;
 		protected int page = 0;
 		protected int showCount = 5;
 
-		public Scroll(Collection<?> collection) {
+		public Scroll(T collection) {
 			this.collection = collection;
 		}
 
@@ -1193,7 +1213,7 @@ public class BaseUI {
 			return showCount;
 		}
 
-		public Scroll setShowCount(int showCount) {
+		public Scroll<T> setShowCount(int showCount) {
 			this.showCount = showCount;
 			return this;
 		}
