@@ -34,6 +34,21 @@ public class JsonParser {
 	public static <T extends JsonElement> T parse(File path, Charset cs) throws IOException {
 		return parse(Files.newInputStream(path.toPath()), cs);
 	}
+	public static <T extends JsonElement> T parse(File file, T def) throws IOException {
+		if(file==null || !file.exists()) return def;
+		return parse(Files.newInputStream(file.toPath()), StandardCharsets.UTF_8);
+	}
+	public static <T extends JsonElement> T parse(File file, String charsetName, T def) throws IOException {
+		if(file==null || !file.exists()) return def;
+		return parse(Files.newInputStream(file.toPath()), charsetName);
+	}
+	/**
+	 * @param cs see {@link java.nio.charset.StandardCharsets}
+	 */
+	public static <T extends JsonElement> T parse(File file, Charset cs, T def) throws IOException {
+		if(file==null || !file.exists()) return def;
+		return parse(Files.newInputStream(file.toPath()), cs);
+	}
 	
 	public static <T extends JsonElement> T parse(InputStream path) {
 		return (T) parse(new InputStreamReader(path, StandardCharsets.UTF_8));
