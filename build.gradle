@@ -1,0 +1,295 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.2.0'
+}
+
+jarJar.enable()
+reobf {
+    jarJar {}
+}
+
+version = mod_version
+group = mod_group_id
+archivesBaseName = mod_name
+String use_mixin = enable_mixin
+
+tasks.jarJar.configure {
+    archivesBaseName = mod_name
+    version = mod_version
+}
+
+Date date = new Date()
+
+base {
+    archivesName = mod_name
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    enableEclipsePrepareRuns = false
+    enableIdeaPrepareRuns = false
+
+    copyIdeResources = true
+    // generateRunFolders = true
+    accessTransformer = file('src/main/resources/META-INF/' + at_file)
+
+    runs {
+        configureEach {
+            workingDirectory project.file(workingDirectory)
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+			if(use_mixin == "true"){
+				property 'mixin.env.remapRefMap', 'true'
+				property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
+			}
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            workingDirectory project.file(client_dir)
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '-username', run_user
+            if (use_mixin == "true") {
+				property 'mixin.env.remapRefMap', 'true'
+				property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
+                arg '-mixin.config='+mixin_file
+            }
+        }
+
+        server {
+            workingDirectory project.file(server_dir)
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '--nogui'
+            if (use_mixin == "true") {
+				property 'mixin.env.remapRefMap', 'true'
+				property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
+				arg '-mixin.config='+mixin_file
+            }
+        }
+
+        gameTestServer {
+            workingDirectory project.file(gameTestServer_dir)
+            property 'forge.enabledGameTestNamespaces', mod_id
+            if (use_mixin == "true") {
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
+                arg '-mixin.config='+mixin_file
+            }
+        }
+
+        data {
+            workingDirectory project.file(data_dir)
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            if (use_mixin == "true") {
+				property 'mixin.env.remapRefMap', 'true'
+				property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
+                arg '-mixin.config='+mixin_file
+            }
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    maven { url = 'https://maven.parchmentmc.org' }
+    maven { url =  'https://www.cursemaven.com/'  }
+    flatDir {
+        dir 'libs'
+    }
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    if(use_mixin == "true") {
+        annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    }
+    jarJar("local.libs:jmp123-all:[1.0.0,)")
+    implementation("local.libs:jmp123-all:1.0.0")
+    minecraftLibrary("local.libs:jmp123-all:1.0.0")
+
+    implementation fg.deobf("curse.maven:cloth-config-348521:4633444")
+    implementation fg.deobf("curse.maven:architectury-api-419699:4663010")
+    implementation fg.deobf("curse.maven:powah-rearchitected-633483:4729364")
+    implementation fg.deobf("curse.maven:create-328085:4626108")
+    implementation fg.deobf("curse.maven:sophisticated-core-618298:6587858")
+    implementation fg.deobf("curse.maven:sophisticated-backpacks-422301:6587116")
+    implementation fg.deobf("curse.maven:betterf3-401648:4863626")
+//    jarJar("blank:jmp123-all:[1.0.0,)")
+
+//    jarJar("org.xerial:sqlite-jdbc:[0.0.1,)") {
+//        jarJar.pin(it, "3.49.1.0")
+//    }
+
+//    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+//    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+
+//    compileOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}:api")
+//    runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
+
+//    compileOnly(fg.deobf("com.almostreliable.mods:almostunified-forge:${minecraft_version}-${au_version}"))
+
+//    implementation fg.deobf("curse.maven:jei-238222:4712868")
+//    implementation fg.deobf("curse.maven:jade-324717:5072729")
+//    implementation fg.deobf("curse.maven:the-one-probe-245211:4579432")
+//    implementation fg.deobf("curse.maven:emi-580555:5204261")
+//    implementation fg.deobf("curse.maven:curios-309927:4985525")
+//    implementation fg.deobf("curse.maven:corail-woodcutter-331983:4573934")
+//    implementation fg.deobf("curse.maven:create-328085:4626108")
+//    implementation fg.deobf("curse.maven:croptopia-415438:4636036")
+//    implementation fg.deobf("curse.maven:farmers-delight-398521:4679319")
+//    implementation fg.deobf("curse.maven:caupona-656147:4727564")
+//    implementation fg.deobf("curse.maven:pams-harvestcraft-2-trees-365460:4625518")
+//    implementation fg.deobf("curse.maven:pams-harvestcraft-2-crops-361385:4687624")
+
+//    implementation fg.deobf("curse.maven:geckolib-388172:4711657")
+//    implementation fg.deobf("curse.maven:ato-405593:4590570")
+//    implementation fg.deobf("curse.maven:allthemodium-364466:4742548")
+
+//    implementation fg.deobf("curse.maven:alchemistry-293425:4770614")
+//    implementation fg.deobf("curse.maven:chemlib-340666:4770575")
+//    implementation fg.deobf("curse.maven:alchemylib-293426:4654069")
+//    implementation fg.deobf("curse.maven:terrablender-563928:4647094")
+//    implementation fg.deobf("curse.maven:biomes-o-plenty-220318:4764804")
+//    implementation fg.deobf("curse.maven:flux-networks-248020:4651164")
+//    implementation fg.deobf("curse.maven:titanium-287342:4712413")
+//    implementation fg.deobf("curse.maven:industrial-foregoing-266515:4709710")
+//    implementation fg.deobf("curse.maven:apotheosis-313970:5030868")
+//    implementation fg.deobf("curse.maven:apothic-attributes-898963:4954000")
+//    implementation fg.deobf("curse.maven:placebo-283644:4913663")
+//    implementation fg.deobf("curse.maven:mutil-351914:4824501")
+//    implementation fg.deobf("curse.maven:tetra-289712:5097001")
+//    implementation fg.deobf("curse.maven:architectury-api-419699:4663010")
+//    implementation fg.deobf("curse.maven:cloth-config-348521:4633444")
+//    implementation fg.deobf("curse.maven:powah-rearchitected-633483:4729364")
+//    implementation fg.deobf("curse.maven:cucumber-272335:4773186")
+//    implementation fg.deobf("curse.maven:mystical-agriculture-246640:4761164")
+}
+
+mixin {
+    if (use_mixin == "true") {
+        add sourceSets.main, mixin_refmap_file
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/mcmodsrepo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+import org.apache.commons.io.FileUtils
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+
+File archiveFile1
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_name,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : 1,
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': date.format("yyyy/MM/dd_HH:mm:ss")
+        ])
+    }
+
+    if(enable_mixin == "true") {
+        manifest.attributes.put('MixinConfigs', mixin_file)
+    }
+    finalizedBy 'reobfJar'
+
+    String date1 = "_" + date.format("HH.mm.ss")
+    String name = mod_id + "-" + mod_version + date1
+
+    archiveFileName.set(name + ".jar")
+
+    doLast {
+        archiveFile1 = archiveFile.get().getAsFile()
+    }
+}
+
+build {
+    doLast {
+        File root = archiveFile1.getParentFile().getParentFile().getParentFile()
+        File tempDir = new File(root, "build/tmp/source/")
+        String name = archiveFile1.getName().substring(0, archiveFile1.getName().lastIndexOf('.'))
+        File sourceJar = new File(archiveFile1.getParent(), name + "-source.jar")
+        println()
+        println("file name: " + archiveFile1.getName())
+        println("source name: " + name + "-source.jar")
+        if (tempDir.exists()) {
+            tempDir.delete()
+        }
+        copy(new File(root, "build/resources/main"), tempDir)
+        FileUtils.copyFile(new File(root, "build/tmp/jar/MANIFEST.MF"), new File(tempDir, "META-INF/MANIFEST.MF"))
+        copy(new File(root, "src/main/java"), tempDir)
+
+        try(ZipOutputStream os = new ZipOutputStream(new FileOutputStream(sourceJar))) {
+            for (File f : tempDir.listFiles()) {
+                zip(os, f)
+            }
+        }
+    }
+}
+
+static void copy(File src, File to) {
+    for (File c : src.listFiles()) {
+        if (c.isFile()) {
+            FileUtils.copyFile(c, new File(to, c.getName()))
+        }else {
+            copy(c, new File(to, c.getName()))
+        }
+    }
+}
+static void zip(ZipOutputStream os, File f) {
+    if (f.isFile()) {
+        String s = f.toString().replace('\\', '/')
+        os.putNextEntry(new ZipEntry(s.substring(s.indexOf("/build/tmp/source/") + "/build/tmp/source/".length())))
+        os.write(f.bytes)
+        os.closeEntry()
+    }else {
+        for (File f1 : f.listFiles()) {
+            zip(os, f1)
+        }
+    }
+}
