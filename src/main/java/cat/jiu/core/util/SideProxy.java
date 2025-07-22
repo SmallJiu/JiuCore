@@ -2,13 +2,13 @@ package cat.jiu.core.util;
 
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.api.distmarker.Dist;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public final class SideProxy {
     static boolean isServerClosed = true;
     static MinecraftServer server;

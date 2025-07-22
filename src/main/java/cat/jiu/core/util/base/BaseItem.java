@@ -1,21 +1,28 @@
 package cat.jiu.core.util.base;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import org.jetbrains.annotations.Nullable;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class BaseItem extends Item {
-    private ResourceKey<CreativeModeTab> creativeTab = CreativeModeTabs.TOOLS_AND_UTILITIES;
+    public static final Object VALUE = "";
+    private static final ConcurrentHashMap<BaseItem, Object> MAP = new ConcurrentHashMap<>();
+    public static Set<BaseItem> registerItems(){
+        return MAP.keySet();
+    }
+
+    private Consumer<RegisterCapabilitiesEvent> onCapabilityRegister;
     public BaseItem(Properties properties) {
         super(properties);
-        ModLoadingContext.get().getActiveContainer().getEventBus().register(this);
+        MAP.put(this, VALUE);
     }
 
     @Override
@@ -26,19 +33,17 @@ public class BaseItem extends Item {
 
     }
 
-    public ResourceKey<CreativeModeTab> getCreativeTab() {
-        return creativeTab;
-    }
-
-    public BaseItem setCreativeTab(ResourceKey<CreativeModeTab> tab) {
-        this.creativeTab = tab;
+    public BaseItem setOnCapabilityRegister(Consumer<RegisterCapabilitiesEvent> onCapabilityRegister) {
+        this.onCapabilityRegister = onCapabilityRegister;
         return this;
     }
 
     @SubscribeEvent
-    public void addToCreativeTab(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == this.getCreativeTab()) {
-            event.accept(this);
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        for (BaseItem item : registerItems()) {
+            if (item.onCapabilityRegister != null) {
+                item.onCapabilityRegister.accept(event);
+            }
         }
     }
 }

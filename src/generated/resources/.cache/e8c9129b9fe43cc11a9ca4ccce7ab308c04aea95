@@ -1,0 +1,10 @@
+// 1.21.1	2025-07-21T22:46:57.6811086	Registrate Provider for jiucore [Registries, Data Maps, Recipes, Advancements, Loot Tables, Tags (enchantments), Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Blockstates, Item models, Lang (en_us/en_ud), generic_client_provider]
+d833494c5c011bdc40cab136cb25187cd3ccadee assets/jiucore/lang/en_ud.json
+36627049855223a230cdb9c765be50ee67a9329e assets/jiucore/lang/en_us.json
+b93b320a3f1f9786a1b69b094a1ebc80dc577b29 assets/jiucore/models/item/infinite_bucket.json
+bb2262efb8229fe59c3bec744df17c043b7bb55b assets/jiucore/models/item/infinite_energy.json
+d47c88d0cd8d77e08fcd4031992c82daaadcb355 assets/jiucore/models/item/infinite_water.json
+c3834d9092bac35d117f9e6d16f1e60ec1c9a163 data/jiucore/advancement/recipes/tools/infinite_bucket.json
+6dca5cb022acdcc35e7a0e54c4c546f38bd74b4a data/jiucore/advancement/recipes/tools/infinite_water.json
+55b1dd1c8fee4c32a5ed2b4c0cc75db070c15415 data/jiucore/recipe/infinite_bucket.json
+67fd237fe8b481753a720c914a761faef13cf7c8 data/jiucore/recipe/infinite_water.json

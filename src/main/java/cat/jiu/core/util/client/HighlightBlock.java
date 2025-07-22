@@ -1,6 +1,5 @@
 package cat.jiu.core.util.client;
 
-import cat.jiu.event.SubscribeEvent;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -12,10 +11,12 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
@@ -56,8 +57,7 @@ public class HighlightBlock extends RenderType {
         return highlight;
     }
     public static Highlight highlight(BlockPos pos, int m, int s, int tick, BlockPos[] connectPos, Direction[] connectSide) {
-        Highlight highlight = highlight(pos, m, s, tick);
-        Collections.addAll(highlight.connectPos, connectPos);
+        Highlight highlight = highlight(pos, m, s, tick, connectPos);
         for (Direction side : connectSide) {
             highlight.connectPos.add(highlight.pos.relative(side));
         }

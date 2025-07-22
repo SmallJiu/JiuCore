@@ -8,7 +8,6 @@ import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.world.item.CreativeModeTabs;
 
 public class CoreItems {
-
     public static final ItemEntry<ItemInfiniteWater> INFINITE_WATER = CoreMain.registrate()
             .object("infinite_water")
             .item(ItemInfiniteWater::new)
@@ -24,9 +23,11 @@ public class CoreItems {
             .register();
 
     public static final ItemEntry<ItemInfiniteEnergy> INFINITE_ENERGY = CoreMain.registrate()
-            .object("infinite_bucket")
+            .object("infinite_energy")
             .item(ItemInfiniteEnergy::new)
             .tab(CreativeModeTabs.TOOLS_AND_UTILITIES)
             .properties(p->p.stacksTo(1))
             .register();
+
+    public static void bootstrap(){}
 }

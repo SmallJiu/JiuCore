@@ -1,6 +1,7 @@
 package cat.jiu.core.config;
 
 import cat.jiu.core.util.base.BaseConfig;
+import net.minecraft.sounds.SoundSource;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.*;
 
@@ -37,7 +38,7 @@ public class ConfigExample extends BaseConfig {
 
         this.DOUBLE_TYPE = builder.worldRestart()
                 .comment("double type config,", "min and max can be any Double number")
-                .defineInRange("double_type", 9.98D, Double.MIN_VALUE, Double.MIN_VALUE);
+                .defineInRange("double_type", 9.98D, Double.MIN_VALUE, Double.MAX_VALUE);
 
         this.STRING_TYPE = builder.worldRestart()
                 .comment("string type config,", "value can be any char.")

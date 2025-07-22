@@ -4,11 +4,12 @@ import cat.jiu.core.api.element.IImage;
 import cat.jiu.core.api.element.ISound;
 import cat.jiu.core.command.CommandJiuCore;
 import cat.jiu.core.config.CoreConfig;
-import cat.jiu.core.register.CoreRecipes;
+import cat.jiu.core.register.CoreItems;
+import cat.jiu.core.register.data.*;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -25,11 +26,11 @@ public class CoreMain {
     public static final String
             MODID = "jiucore",
             NAME = "JiuCore",
-            VERSION = "1.20.1-0.0.1";
+            VERSION = "1.21.1-1.0.0";
     public static final boolean DEV = false;
     public static final Logger LOGGER = LoggerFactory.getLogger(NAME);
     public static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
-    private static Registrate registrate;
+    private static final Registrate registrate = Registrate.create(MODID).defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
     public static Registrate registrate() {
         return registrate;
     }
@@ -47,11 +48,12 @@ public class CoreMain {
         CoreMain.modBus = modBus;
         CoreMain.modContainer = container;
         bus().addListener(this::setup);
-//        modBus.addListener(this::genData);
+//        if (FMLLoader.getDist().isClient()) {
+            bus().addListener(this::clientSetup);
+//        }
+        CoreItems.bootstrap();
 
-        registrate = Registrate.create(MODID);
-
-        registrate().object("recipe").addDataGenerator(ProviderType.RECIPE, CoreRecipes::register);
+        registrate().addDataGenerator(ProviderType.RECIPE, CoreRecipes::register);
 
         CoreConfig.registerConfig(container());
         IImage.REGISTRY.init();
@@ -59,9 +61,8 @@ public class CoreMain {
         NeoForge.EVENT_BUS.register(this);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
+//    @OnlyIn(Dist.CLIENT)
+    private void clientSetup(FMLClientSetupEvent event) {
         CoreConfig.registerConfigScreen(container());
 //        RenderSystem.recordRenderCall(()->{
 //            JsonUtils.toJsonFile("C:/image.gif.json", new ImageGif(GifDecoder.getTexture("D:\\Users\\small_jiu\\Desktop\\Desktop\\表情包\\}LIKV%`AVKXF8ZZ}5SF1{8U.gif", -1)).write(new JsonObject()), true);

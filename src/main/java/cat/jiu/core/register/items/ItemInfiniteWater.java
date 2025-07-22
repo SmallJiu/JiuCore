@@ -4,7 +4,9 @@ import cat.jiu.core.util.base.BaseItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlockContainer;
@@ -12,6 +14,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.wrappers.FluidBucketWrapper;
 import org.jetbrains.annotations.NotNull;
 
 public class ItemInfiniteWater extends BaseItem {
@@ -21,8 +26,20 @@ public class ItemInfiniteWater extends BaseItem {
             pLevel.setBlockAndUpdate(pBlockPos, Blocks.WATER_CAULDRON.defaultBlockState().setValue(BlockStateProperties.LEVEL_CAULDRON, 3));
             pLevel.playSound(pPlayer, pBlockPos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
             pLevel.gameEvent(pPlayer, GameEvent.FLUID_PLACE, pBlockPos);
-            return InteractionResult.sidedSuccess(pLevel.isClientSide());
+            return ItemInteractionResult.sidedSuccess(pLevel.isClientSide());
         }));
+        this.setOnCapabilityRegister(event->
+                event.registerItem(Capabilities.FluidHandler.ITEM, (stack, $) ->
+                        new FluidBucketWrapper(stack) {
+                            @Override
+                            public FluidStack getFluid() {
+                                return new FluidStack(Fluids.WATER, 1000);
+                            }
+                            @Override
+                            protected void setFluid(FluidStack fluidStack) {}
+                        }, this
+                )
+        );
     }
 
     @NotNull
@@ -31,13 +48,13 @@ public class ItemInfiniteWater extends BaseItem {
         boolean placed = false;
         BlockPos pos = ctx.getClickedPos();
         BlockState state = ctx.getLevel().getBlockState(ctx.getClickedPos());
-        if (state.getBlock() instanceof LiquidBlockContainer && ((LiquidBlockContainer) state.getBlock()).canPlaceLiquid(ctx.getLevel(), pos, state, Fluids.WATER)) {
+        if (state.getBlock() instanceof LiquidBlockContainer && ((LiquidBlockContainer) state.getBlock()).canPlaceLiquid(ctx.getPlayer(), ctx.getLevel(), pos, state, Fluids.WATER)) {
             ((LiquidBlockContainer) state.getBlock()).placeLiquid(ctx.getLevel(), pos, state, Fluids.WATER.defaultFluidState());
             placed = true;
         }else {
             BlockPos pos_relative = ctx.getClickedPos().relative(ctx.getClickedFace());
             BlockState state_relative = ctx.getLevel().getBlockState(pos_relative);
-            if (state_relative.getBlock() instanceof LiquidBlockContainer && ((LiquidBlockContainer) state_relative.getBlock()).canPlaceLiquid(ctx.getLevel(), pos, state_relative, Fluids.WATER)) {
+            if (state_relative.getBlock() instanceof LiquidBlockContainer && ((LiquidBlockContainer) state_relative.getBlock()).canPlaceLiquid(ctx.getPlayer(), ctx.getLevel(), pos, state_relative, Fluids.WATER)) {
                 ((LiquidBlockContainer) state_relative.getBlock()).placeLiquid(ctx.getLevel(), pos_relative, state_relative, Fluids.WATER.defaultFluidState());
                 placed = true;
             }else if (state_relative.canBeReplaced(Fluids.WATER)) {

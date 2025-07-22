@@ -57,7 +57,7 @@ public interface ISound1 extends ISerializable {
 	}
 	default void read(CompoundTag nbt) {
 		this.setTime(new Timer(nbt.getLong("millis")));
-		this.setSound(BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.fromNamespaceAndPath(nbt.getString("sound"))));
+		this.setSound(BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(nbt.getString("sound"))));
 		this.setSoundVolume(nbt.getFloat("volume"));
 		this.setSoundPitch(nbt.getFloat("pitch"));
 		this.setSoundCategory(getSoundCategoryByName(nbt.getString("category")));
@@ -85,9 +85,9 @@ public interface ISound1 extends ISerializable {
 		
 		SoundEvent sound = null;
 		if(json.getAsJsonPrimitive("id").isString()) {
-			sound = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.fromNamespaceAndPath(json.get("id").getAsString()));
+			sound = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(json.get("id").getAsString()));
 		}else if(json.getAsJsonPrimitive("id").isNumber()) {
-			sound = BuiltInRegistries.SOUND_EVENT.getHolder(json.get("id").getAsInt()).get().get();
+			sound = BuiltInRegistries.SOUND_EVENT.getHolder(json.get("id").getAsInt()).get().value();
 		}
 		this.setSound(sound);
 		

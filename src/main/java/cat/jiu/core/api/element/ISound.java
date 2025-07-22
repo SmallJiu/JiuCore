@@ -101,7 +101,7 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
             this(ResourceLocation.fromNamespaceAndPath(mod, id));
         }
         public BaseSound(String id) {
-            this(ResourceLocation.fromNamespaceAndPath(id));
+            this(ResourceLocation.parse(id));
         }
         public BaseSound(ResourceLocation id) {
             this.id = id;

@@ -1,5 +1,6 @@
-package cat.jiu.core.register;
+package cat.jiu.core.register.data;
 
+import cat.jiu.core.register.CoreItems;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;

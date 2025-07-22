@@ -3,6 +3,7 @@ package cat.jiu.core.util;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
@@ -11,13 +12,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import com.mojang.serialization.JsonOps;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.component.CustomData;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -78,31 +80,81 @@ public final class JsonToStackUtil {
 		}
 		return obj;
 	}
-	
-	public static JsonObject toJson(ItemStack arg) {
-		if(arg == null || arg.isEmpty()) return null;
-		JsonObject obj = new JsonObject();
 
-		obj.addProperty("name", ForgeRegistries.ITEMS.getKey(arg.getItem()).toString());
-		obj.addProperty("count", arg.getCount());
-		obj.addProperty("damage", arg.getDamageValue());
-		if(arg.hasTag()) {
-			obj.add("nbt", toJson(arg.getTag()));
-		}
-		
-		return obj;
+	public static JsonObject toJson(ItemStack arg) {
+		if(arg == null || arg.isEmpty()) return new JsonObject();
+
+		AtomicReference<JsonObject> obj = new AtomicReference<>();
+		ItemStack.CODEC.encodeStart(JsonOps.INSTANCE, arg).ifSuccess(e->
+			obj.set(e.getAsJsonObject())
+		);
+		obj.get().addProperty("name", BuiltInRegistries.ITEM.getKey(arg.getItem()).toString());
+		obj.get().addProperty("Count", arg.getCount());
+		return obj.get();
 	}
-	
+	private static ItemStack toStack(JsonObject obj) {
+		if(obj==null) return null;
+		if (obj.has("item")) {
+			AtomicReference<ItemStack> result = new AtomicReference<>();
+			ItemStack.CODEC.parse(JsonOps.INSTANCE, obj).ifSuccess(result::set);
+			return result.get();
+		}
+		if(!obj.has("name")) {
+			if(!obj.has("id")) {
+				return null;
+			}
+		}
+
+		AtomicReference<ItemStack> result = new AtomicReference<>();
+		ItemStack.CODEC.parse(JsonOps.INSTANCE, obj).ifSuccess(result::set);
+		if (result.get() != null && !result.get().isEmpty()) {
+			return result.get();
+		}
+
+		String name = obj.has("name") ?
+				obj.get("name").getAsString() :
+				obj.get("id").getAsString();
+		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name));
+		if(item == null) return null;
+		int count = obj.has("count") ? obj.get("count").getAsInt() : obj.has("amount") ? obj.get("amount").getAsInt() : 1;
+		int meta = obj.has("meta") ? obj.get("meta").getAsInt() : obj.has("data") ? obj.get("data").getAsInt() : 0;
+		CompoundTag nbt = obj.has("nbt") ? toNBT(obj.get("nbt").getAsJsonObject()) : null;
+
+		return setNBT(new ItemStack(item, count), nbt);
+	}
+
 	private static String toString(ItemStack arg) {
 		if(arg == null || arg.isEmpty()) return null;
 		StringJoiner j = new StringJoiner("@");
-		j.add(ForgeRegistries.ITEMS.getKey(arg.getItem()).toString());
+		j.add(BuiltInRegistries.ITEM.getKey(arg.getItem()).toString());
 		j.add(Integer.toString(arg.getCount()));
 		j.add(Integer.toString(arg.getDamageValue()));
-		if(arg.hasTag()) {
-			j.add(toJson(arg.getTag()).toString());
-		}
+//		if(arg.hasTag()) {
+//			j.add(toJson(arg.getTag()).toString());
+//		}
 		return j.toString();
+	}
+	private static ItemStack toStack(String stack) {
+		if(stack.contains("@")) {
+			String[] name = stack.split("@");
+			Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name[0]));
+			if(item!=null) {
+				int amount = 1;
+				CompoundTag nbt = null;
+
+				switch(name.length) {
+					case 4:
+						nbt = toNBT(parser.parse(name[3]).getAsJsonObject());
+					case 2:
+						amount = Integer.parseInt(name[1]);
+						break;
+				}
+				return setNBT(new ItemStack(item, amount), nbt);
+			}
+		}else {
+			return new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse(stack)));
+		}
+		return null;
 	}
 	
 	public static JsonArray toJson(ListTag list) {
@@ -343,29 +395,7 @@ public final class JsonToStackUtil {
 		if(stacks.isEmpty()) return null;
 		return stacks;
 	}
-	
-	private static ItemStack toStack(JsonObject obj) {
-		if(obj==null) return null;
-		if (obj.has("item")) {
-			return CraftingHelper.getItemStack(obj, true, true);
-		}
-		if(!obj.has("name")) {
-			if(!obj.has("id")) {
-				return null;
-			}
-		}
-		String name = obj.has("name") ? 
-				obj.get("name").getAsString() : 
-				obj.get("id").getAsString();
-		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(name));
-		if(item == null) return null;
-		int count = obj.has("count") ? obj.get("count").getAsInt() : obj.has("amount") ? obj.get("amount").getAsInt() : 1;
-		int meta = obj.has("meta") ? obj.get("meta").getAsInt() : obj.has("data") ? obj.get("data").getAsInt() : 0;
-		CompoundTag nbt = obj.has("nbt") ? toNBT(obj.get("nbt").getAsJsonObject()) : null;
 
-		return setNBT(new ItemStack(item, count), nbt);
-	}
-	
 	public static CompoundTag toNBT(JsonObject obj) {
 		CompoundTag nbt = new CompoundTag();
 		for(Entry<String, JsonElement> objTags : obj.entrySet()) {
@@ -556,29 +586,6 @@ public final class JsonToStackUtil {
 	}
 	static final JsonParser parser = new JsonParser();
 	
-	private static ItemStack toStack(String stack) {
-		if(stack.contains("@")) {
-			String[] name = stack.split("@");
-			Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(name[0]));
-			if(item!=null) {
-				int amount = 1;
-				CompoundTag nbt = null;
-				
-				switch(name.length) {
-					case 4:
-						nbt = toNBT(parser.parse(name[3]).getAsJsonObject());
-					case 2:
-						amount = Integer.parseInt(name[1]);
-						break;
-				}
-				return setNBT(new ItemStack(item, amount), nbt);
-			}
-		}else {
-			return new ItemStack(ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(stack)));
-		}
-		return null;
-	}
-	
 	private static CompoundTag setNBT(CompoundTag nbt, String nbtName, double[] value) {
 		nbt.putString(nbtName, "double_array@" + toString(toArray(value)));
 		return nbt;
@@ -591,9 +598,11 @@ public final class JsonToStackUtil {
 		nbt.putString(nbtName, "short_array@" + toString(toArray(value)));
 		return nbt;
 	}
-	
+
 	private static ItemStack setNBT(ItemStack stack, CompoundTag nbt) {
-		if(nbt != null) stack.setTag(nbt);
+		if(nbt != null) {
+			stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+		}
 		return stack;
 	}
 	

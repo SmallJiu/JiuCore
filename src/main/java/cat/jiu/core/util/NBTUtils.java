@@ -5,16 +5,25 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.*;
 import net.minecraft.util.StringUtil;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 
 public class NBTUtils {
+    public static void get(ItemStack stack, Consumer<CompoundTag> consumer) {
+        CustomData data = stack.has(DataComponents.CUSTOM_DATA) ? stack.get(DataComponents.CUSTOM_DATA) : CustomData.EMPTY;
+        stack.set(DataComponents.CUSTOM_DATA, data.update(consumer));
+    }
+
     public static Tag get(CompoundTag data, String k, Tag failBack) {
         if (data.contains(k)) {
             return data.get(k);
