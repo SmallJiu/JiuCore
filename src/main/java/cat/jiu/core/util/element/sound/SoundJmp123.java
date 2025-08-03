@@ -3,6 +3,7 @@ package cat.jiu.core.util.element.sound;
 import cat.jiu.core.api.element.ISound;
 import cat.jiu.core.util.JsonUtils;
 import cat.jiu.core.util.NBTUtils;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.AudioSystem;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
@@ -14,7 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import java.util.UUID;
 
 public class SoundJmp123 extends ISound.BaseSound {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/sound/jmp123");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/sound/jmp123");
 
     private AudioSystem.Audio audio;
     private UUID uid;

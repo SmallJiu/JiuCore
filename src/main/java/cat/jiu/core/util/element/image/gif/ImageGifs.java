@@ -1,12 +1,13 @@
 package cat.jiu.core.util.element.image.gif;
 
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.GifDecoder;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public class ImageGifs extends BaseGifImage {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/image/gif/more");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/image/gif/more");
 
     protected GifDecoder.GifTextures gif;
     public ImageGifs() {

@@ -65,7 +65,7 @@ public class EnumEntry<T extends Enum<T>> extends ConfigEntry<T> {
         try {
             this.drawCommentWithRange(gui, graphics, mouseX, mouseY, this.button.getX() -5-gui.getMinecraft().font.width(this.configName), this.button.getY() +5, gui.getMinecraft().font.width(this.configName), Minecraft.getInstance().font.lineHeight);
             if(this.button.isMouseOver(mouseX, mouseY)) {
-                StringJoiner selected = new StringJoiner(", ", "[ ", " ]");
+                StringJoiner selected = new StringJoiner(ChatFormatting.RESET + ", ", ChatFormatting.RESET + "[ ", ChatFormatting.RESET + " ]");
                 for (int i = 0; i < this.types.length; i++) {
                     T t = this.types[i];
                     boolean set = false;
@@ -79,7 +79,7 @@ public class EnumEntry<T extends Enum<T>> extends ConfigEntry<T> {
                     if (!set) {
                         name = I18n.get(t.toString());
                     }
-                    selected.add((i == this.cacheIndex ? ChatFormatting.RED : ChatFormatting.GREEN) + name + ChatFormatting.RESET);
+                    selected.add((i == this.cacheIndex ? ChatFormatting.RED : ChatFormatting.GREEN) + name);
                 }
                 graphics.renderComponentTooltip(gui.getMinecraft().font, List.of(Component.literal(selected.toString())), mouseX+5, mouseY);
             }

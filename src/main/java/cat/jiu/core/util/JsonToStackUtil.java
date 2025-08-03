@@ -12,8 +12,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import net.minecraft.nbt.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.crafting.CraftingHelper;
@@ -357,7 +355,7 @@ public final class JsonToStackUtil {
 		String name = obj.has("name") ? 
 				obj.get("name").getAsString() : 
 				obj.get("id").getAsString();
-		Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+		Item item = ForgeRegistries.ITEMS.getValue(Utils.location(name));
 		if(item == null) return null;
 		int count = obj.has("count") ? obj.get("count").getAsInt() : obj.has("amount") ? obj.get("amount").getAsInt() : 1;
 		int meta = obj.has("meta") ? obj.get("meta").getAsInt() : obj.has("data") ? obj.get("data").getAsInt() : 0;
@@ -559,7 +557,7 @@ public final class JsonToStackUtil {
 	private static ItemStack toStack(String stack) {
 		if(stack.contains("@")) {
 			String[] name = stack.split("@");
-			Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name[0]));
+			Item item = ForgeRegistries.ITEMS.getValue(Utils.location(name[0]));
 			if(item!=null) {
 				int amount = 1;
 				CompoundTag nbt = null;
@@ -574,7 +572,7 @@ public final class JsonToStackUtil {
 				return setNBT(new ItemStack(item, amount), nbt);
 			}
 		}else {
-			return new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(stack)));
+			return new ItemStack(ForgeRegistries.ITEMS.getValue(Utils.location(stack)));
 		}
 		return null;
 	}

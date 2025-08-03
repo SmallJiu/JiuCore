@@ -1,5 +1,6 @@
 package cat.jiu.core.util.element.image;
 
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.RenderUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -14,7 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import java.awt.image.BufferedImage;
 
 public class ImageBuffered extends ImageGL {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/image/buffered");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/image/buffered");
     protected BufferedImage image;
 
     public ImageBuffered() {

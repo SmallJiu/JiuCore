@@ -31,12 +31,10 @@ public class SubEntry extends ConfigEntry<Object> {
     private final String comment;
     public SubEntry(ModContainer mod, GuiConfig parent) {
         super(null, null);
-        GuiConfig gui = new GuiConfig(
-                parent,
-                mod.getModId()
-        );
+        GuiConfig gui = new GuiConfig(parent, mod);
         gui.setCanEdit(parent.isCanEdit());
-        this.entries = gui.getConfigEntries();
+        List<ConfigEntry<?>> entries = gui.getConfigEntries();
+        this.entries = entries == null ? new ArrayList<>() : entries;
 
         this.comment = null;
 
@@ -46,8 +44,11 @@ public class SubEntry extends ConfigEntry<Object> {
     }
     public SubEntry(ModConfig config, GuiConfig parent) {
         super(null, null);
+        String configDir = "config/";
+
+
         GuiConfig gui = new GuiConfig(
-                "config/"+config.getFileName(),
+                configDir + config.getFileName(),
                 parent,
                 (ForgeConfigSpec) config.getSpec(),
                 null,
@@ -55,8 +56,7 @@ public class SubEntry extends ConfigEntry<Object> {
         );
         gui.setCanEdit(parent.isCanEdit());
         gui.setType(config.getType());
-        this.entries = gui.createEntries(String.valueOf(config.getType()));
-        gui.setConfigEntries(this.entries);
+        gui.setConfigEntries(this.entries = gui.createEntries(String.valueOf(config.getType())));
 
         this.comment = null;
 
@@ -70,21 +70,20 @@ public class SubEntry extends ConfigEntry<Object> {
         GuiConfig gui = new GuiConfig(parent.configFile, parent, spec, path, paths);
         gui.setCanEdit(parent.isCanEdit());
         gui.setType(parent.getType());
-        this.entries = gui.createEntries(path, spec, config.valueMap());
-        gui.setConfigEntries(this.entries);
+        gui.setConfigEntries(this.entries = gui.createEntries(path, spec, config.valueMap()));
 
         String lC = spec.getLevelComment(paths);
         String comment = I18n.get(StringUtil.isNullOrEmpty(lC) ? "" : lC);
         this.comment = StringUtil.isNullOrEmpty(comment) ? null : comment;
 
         String key = spec.getLevelTranslationKey(paths);
-        this.button = this.addWidget(new GuiButton(0, 9999, 300, 20, Component.nullToEmpty(key != null ? I18n.get(key) : name), btn-> parent.getMinecraft().setScreen(gui)));
+        this.button = this.addWidget(new GuiButton(0, 9999, 300, 20, Component.literal(key != null ? I18n.get(key) : name), btn-> parent.getMinecraft().setScreen(gui)));
         this.button.setX(Minecraft.getInstance().getWindow().getGuiScaledWidth()/2 - this.button.getWidth()/2+2);
         this.addUndoAndReset();
     }
 
     public boolean isEmpty(){
-        return this.entries.isEmpty();
+        return this.entries == null || this.entries.isEmpty();
     }
 
     @Override
@@ -132,6 +131,11 @@ public class SubEntry extends ConfigEntry<Object> {
     @Override
     public int getWeight() {
         return 0;
+    }
+
+    @Override
+    public String getConfigName() {
+        return this.button.getMessage().getString();
     }
 
     @Override

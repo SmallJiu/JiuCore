@@ -4,6 +4,7 @@ import cat.jiu.core.util.JsonUtils;
 import cat.jiu.core.util.NBTUtils;
 import cat.jiu.core.api.serializable.IJsonSerializable;
 import cat.jiu.core.api.serializable.INBTSerializable;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.element.image.*;
 import cat.jiu.core.util.element.image.gif.*;
 import cat.jiu.core.util.registry.DynamicRegistry;
@@ -30,8 +31,8 @@ public interface IImage extends IJsonSerializable, INBTSerializable, Supplier<Re
                 registry.register(ImageMC.ID,                  ImageMC.class);
             })
             .setKeyGetter(
-                    data->new ResourceLocation(NBTUtils.get(data, ID_NAME, "")),
-                    data->new ResourceLocation(JsonUtils.get(data, ID_NAME, ""))
+                    data-> Utils.location(NBTUtils.get(data, ID_NAME, "")),
+                    data->Utils.location(JsonUtils.get(data, ID_NAME, ""))
             );
 
     @OnlyIn(Dist.CLIENT)

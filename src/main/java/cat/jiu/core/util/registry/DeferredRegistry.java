@@ -44,6 +44,13 @@ public class DeferredRegistry<V> {
     }
 
     public void init(){}
+
+    public DeferredRegistry<V> setKeyGetter() {
+        return this.setKeyGetter(
+                data-> data.getString(StaticRegistry.DEFAULT_ID_TAG_NAME),
+                data-> data.get(StaticRegistry.DEFAULT_ID_TAG_NAME).getAsString()
+        );
+    }
     public DeferredRegistry<V> setKeyGetter(Function<CompoundTag, String> nbtKeyGetter, Function<JsonObject, String> jsonKeyGetter) {
         this.nbtKeyGetter = nbtKeyGetter;
         this.jsonKeyGetter = jsonKeyGetter;

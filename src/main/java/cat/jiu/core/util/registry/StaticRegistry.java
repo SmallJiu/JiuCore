@@ -1,5 +1,6 @@
 package cat.jiu.core.util.registry;
 
+import cat.jiu.core.util.Utils;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -13,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class StaticRegistry<K, V extends Supplier<K>> {
+    public static final String DEFAULT_ID_TAG_NAME = "id";
     public static <K, T> Function<K, T>  failBack(ResourceLocation typeID) {
         return id -> {
             LogManager.getLogger("Registry").fatal("{} is not register to {}. ", id, typeID);
@@ -31,13 +33,20 @@ public class StaticRegistry<K, V extends Supplier<K>> {
         this(failBack(id));
     }
     public StaticRegistry(String modid, String typeName) {
-        this(new ResourceLocation(modid, typeName));
+        this(Utils.location(modid, typeName));
     }
     public StaticRegistry(Function<K, V> failBack) {
         this.failBack = failBack;
     }
 
     public void init(){}
+
+    public StaticRegistry<K, V> setKeyGetter(Function<String, K> keyInstance){
+        return this.setKeyGetter(
+                data-> keyInstance.apply(data.getString(DEFAULT_ID_TAG_NAME)),
+                data-> keyInstance.apply(data.get(DEFAULT_ID_TAG_NAME).getAsString())
+        );
+    }
     public StaticRegistry<K, V> setKeyGetter(Function<CompoundTag, K> nbtKeyGetter, Function<JsonObject, K> jsonKeyGetter) {
         this.nbtKeyGetter = nbtKeyGetter;
         this.jsonKeyGetter = jsonKeyGetter;

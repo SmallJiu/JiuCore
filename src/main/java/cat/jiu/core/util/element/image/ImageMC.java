@@ -1,6 +1,7 @@
 package cat.jiu.core.util.element.image;
 
 import cat.jiu.core.api.element.IImage;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.RenderUtils;
 import com.google.gson.JsonObject;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,7 +11,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class ImageMC extends IImage.BaseImage {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/image/mc");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/image/mc");
     protected ResourceLocation texture;
 
     public ImageMC() {
@@ -25,7 +26,7 @@ public class ImageMC extends IImage.BaseImage {
     }
 
     public void setTexture(String texture) {
-        this.setTexture(new ResourceLocation(texture));
+        this.setTexture(Utils.location(texture));
     }
     public void setTexture(ResourceLocation texture) {
         this.texture = texture;

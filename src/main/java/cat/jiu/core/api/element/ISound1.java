@@ -2,13 +2,13 @@ package cat.jiu.core.api.element;
 
 import cat.jiu.core.api.ITimer;
 import cat.jiu.core.api.serializable.ISerializable;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.timer.Timer;
 import cat.jiu.sql.SQLValues;
 import com.google.gson.JsonObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 
@@ -57,7 +57,7 @@ public interface ISound1 extends ISerializable {
 	}
 	default void read(CompoundTag nbt) {
 		this.setTime(new Timer(nbt.getLong("millis")));
-		this.setSound(BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(nbt.getString("sound"))));
+		this.setSound(BuiltInRegistries.SOUND_EVENT.get(Utils.location(nbt.getString("sound"))));
 		this.setSoundVolume(nbt.getFloat("volume"));
 		this.setSoundPitch(nbt.getFloat("pitch"));
 		this.setSoundCategory(getSoundCategoryByName(nbt.getString("category")));
@@ -85,7 +85,7 @@ public interface ISound1 extends ISerializable {
 		
 		SoundEvent sound = null;
 		if(json.getAsJsonPrimitive("id").isString()) {
-			sound = BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(json.get("id").getAsString()));
+			sound = BuiltInRegistries.SOUND_EVENT.get(Utils.location(json.get("id").getAsString()));
 		}else if(json.getAsJsonPrimitive("id").isNumber()) {
 			sound = BuiltInRegistries.SOUND_EVENT.getHolder(json.get("id").getAsInt()).get().get();
 		}

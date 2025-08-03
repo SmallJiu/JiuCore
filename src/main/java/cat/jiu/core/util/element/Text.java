@@ -91,25 +91,7 @@ public class Text implements IText {
 	public Text copy() {
 		return new Text(this.writeTo(CompoundTag.class));
 	}
-	
-	public JsonArray writeArgs(JsonArray args) {
-		if(args==null) args = new JsonArray();
-		if(this.args != null) {
-			for(Object o : this.args) {
-				args.add(String.valueOf(o));
-			}
-		}
-		return args;
-	}
-	public ListTag writeArgs(ListTag args) {
-		if(args==null) args = new ListTag();
-		if(this.args!=null&&this.args.length>0) {
-			for(int j = 0; j < this.args.length; j++) {
-				args.add(StringTag.valueOf(String.valueOf(this.args[j])));
-			}
-		}
-		return args;
-	}
+
 	@Override
 	public String toString() {
 		return String.valueOf(this.writeTo(JsonObject.class));

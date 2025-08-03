@@ -1,28 +1,26 @@
 package cat.jiu.core.api.element;
 
 import cat.jiu.core.api.serializable.ISerializable;
-import cat.jiu.core.event.client.TextFormatEvent;
 import cat.jiu.core.util.element.Text;
 import cat.jiu.sql.SQLValues;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.MinecraftForge;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public interface IText extends ISerializable {
 	String getText();
@@ -41,7 +39,12 @@ public interface IText extends ISerializable {
 
 	@OnlyIn(Dist.CLIENT)
 	default String format() {
-		return I18n.get(this.getText(), IText.format(this.getParameters()));
+		Object[] parameters = IText.format(this.getParameters());
+		String result = I18n.get(this.getText(), parameters);
+		if (Objects.equals(result, this.getText())) {
+			result = String.format(result, parameters);
+		}
+		return result;
 	}
 
 	@OnlyIn(Dist.CLIENT)
@@ -75,6 +78,114 @@ public interface IText extends ISerializable {
 		return text.copy().setStyle(text.getStyle().withColor(color));
 	}
 
+	default JsonArray writeArgs(JsonArray parametersArray) {
+		if(parametersArray==null) parametersArray = new JsonArray();
+		for(int i = 0; i < this.getParameters().length; i++) {
+			parametersArray.add(argToJson(this.getParameters()[i]));
+		}
+		return parametersArray;
+	}
+	static JsonObject argToJson(Object parameter) {
+		JsonObject object;
+		if (parameter instanceof IText) {
+			object = ((IText) parameter).write(new JsonObject());
+			object.addProperty("type", (byte) 0);
+		} else if (parameter instanceof Component) {
+			object = Component.Serializer.toJsonTree((Component) parameter).getAsJsonObject();
+			object.addProperty("type", (byte) 1);
+		}else {
+			object = new JsonObject();
+			object.addProperty("parameter", String.valueOf(parameter));
+			object.addProperty("type", (byte) 2);
+		}
+		return object;
+	}
+
+	static Object[] readArgs(JsonArray parametersArray) {
+		Object[] parameters = new Object[parametersArray.size()];
+		for(int i = 0; i < parameters.length; i++) {
+			parameters[i] = jsonToArg(parametersArray.get(i).getAsJsonObject());
+		}
+		return parameters;
+	}
+	static Object jsonToArg(JsonObject arg) {
+		switch (arg.get("type").getAsByte()) {
+			case 0: {
+				return new Text(arg);
+			}
+			case 1: {
+				return Component.Serializer.fromJson(arg);
+			}
+			case 2: {
+				return arg.get("parameter").getAsString();
+			}
+		}
+		return null;
+	}
+
+	default CompoundTag writeArgs(CompoundTag parametersTag) {
+		if(parametersTag==null) parametersTag = new CompoundTag();
+		for(int i = 0; i < this.getParameters().length; i++) {
+			parametersTag.put(String.valueOf(i), argToNBT(this.getParameters()[i]));
+		}
+		return parametersTag;
+	}
+	default ListTag writeArgs(ListTag parametersTag) {
+		if(parametersTag==null) parametersTag = new ListTag();
+		for(int i = 0; i < this.getParameters().length; i++) {
+			parametersTag.add(argToNBT(this.getParameters()[i]));
+		}
+		return parametersTag;
+	}
+
+	static CompoundTag argToNBT(Object arg) {
+		CompoundTag tag;
+		if (arg instanceof IText) {
+			tag = ((IText) arg).write(new CompoundTag());
+			tag.putByte("type", (byte) 0);
+		} else if (arg instanceof Component) {
+			tag = new CompoundTag();
+			tag.putString("text", Component.Serializer.toJson((Component) arg));
+			tag.putByte("type", (byte) 1);
+		}else {
+			tag = new CompoundTag();
+			tag.putString("parameter", String.valueOf(arg));
+			tag.putByte("type", (byte) 2);
+		}
+		return tag;
+	}
+
+	static Object[] readArgs(CompoundTag parametersArray){
+		Object[] parameters = new Object[parametersArray.size()];
+		List<String> keys = parametersArray.getAllKeys().stream().sorted(Comparator.comparingLong(Long::valueOf)).toList();
+
+		for(int i = 0; i < keys.size(); i++) {
+			parameters[i] = nbtToArg(parametersArray.getCompound(keys.get(i)));
+		}
+		return parameters;
+	}
+	static Object[] readArgs(ListTag parametersArray){
+		Object[] parameters = new Object[parametersArray.size()];
+		for (int i = 0; i < parametersArray.size(); i++) {
+			parameters[i] = nbtToArg(parametersArray.getCompound(i));
+		}
+		return parameters;
+	}
+	static Object nbtToArg(CompoundTag tag) {
+		switch (tag.getByte("type")) {
+			case 0: {
+				return new Text(tag);
+			}
+			case 1: {
+				return Component.Serializer.fromJson(tag.getString("text"));
+			}
+			case 2: {
+				return tag.getString("parameter");
+			}
+		}
+		return null;
+	}
+
 	@Override
 	default void read(JsonObject json) {
 		if(json.has("text")) {
@@ -86,17 +197,7 @@ public interface IText extends ISerializable {
 		if(json.has("isVanillaWrap")) this.setUseVanillaWrap(json.get("isVanillaWrap").getAsBoolean());
 		if(json.has("isCenter")) this.setCenter(json.get("isCenter").getAsBoolean());
 		if(json.has("parameters") || json.has("args")) {
-			JsonArray parametersArray = json.getAsJsonArray(json.has("parameters") ? "parameters" : "args");
-			Object[] parameters = new Object[parametersArray.size()];
-			for(int i = 0; i < parameters.length; i++) {
-				JsonElement e = parametersArray.get(i);
-				if(e.isJsonObject()) {
-					parameters[i] = new Text(e.getAsJsonObject());
-				}else if(e.isJsonPrimitive()) {
-					parameters[i] = e.getAsString();
-				}
-			}
-			this.setParameters(parameters);
+			this.setParameters(readArgs(json.getAsJsonArray(json.has("parameters") ? "parameters" : "args")));
 		}
 	}
 
@@ -109,16 +210,7 @@ public interface IText extends ISerializable {
 		if(this.isCenter()) json.addProperty("isCenter", this.isCenter());
 		if(this.isVanillaWrap()) json.addProperty("isVanillaWrap", this.isVanillaWrap());
 		if(this.getParameters()!=null && this.getParameters().length > 0) {
-			JsonArray parametersArray = new JsonArray();
-			for(int i = 0; i < this.getParameters().length; i++) {
-				Object o = this.getParameters()[i];
-				if(o instanceof IText) {
-					parametersArray.add(((IText) o).writeTo(JsonObject.class));
-				}else {
-					parametersArray.add(String.valueOf(o));
-				}
-			}
-			json.add("parameters", parametersArray);
+			json.add("parameters", this.writeArgs(new JsonArray()));
 		}
 		
 		return json;
@@ -130,19 +222,7 @@ public interface IText extends ISerializable {
 		if(nbt.contains("isVanillaWrap")) this.setUseVanillaWrap(nbt.getBoolean("isVanillaWrap"));
 		if(nbt.contains("isCenter")) this.setCenter(nbt.getBoolean("isCenter"));
 		if(nbt.contains("parameters")) {
-			CompoundTag parametersArray = nbt.getCompound("parameters");
-			Object[] parameters = new Object[parametersArray.size()];
-			List<String> keys = parametersArray.getAllKeys().stream().sorted(Comparator.comparingLong(Long::valueOf)).toList();
-
-			for(int i = 0; i < keys.size(); i++) {
-				Tag e = parametersArray.get(keys.get(i));
-				if(e instanceof CompoundTag) {
-					parameters[i] = new Text((CompoundTag)e);
-				}else {
-					parameters[i] = e.getAsString();
-				}
-			}
-			this.setParameters(parameters);
+			this.setParameters(readArgs(nbt.getCompound("parameters")));
 		}
 	}
 
@@ -155,16 +235,7 @@ public interface IText extends ISerializable {
 		if(this.isCenter()) nbt.putBoolean("isCenter", this.isCenter());
 		if(this.isVanillaWrap()) nbt.putBoolean("isVanillaWrap", this.isVanillaWrap());
 		if(this.getParameters()!=null && this.getParameters().length > 0) {
-			CompoundTag parametersTag = new CompoundTag();
-			for(int i = 0; i < this.getParameters().length; i++) {
-				Object o = this.getParameters()[i];
-				if(o instanceof IText) {
-					parametersTag.put(String.valueOf(i), ((IText) o).writeTo(CompoundTag.class));
-				}else {
-					parametersTag.putString(String.valueOf(i), String.valueOf(o));
-				}
-			}
-			nbt.put("parameters", parametersTag);
+			nbt.put("parameters", this.writeArgs(new CompoundTag()));
 		}
 		
 		return nbt;

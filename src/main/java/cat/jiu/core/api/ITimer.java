@@ -140,9 +140,7 @@ public interface ITimer extends ISerializable {
 		StringBuilder s = new StringBuilder();
 		if(num < 10)
 			s.append("0");
-		for(int i = 0; i < Long.toString(f).length() - 2; i++) {
-			s.append(0);
-		}
+		s.append("0".repeat(Math.max(0, Long.toString(f).length() - 2)));
 		s.append(num);
 		return s;
 	}
@@ -212,7 +210,7 @@ public interface ITimer extends ISerializable {
 	}
 
 	/**
-	 * like {@link net.minecraft.tileentity.TileEntity}
+	 * like {@link net.minecraft.world.level.block.entity.BlockEntity}
 	 * 
 	 * @param subtractTick
 	 *            Per tick to subtract lastMillis ticks

@@ -3,6 +3,7 @@ package cat.jiu.core.util.registry;
 import cat.jiu.core.api.FailBack;
 import cat.jiu.core.api.serializable.IJsonSerializable;
 import cat.jiu.core.api.serializable.INBTSerializable;
+import cat.jiu.core.util.Utils;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +39,7 @@ public class DynamicRegistry<K, V extends IJsonSerializable & INBTSerializable &
     public DynamicRegistry(){
     }
     public DynamicRegistry(String modid, String typeName) {
-        this(new ResourceLocation(modid, typeName));
+        this(Utils.location(modid, typeName));
     }
     public DynamicRegistry(ResourceLocation id) {
         this(jsonFailBack(id), nbtFailBack(id));
@@ -59,6 +60,12 @@ public class DynamicRegistry<K, V extends IJsonSerializable & INBTSerializable &
         return this;
     }
 
+    public DynamicRegistry<K, V> setKeyGetter(Function<String, K> keyInstance){
+        return this.setKeyGetter(
+                data-> keyInstance.apply(data.getString(StaticRegistry.DEFAULT_ID_TAG_NAME)),
+                data-> keyInstance.apply(data.get(StaticRegistry.DEFAULT_ID_TAG_NAME).getAsString())
+        );
+    }
     public DynamicRegistry<K, V> setKeyGetter(Function<CompoundTag, K> nbtKeyGetter, Function<JsonObject, K> jsontKeyGetter) {
         this.nbtKeyGetter = nbtKeyGetter;
         this.jsonKeyGetter = jsontKeyGetter;

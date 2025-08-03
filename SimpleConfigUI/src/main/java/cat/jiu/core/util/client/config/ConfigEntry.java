@@ -7,12 +7,16 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraft.client.gui.components.Button;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -23,7 +27,7 @@ import java.util.Objects;
 /**
  * @author small_jiu
  */
-public abstract class ConfigEntry<T> {
+public abstract class ConfigEntry<T> implements ContainerEventHandler {
     protected final ForgeConfigSpec.ConfigValue<T> value;
     protected final ForgeConfigSpec.ValueSpec spec;
     protected final T defaultValue;
@@ -66,10 +70,9 @@ public abstract class ConfigEntry<T> {
     protected final void addUndoAndReset(){
         if(this.getConfigWidget()!=null){
             this.undo = this.addWidget(new GuiButton(this.getConfigWidget().getX() +this.getConfigWidget().getWidth()+2, 0, 20, 20, Component.nullToEmpty("U"), btn->this.undo()));
+            this.undo.setTooltip(Tooltip.create(Component.translatable("info.config.undo")));
             this.reset = this.addWidget(new GuiButton(this.undo.getX() +this.undo.getWidth()+2, 0, 20, 20, Component.nullToEmpty("R"), btn->this.reset()));
-        }
-        if (this.value != null) {
-            this.setCacheValue(this.value.get());
+            this.reset.setTooltip(Tooltip.create(Component.translatable("info.config.reset")));
         }
     }
 
@@ -93,15 +96,9 @@ public abstract class ConfigEntry<T> {
         });
         if(this.undo!=null){
             this.undo.active = this.isChanged() && this.canEdit;
-            if(this.reset.active && this.undo.isMouseOver(mouseX, mouseY)){
-                graphics.renderTooltip(gui.getMinecraft().font, Component.translatable("info.config.undo"), mouseX, mouseY);
-            }
         }
         if(this.reset!=null){
             this.reset.active = this.isDefault() && this.canEdit;
-            if(this.reset.active && this.reset.isMouseOver(mouseX, mouseY)){
-                graphics.renderTooltip(gui.getMinecraft().font, Component.translatable("info.config.reset"), mouseX, mouseY);
-            }
         }
     }
 
@@ -129,6 +126,9 @@ public abstract class ConfigEntry<T> {
     public int getWeight(){
         return 1;
     }
+    public String getConfigName() {
+        return configName;
+    }
 
     public void setUnFocused() {
         for (AbstractWidget widget : this.widgets) {
@@ -146,7 +146,8 @@ public abstract class ConfigEntry<T> {
         return result;
     }
 
-    public boolean mouseClick(double mouseX, double mouseY, int button){
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         boolean flag = false;
         for (AbstractWidget widget : this.widgets) {
             widget.setFocused(false);
@@ -160,23 +161,14 @@ public abstract class ConfigEntry<T> {
         }
         return flag;
     }
+
     public boolean charTyped(char codePoint, int modifiers) {
         if (!this.canEdit) return false;
-        for (AbstractWidget widget : this.widgets) {
-            if(widget.charTyped(codePoint, modifiers)){
-                return true;
-            }
-        }
-        return false;
+        return ContainerEventHandler.super.charTyped(codePoint, modifiers);
     }
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!this.canEdit) return false;
-        for (AbstractWidget widget : this.widgets) {
-            if(widget.keyPressed(keyCode, scanCode, modifiers)){
-                return true;
-            }
-        }
-        return false;
+        return ContainerEventHandler.super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     public void drawHoverText(Screen gui, GuiGraphics graphics, int mouseX, int mouseY){
@@ -257,5 +249,35 @@ public abstract class ConfigEntry<T> {
         int maxX = x + width;
         int maxY = y + height;
         return (mouseX >= x && mouseY >= y) && (mouseX <= maxX && mouseY <= maxY);
+    }
+
+    @Override
+    public List<? extends GuiEventListener> children() {
+        return this.widgets;
+    }
+
+    @Override
+    public boolean isDragging() {
+        return false;
+    }
+
+    @Override
+    public void setDragging(boolean b) {
+
+    }
+
+    @Override
+    public @Nullable GuiEventListener getFocused() {
+        for (AbstractWidget widget : this.widgets) {
+            if (widget.isFocused()) return widget;
+        }
+        return null;
+    }
+
+    @Override
+    public void setFocused(@Nullable GuiEventListener guiEventListener) {
+        if (guiEventListener != null) {
+            guiEventListener.setFocused(true);
+        }
     }
 }

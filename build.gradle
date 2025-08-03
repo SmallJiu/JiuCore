@@ -130,9 +130,11 @@ dependencies {
     if(use_mixin == "true") {
         annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     }
-    jarJar("local.libs:jmp123-all:[1.0.0,)")
-    implementation("local.libs:jmp123-all:1.0.0")
-    minecraftLibrary("local.libs:jmp123-all:1.0.0")
+
+    implementation(jarJar(project(":SimpleConfigUI")))
+    implementation(minecraftLibrary(jarJar(project(":SimpleSQL"))))
+    implementation(minecraftLibrary(jarJar(project(":SimpleEvent"))))
+    implementation(minecraftLibrary(jarJar("local.libs:jmp123-all:[1.0.0,)")))
 
     implementation fg.deobf("curse.maven:cloth-config-348521:4633444")
     implementation fg.deobf("curse.maven:architectury-api-419699:4663010")

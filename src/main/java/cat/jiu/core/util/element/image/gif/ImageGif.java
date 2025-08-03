@@ -1,5 +1,6 @@
 package cat.jiu.core.util.element.image.gif;
 
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.GifDecoder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -9,7 +10,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 
 public class ImageGif extends BaseGifImage {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/image/gif/normal");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/image/gif/normal");
 
     public ImageGif() {
     }

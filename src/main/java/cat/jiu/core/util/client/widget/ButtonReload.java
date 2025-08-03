@@ -1,6 +1,7 @@
 package cat.jiu.core.util.client.widget;
 
 import cat.jiu.core.CoreMain;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.RenderUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -11,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ButtonReload extends Button {
     public static final Component RELOAD = Component.translatable("info.config.reload");
-    public static final ResourceLocation TEXTURE = new ResourceLocation(CoreMain.MODID, "textures/gui/widgets.png");
+    public static final ResourceLocation TEXTURE = Utils.location(CoreMain.MODID, "textures/gui/widgets.png");
     public ButtonReload(int x, int y, OnPress onPress) {
         super(x, y, 20, 20, CommonComponents.EMPTY, onPress, DEFAULT_NARRATION);
         this.setTooltip(Tooltip.create(RELOAD));

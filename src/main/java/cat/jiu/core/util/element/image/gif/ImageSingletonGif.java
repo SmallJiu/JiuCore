@@ -1,11 +1,12 @@
 package cat.jiu.core.util.element.image.gif;
 
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.element.image.ImageBuffered;
 import cat.jiu.core.util.client.GifDecoder;
 import net.minecraft.resources.ResourceLocation;
 
 public class ImageSingletonGif extends ImageBuffered {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/image/gif/singleton");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/image/gif/singleton");
 
     protected GifDecoder.SingletonGifTexture gif;
     public ImageSingletonGif() {

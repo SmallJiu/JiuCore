@@ -14,6 +14,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -36,6 +37,10 @@ public class ListEntry<T> extends ConfigEntry<List<T>> {
     protected static final HashMap<Class<?>, Function<Class<?>, List<String>>> CUSTOM_SELECT = new HashMap<>();
     public static void registerTypeValueGetter(Class<?> type, Function<Class<?>, List<String>> getter) {
         CUSTOM_SELECT.put(type, getter);
+    }
+    protected static final HashMap<Class<?>, Function<String, String>> NAME_GETTER = new HashMap<>();
+    public static void registerTypeNameGetter(Class<?> type, Function<String, String> getter) {
+        NAME_GETTER.put(type, getter);
     }
     public static class TypeContext {
         public final String str;
@@ -307,7 +312,7 @@ public class ListEntry<T> extends ConfigEntry<List<T>> {
             public void updateNarration(NarrationElementOutput pNarrationElementOutput) {}
 
             public static class ValueEntry<T> extends Entry<ValueEntry<T>> {
-                public static final ResourceLocation BEACON_LOCATION = new ResourceLocation("textures/gui/container/beacon.png");
+                public static final ResourceLocation BEACON_LOCATION = GuiConfig.location("textures/gui/container/beacon.png");
                 protected final ListScreen<T> screen;
                 protected final AbstractWidget widget;
                 protected Button remove;
@@ -405,7 +410,7 @@ public class ListEntry<T> extends ConfigEntry<List<T>> {
 
             @Override
             protected void init() {
-                this.addRenderableWidget(new SelectValuePanel(this.parent, this.values, this.select));
+                this.addRenderableWidget(new SelectValuePanel<>(this.parent, this.values, this.select));
                 Window window = Minecraft.getInstance().getWindow();
                 this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, btn->
                         Minecraft.getInstance().setScreen(this.parent)
@@ -424,20 +429,20 @@ public class ListEntry<T> extends ConfigEntry<List<T>> {
             }
         }
 
-        public static class SelectValuePanel extends ObjectSelectionList<SelectValuePanel.SelectEntry> {
-            public SelectValuePanel(Screen parent, List<String> values, Consumer<String> select) {
+        public static class SelectValuePanel<T> extends ObjectSelectionList<SelectValuePanel.SelectEntry<T>> {
+            public SelectValuePanel(ListScreen<T> parent, List<String> values, Consumer<String> select) {
                 super(Minecraft.getInstance(), Minecraft.getInstance().getWindow().getGuiScaledWidth(), Minecraft.getInstance().getWindow().getGuiScaledHeight() - 60, 35, 30+Minecraft.getInstance().getWindow().getGuiScaledHeight() - 60, 23);
                 for (String value : values) {
-                    this.addEntry(new SelectEntry(value, parent, select));
+                    this.addEntry(new SelectEntry<>(value, parent, select));
                 }
             }
 
-            public static class SelectEntry extends Entry<SelectEntry> {
+            public static class SelectEntry<T> extends Entry<SelectEntry<T>> {
                 public final String value;
-                public final Screen parent;
+                public final ListScreen<T> parent;
                 public final Consumer<String> select;
 
-                public SelectEntry(String value, Screen parent, Consumer<String> select) {
+                public SelectEntry(String value, ListScreen<T> parent, Consumer<String> select) {
                     this.value = value;
                     this.parent = parent;
                     this.select = select;
@@ -457,9 +462,14 @@ public class ListEntry<T> extends ConfigEntry<List<T>> {
                     graphics.blitNineSliced(AbstractWidget.WIDGETS_LOCATION, pLeft, pTop, pWidth, pHeight, 20, 4, 200, 20, 0, 46 + (pHovering ? 2 : 1) * 20);
                     graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
+                    String name = this.value;
+                    if (NAME_GETTER.containsKey(this.parent.type)) {
+                        name = I18n.get((NAME_GETTER.get(this.parent.type).apply(this.value)));
+                    }
+
                     graphics.drawCenteredString(
                             Minecraft.getInstance().font,
-                            this.value, pLeft + pWidth/2, pTop+pHeight/2-Minecraft.getInstance().font.lineHeight/2,Color.WHITE.getRGB()
+                            name, pLeft + pWidth/2, pTop+pHeight/2-Minecraft.getInstance().font.lineHeight/2,Color.WHITE.getRGB()
                     );
                 }
 

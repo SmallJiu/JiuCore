@@ -7,4 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SubscribeEvent {}
+public @interface SubscribeEvent {
+    EventPriority priority() default EventPriority.NORMAL;
+}

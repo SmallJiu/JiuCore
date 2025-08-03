@@ -1,6 +1,7 @@
 package cat.jiu.core.util.element.sound;
 
 import cat.jiu.core.api.element.ISound;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.AudioSystem;
 import cat.jiu.core.util.client.FollowPosSoundInstance;
 import cat.jiu.core.util.timer.MillisTimer;
@@ -16,7 +17,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class SoundMC extends ISound.BaseSound {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/sound/mc");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/sound/mc");
 
     @OnlyIn(Dist.CLIENT)
     protected FollowPosSoundInstance mcSound;
@@ -161,7 +162,7 @@ public class SoundMC extends ISound.BaseSound {
     @Override
     public void read(JsonObject data) {
         super.read(data);
-        this.setSoundEvent(ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(data.get("sound").getAsString())));
+        this.setSoundEvent(ForgeRegistries.SOUND_EVENTS.getValue(Utils.location(data.get("sound").getAsString())));
         this.setDuration(data.get("duration").getAsLong());
     }
 
@@ -176,7 +177,7 @@ public class SoundMC extends ISound.BaseSound {
     @Override
     public void read(CompoundTag data) {
         super.read(data);
-        this.setSoundEvent(ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(data.getString("sound"))));
+        this.setSoundEvent(ForgeRegistries.SOUND_EVENTS.getValue(Utils.location(data.getString("sound"))));
         this.setDuration(data.getLong("duration"));
     }
 }

@@ -1,5 +1,6 @@
 package cat.jiu.core.util.element.image;
 
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.element.image.gif.BaseGifImage;
 import cat.jiu.core.util.client.GifDecoder;
 import com.google.gson.JsonArray;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class ImageFilePath extends BaseGifImage {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/image/path");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/image/path");
     protected static final List<Function<File, GifDecoder.IGifTexture>> DECODERS = new ArrayList<>();
     public static void register(Function<File, GifDecoder.IGifTexture> decoder) {
         DECODERS.add(decoder);

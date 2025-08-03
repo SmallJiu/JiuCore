@@ -1,7 +1,6 @@
 package cat.jiu.core.config;
 
 import cat.jiu.core.util.client.config.BaseConfig;
-import cat.jiu.core.util.client.config.entry.ListEntry;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.*;
@@ -35,11 +34,11 @@ public class ConfigExample extends BaseConfig {
 
         this.FLOAT_TYPE = builder.worldRestart()
                 .comment("float type config,", "min and max can be any Float number")
-                .defineInRange("float_type", 9.98F, Float.MIN_VALUE, Float.MIN_VALUE, Float.class);
+                .defineInRange("float_type", 9.98F, Float.MIN_VALUE, Float.MAX_VALUE, Float.class);
 
         this.DOUBLE_TYPE = builder.worldRestart()
                 .comment("double type config,", "min and max can be any Double number")
-                .defineInRange("double_type", 9.98D, Double.MIN_VALUE, Double.MIN_VALUE);
+                .defineInRange("double_type", 9.98D, Double.MIN_VALUE, Double.MAX_VALUE);
 
         this.STRING_TYPE = builder.worldRestart()
                 .comment("string type config,", "value can be any char.")
@@ -58,19 +57,6 @@ public class ConfigExample extends BaseConfig {
                 .defineEnum("enum_type", SoundSource.MASTER);
 
         builder.pop();
-    }
-
-    DoubleValue MIN_MEAN_TIME;
-    private boolean mspt(Dimension dimension) {
-        double min_mspt = MIN_MEAN_TIME.get();
-        if (min_mspt > 0.01 && dimension.meanTickTime < min_mspt) {
-            return false;
-        }
-        return true;
-    }
-
-    static class Dimension {
-        double meanTickTime;
     }
 
     public static class ConfigList extends BaseConfig {

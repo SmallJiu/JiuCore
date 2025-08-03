@@ -1,6 +1,5 @@
 package cat.jiu.core.config;
 
-import cat.jiu.core.CoreMain;
 import cat.jiu.core.util.client.config.entry.EnumEntry;
 import cat.jiu.core.util.client.config.entry.ListEntry;
 import net.minecraft.sounds.SoundSource;
@@ -35,5 +34,15 @@ public class CoreConfig {
                 new cat.jiu.core.util.client.config.GuiConfig(parent)
         ));
         EnumEntry.registerNameGetter(SoundSource.class, source -> "soundCategory." + source.getName());
+
+        SoundSource[] VALUES = SoundSource.values();
+        ListEntry.registerTypeNameGetter(SoundSource.class, source -> {
+            for (SoundSource value : VALUES) {
+                if (source.equalsIgnoreCase(value.name())) {
+                    return "soundCategory." + value.getName();
+                }
+            }
+            return source;
+        });
     }
 }

@@ -4,6 +4,7 @@ import cat.jiu.core.api.serializable.IJsonSerializable;
 import cat.jiu.core.api.serializable.INBTSerializable;
 import cat.jiu.core.util.JsonUtils;
 import cat.jiu.core.util.NBTUtils;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.registry.DynamicRegistry;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
@@ -18,8 +19,8 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
     public static final String ID_NAME = "id";
     DynamicRegistry<ResourceLocation, ISound> REGISTRY = new DynamicRegistry<ResourceLocation, ISound>("jiucore", "element/sound")
             .setKeyGetter(
-                    data->new ResourceLocation(NBTUtils.get(data, ID_NAME, "")),
-                    data->new ResourceLocation(JsonUtils.get(data, ID_NAME, ""))
+                    data->Utils.location(NBTUtils.get(data, ID_NAME, "")),
+                    data->Utils.location(JsonUtils.get(data, ID_NAME, ""))
             );
 
     ResourceLocation getSoundID();
@@ -98,10 +99,10 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
         private SoundSource channel = SoundSource.PLAYERS;
 
         public BaseSound(String mod, String id) {
-            this(new ResourceLocation(mod, id));
+            this(Utils.location(mod, id));
         }
         public BaseSound(String id) {
-            this(new ResourceLocation(id));
+            this(Utils.location(id));
         }
         public BaseSound(ResourceLocation id) {
             this.id = id;

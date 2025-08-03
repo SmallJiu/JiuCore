@@ -1,6 +1,7 @@
 package cat.jiu.core.util.element.image;
 
 import cat.jiu.core.api.element.IImage;
+import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.RenderUtils;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -13,7 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import java.awt.image.BufferedImage;
 
 public class ImageGL extends IImage.BaseImage {
-    public static final ResourceLocation ID = new ResourceLocation("jiucore", "element/image/gl");
+    public static final ResourceLocation ID = Utils.location("jiucore", "element/image/gl");
     protected int glID = -1;
 
     public ImageGL() {
