@@ -1,5 +1,6 @@
 package cat.jiu.core.util.registry;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.util.Utils;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,7 @@ public class StaticRegistry<K, V extends Supplier<K>> {
     protected Function<K, V> failBack;
     protected Function<CompoundTag, K> nbtKeyGetter;
     protected Function<JsonObject, K> jsonKeyGetter;
+    protected Function<IData.IMapData<?>, K> dataKeyGetter;
 
     public StaticRegistry() {
     }
@@ -44,12 +46,14 @@ public class StaticRegistry<K, V extends Supplier<K>> {
     public StaticRegistry<K, V> setKeyGetter(Function<String, K> keyInstance){
         return this.setKeyGetter(
                 data-> keyInstance.apply(data.getString(DEFAULT_ID_TAG_NAME)),
-                data-> keyInstance.apply(data.get(DEFAULT_ID_TAG_NAME).getAsString())
+                data-> keyInstance.apply(data.get(DEFAULT_ID_TAG_NAME).getAsString()),
+                data -> keyInstance.apply(data.getString(DEFAULT_ID_TAG_NAME))
         );
     }
-    public StaticRegistry<K, V> setKeyGetter(Function<CompoundTag, K> nbtKeyGetter, Function<JsonObject, K> jsonKeyGetter) {
+    public StaticRegistry<K, V> setKeyGetter(Function<CompoundTag, K> nbtKeyGetter, Function<JsonObject, K> jsonKeyGetter, Function<IData.IMapData<?>, K> dataKeyGetter) {
         this.nbtKeyGetter = nbtKeyGetter;
         this.jsonKeyGetter = jsonKeyGetter;
+        this.dataKeyGetter = dataKeyGetter;
         return this;
     }
 
@@ -75,12 +79,14 @@ public class StaticRegistry<K, V extends Supplier<K>> {
     public boolean registered(K id) {
         return this.registry.containsKey(id);
     }
-
     public V unregister(K id) {
         return this.registry.remove(id);
     }
     public void unregisterAll() {
         this.registry.clear();
+    }
+    public boolean hasEntry(){
+        return !this.registry.isEmpty();
     }
 
     public V get(K id) {
@@ -98,6 +104,12 @@ public class StaticRegistry<K, V extends Supplier<K>> {
     public V get(JsonObject data) {
         if (this.jsonKeyGetter != null) {
             return this.get(this.jsonKeyGetter.apply(data));
+        }
+        return null;
+    }
+    public V get(IData.IMapData<?> data) {
+        if (this.dataKeyGetter != null) {
+            return this.get(this.dataKeyGetter.apply(data));
         }
         return null;
     }

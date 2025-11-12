@@ -1,6 +1,9 @@
 package cat.jiu.core.api;
 
+import cat.jiu.core.api.serializable.IDataSerializable;
 import cat.jiu.core.api.serializable.ISerializable;
+import cat.jiu.core.util.element.data.JsonData;
+import cat.jiu.core.util.element.data.NBTData;
 import cat.jiu.core.util.timer.MillisTimer;
 import cat.jiu.core.util.timer.Timer;
 import cat.jiu.sql.SQLValues;
@@ -11,7 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringJoiner;
 
-public interface ITimer extends ISerializable {
+public interface ITimer extends IDataSerializable<IData.IMapData<?>> {
 	/**
 	 * the core method, use {@code ticks} to format ticks
 	 * 
@@ -223,27 +226,29 @@ public interface ITimer extends ISerializable {
 		this.update(1);
 	}
 
-	@Override
+	@Deprecated(since = "1.20.1-0.0.1-2025.8.10")
 	default JsonObject write(JsonObject json) {
 		if(json == null)
 			json = new JsonObject();
-		json.addProperty("ticks", this.getTicks());
-		json.addProperty("allTicks", this.getAllTicks());
-		json.addProperty("isSys", this instanceof MillisTimer);
-		return json;
+		return (JsonObject) this.write(JsonData.map(json)).getData();
 	}
 
-	@Override
+	@Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+	default void read(JsonObject json) {
+		this.read(JsonData.map(json));
+	}
+
+	@Deprecated(since = "1.20.1-0.0.1-2025.8.10")
 	default CompoundTag write(CompoundTag nbt) {
 		if(nbt == null)
 			nbt = new CompoundTag();
-		nbt.putLong("ticks", this.getTicks());
-		nbt.putLong("allTicks", this.getAllTicks());
-		nbt.putBoolean("isSys", this instanceof MillisTimer);
-		return nbt;
+		return (CompoundTag) this.write(NBTData.map(nbt)).getData();
+	}
+	@Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+	default void read(CompoundTag nbt) {
+		this.read(NBTData.map(nbt));
 	}
 
-	@Override
 	default SQLValues write(SQLValues value) {
 		if(value == null)
 			value = new SQLValues();
@@ -253,22 +258,23 @@ public interface ITimer extends ISerializable {
 		return value;
 	}
 
-	@Override
-	default void read(JsonObject json) {
-		this.format(json.get("ticks").getAsLong());
-		this.setAllTicks(json.get("allTicks").getAsLong());
-	}
-
-	@Override
-	default void read(CompoundTag nbt) {
-		this.format(nbt.getLong("ticks"));
-		this.setAllTicks(nbt.getLong("allTicks"));
-	}
-
-	@Override
 	default void read(ResultSet result) throws SQLException {
 		this.format(result.getLong("ticks"));
 		this.setAllTicks(result.getLong("allTicks"));
+	}
+
+	@Override
+	default IData.IMapData<?> write(IData.IMapData<?> data) {
+		data.putData("ticks", this.getTicks());
+		data.putData("allTicks", this.getAllTicks());
+		data.putData("isSys", this instanceof MillisTimer);
+		return data;
+	}
+
+	@Override
+	default void read(IData.IMapData<?> data) {
+		this.format(data.getLong("ticks", 0));
+		this.setAllTicks(data.getLong("allTicks", 0));
 	}
 
 	static ITimer from(CompoundTag nbt) {
@@ -278,7 +284,7 @@ public interface ITimer extends ISerializable {
 		}else {
 			time = new Timer();
 		}
-		time.readFrom(nbt);
+		time.read(nbt);
 		return time;
 	}
 
@@ -289,7 +295,7 @@ public interface ITimer extends ISerializable {
 		}else {
 			time = new Timer();
 		}
-		time.readFrom(obj);
+		time.read(obj);
 		return time;
 	}
 

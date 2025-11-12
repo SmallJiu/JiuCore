@@ -1,11 +1,10 @@
 package cat.jiu.core.util.element.image;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.api.element.IImage;
 import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.RenderUtils;
-import com.google.gson.JsonObject;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -49,28 +48,15 @@ public class ImageMC extends IImage.BaseImage {
     }
 
     @Override
-    public JsonObject write(JsonObject data) {
+    public IData.IMapData<?> write(IData.IMapData<?> data) {
         this.writeBaseInfo(data);
-        data.addProperty("texture", String.valueOf(this.texture));
+        data.putData("texture", String.valueOf(this.texture));
         return data;
     }
 
     @Override
-    public void read(JsonObject data) {
+    public void read(IData.IMapData<?> data) {
         this.readBaseInfo(data);
-        this.setTexture(data.get("texture").getAsString());
-    }
-
-    @Override
-    public CompoundTag write(CompoundTag data) {
-        this.writeBaseInfo(data);
-        data.putString("texture", String.valueOf(this.texture));
-        return data;
-    }
-
-    @Override
-    public void read(CompoundTag data) {
-        this.readBaseInfo(data);
-        this.setTexture(data.getString("texture"));
+        this.setTexture(data.getString("texture", ""));
     }
 }

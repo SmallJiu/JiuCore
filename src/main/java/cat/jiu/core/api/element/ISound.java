@@ -1,11 +1,13 @@
 package cat.jiu.core.api.element;
 
-import cat.jiu.core.api.serializable.IJsonSerializable;
-import cat.jiu.core.api.serializable.INBTSerializable;
-import cat.jiu.core.util.JsonUtils;
-import cat.jiu.core.util.NBTUtils;
+import cat.jiu.core.api.IData;
+import cat.jiu.core.api.serializable.IDataSerializable;
 import cat.jiu.core.util.Utils;
-import cat.jiu.core.util.registry.DynamicRegistry;
+import cat.jiu.core.util.element.data.JsonData;
+import cat.jiu.core.util.element.data.NBTData;
+import cat.jiu.core.util.element.sound.SoundJmp123;
+import cat.jiu.core.util.element.sound.SoundMC;
+import cat.jiu.core.util.registry.DynamicRegistry2;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -15,13 +17,18 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.function.Supplier;
 
-public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<ResourceLocation> {
-    public static final String ID_NAME = "id";
-    DynamicRegistry<ResourceLocation, ISound> REGISTRY = new DynamicRegistry<ResourceLocation, ISound>("jiucore", "element/sound")
+public interface ISound extends IDataSerializable<IData.IMapData<?>>, Supplier<ResourceLocation> {
+    String ID_NAME = "id";
+    DynamicRegistry2<ResourceLocation, ISound> REGISTRY = new DynamicRegistry2<ResourceLocation, ISound>("jiucore", "element/sound")
             .setKeyGetter(
-                    data->Utils.location(NBTUtils.get(data, ID_NAME, "")),
-                    data->Utils.location(JsonUtils.get(data, ID_NAME, ""))
-            );
+                    data->Utils.location(data.getString(ID_NAME, ""))
+            )
+            .register(register->{
+                register.register(SoundMC.ID, SoundMC::new);
+                register.register(SoundJmp123.ID, SoundJmp123::new);
+            });
+
+
 
     ResourceLocation getSoundID();
     @Override
@@ -33,17 +40,14 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
 
     @OnlyIn(Dist.CLIENT)
     void play();
-    @OnlyIn(Dist.CLIENT)
     boolean isPlayed();
 
     @OnlyIn(Dist.CLIENT)
     void pause(boolean pauseSound);
-    @OnlyIn(Dist.CLIENT)
     boolean isPaused();
 
     @OnlyIn(Dist.CLIENT)
     void stop();
-    @OnlyIn(Dist.CLIENT)
     boolean isStopped();
 
     float getSoundVolume();
@@ -69,21 +73,16 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
         return null;
     }
 
-    @OnlyIn(Dist.CLIENT)
     float getFloatDuration();
-    @OnlyIn(Dist.CLIENT)
     default long getDuration() {
         return (long) this.getFloatDuration();
     }
 
-    @OnlyIn(Dist.CLIENT)
     float getFloatElapse();
-    @OnlyIn(Dist.CLIENT)
     default long getElapse() {
         return (long)this.getFloatElapse();
     }
 
-    @OnlyIn(Dist.CLIENT)
     default float getSurplusPart() {
         return 1.0f - ((getFloatElapse() - getFloatDuration()) * 1.0f / getFloatDuration() + 1f);
     }
@@ -92,7 +91,25 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
         return this;
     }
 
-    public static abstract class BaseSound implements ISound {
+    @Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+    default JsonObject write(JsonObject data) {
+        return (JsonObject) this.write(JsonData.map(data)).getData();
+    }
+    @Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+    default void read(JsonObject data) {
+        this.read(JsonData.map(data));
+    }
+
+    @Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+    default CompoundTag write(CompoundTag data) {
+        return (CompoundTag) this.write(NBTData.map(data)).getData();
+    }
+    @Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+    default void read(CompoundTag data) {
+        this.read(NBTData.map(data));
+    }
+
+    abstract class BaseSound implements ISound {
         public final ResourceLocation id;
         private float volume = 1f, pitch = 1f;
         private boolean canLooping = false;
@@ -115,15 +132,8 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
 
         @Override
         public float getSoundVolume() {
-            float fullVol = this.getFullSoundVolume();
-            float vol = this.getCurrentSoundVolume();
-            if (vol == 0) {
-                vol += 0.000001f;
-            }
-            return vol / fullVol;
+            return this.volume;
         }
-
-        public abstract float getCurrentSoundVolume();
 
         @Override
         public ISound setSoundVolume(float volume) {
@@ -165,39 +175,21 @@ public interface ISound extends IJsonSerializable, INBTSerializable, Supplier<Re
         }
 
         @Override
-        public JsonObject write(JsonObject data) {
-            data.addProperty(ID_NAME, String.valueOf(this.getSoundID()));
-            data.addProperty("channel", this.getSoundChannel().getName());
-            data.addProperty("looping", this.isSoundLooping());
-            data.addProperty("volume", this.getCurrentSoundVolume());
-            data.addProperty("pitch", this.getSoundPitch());
+        public IData.IMapData<?> write(IData.IMapData<?> data) {
+            data.putData(ID_NAME, String.valueOf(this.getSoundID()));
+            data.putData("channel", this.getSoundChannel().getName());
+            data.putData("looping", this.isSoundLooping());
+            data.putData("volume", this.getSoundVolume());
+            data.putData("pitch", this.getSoundPitch());
             return data;
         }
 
         @Override
-        public void read(JsonObject data) {
-            this.setSoundChannel(data.has("channel") ? getSoundChannelByName(data.get("channel").getAsString()) : SoundSource.PLAYERS);
-            this.setSoundLooping(data.has("looping") && data.get("looping").getAsBoolean());
-            this.setSoundVolume(data.has("volume") ? data.get("volume").getAsFloat() : 1f);
-            this.setSoundPitch(data.has("pitch") ? data.get("pitch").getAsFloat() : 1f);
-        }
-
-        @Override
-        public CompoundTag write(CompoundTag data) {
-            data.putString(ID_NAME, String.valueOf(this.getSoundID()));
-            data.putString("channel", this.getSoundChannel().getName());
-            data.putBoolean("looping", this.isSoundLooping());
-            data.putFloat("volume", this.getCurrentSoundVolume());
-            data.putFloat("pitch", this.getSoundPitch());
-            return data;
-        }
-
-        @Override
-        public void read(CompoundTag data) {
-            this.setSoundChannel(getSoundChannelByName(data.getString("channel")));
-            this.setSoundLooping(data.getBoolean("looping"));
-            this.setSoundVolume(data.getFloat("volume"));
-            this.setSoundPitch(data.getFloat("pitch"));
+        public void read(IData.IMapData<?> data) {
+            this.setSoundChannel(getSoundChannelByName(data.getString("channel", SoundSource.PLAYERS.getName())));
+            this.setSoundLooping(data.getBoolean("looping", false));
+            this.setSoundVolume(data.getFloat("volume", 1f));
+            this.setSoundPitch(data.getFloat("pitch", 1f));
         }
     }
 }

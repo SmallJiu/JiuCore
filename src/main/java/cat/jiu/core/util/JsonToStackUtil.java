@@ -435,7 +435,7 @@ public final class JsonToStackUtil {
 					for(int i = 0; i < array.size(); i++) {
 						num_array[i] = array.get(i).getAsShort();
 					}
-					setNBT(nbt, nbts.getKey(), num_array);
+					putShortArray(nbt, nbts.getKey(), num_array);
 				}
 				continue;
 			}
@@ -457,7 +457,7 @@ public final class JsonToStackUtil {
 					for(int i = 0; i < array.size(); i++) {
 						num_array[i] = array.get(i).getAsDouble();
 					}
-					setNBT(nbt, nbts.getKey(), num_array);
+					putDoubleArray(nbt, nbts.getKey(), num_array);
 				}
 				continue;
 			}
@@ -468,7 +468,7 @@ public final class JsonToStackUtil {
 					for(int i = 0; i < array.size(); i++) {
 						num_array[i] = array.get(i).getAsFloat();
 					}
-					setNBT(nbt, nbts.getKey(), num_array);
+					putFloatArray(nbt, nbts.getKey(), num_array);
 				}
 				continue;
 			}
@@ -576,68 +576,34 @@ public final class JsonToStackUtil {
 		}
 		return null;
 	}
-	
-	private static CompoundTag setNBT(CompoundTag nbt, String nbtName, double[] value) {
-		nbt.putString(nbtName, "double_array@" + toString(toArray(value)));
-		return nbt;
-	}
-	private static CompoundTag setNBT(CompoundTag nbt, String nbtName, float[] value) {
-		nbt.putString(nbtName, "float_array@" + toString(toArray(value)));
-		return nbt;
-	}
-	private static CompoundTag setNBT(CompoundTag nbt, String nbtName, short[] value) {
-		nbt.putString(nbtName, "short_array@" + toString(toArray(value)));
-		return nbt;
-	}
-	
+
 	private static ItemStack setNBT(ItemStack stack, CompoundTag nbt) {
 		if(nbt != null) stack.setTag(nbt);
 		return stack;
 	}
-	
-	private static <T> String toString(T[] args) {
-		if(args == null || args.length == 0) {
-			return "null";
+
+	private static CompoundTag putDoubleArray(CompoundTag nbt, String nbtName, double[] value) {
+		ListTag list = new ListTag();
+		for (double v : value) {
+			list.add(DoubleTag.valueOf(v));
 		}
-		List<String> l = Lists.newArrayList();
-		for(T i : args) {
-			l.add(i.toString());
-		}
-		return toString(l.toArray(new String[0]));
+		nbt.put(nbtName, list);
+		return nbt;
 	}
-	
-	private static Short[] toArray(short[] args) {
-		Short[] arg = new Short[args.length];
-		for (int i = 0; i < arg.length; i++) {
-			arg[i] = args[i];
+	private static CompoundTag putFloatArray(CompoundTag nbt, String nbtName, float[] value) {
+		ListTag list = new ListTag();
+		for (float v : value) {
+			list.add(FloatTag.valueOf(v));
 		}
-		return arg;
+		nbt.put(nbtName, list);
+		return nbt;
 	}
-	
-	private static Double[] toArray(double[] args) {
-		Double[] arg = new Double[args.length];
-		for (int i = 0; i < arg.length; i++) {
-			arg[i] = args[i];
+	private static CompoundTag putShortArray(CompoundTag nbt, String nbtName, short[] value) {
+		ListTag list = new ListTag();
+		for (short v : value) {
+			list.add(ShortTag.valueOf(v));
 		}
-		return arg;
-	}
-	
-	private static Float[] toArray(float[] args) {
-		Float[] arg = new Float[args.length];
-		for (int i = 0; i < arg.length; i++) {
-			arg[i] = args[i];
-		}
-		return arg;
-	}
-	
-	private static String toString(String[] args) {
-		if(args == null || args.length == 0) {
-			return "null";
-		}
-		StringJoiner j = new StringJoiner(",");
-		for(String arg : args) {
-			j.add(arg);
-		}
-		return j.toString();
+		nbt.put(nbtName, list);
+		return nbt;
 	}
 }

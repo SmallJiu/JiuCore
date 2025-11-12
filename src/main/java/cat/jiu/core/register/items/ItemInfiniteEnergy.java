@@ -1,5 +1,6 @@
 package cat.jiu.core.register.items;
 
+import cat.jiu.core.CoreMain;
 import cat.jiu.core.util.base.BaseItem;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +22,6 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -41,16 +41,20 @@ public class ItemInfiniteEnergy extends BaseItem {
             }
         });
         @Override
-        public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @org.jetbrains.annotations.Nullable Direction side) {
+        public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
             return ForgeCapabilities.ENERGY.orEmpty(cap, optional);
         }
     };
 
-    public ItemInfiniteEnergy() {
-        super(new Properties()
-                .stacksTo(1)
-                .rarity(Rarity.RARE)
-        );
+    public ItemInfiniteEnergy(Properties properties) {
+        super(properties, CoreMain.registrate());
+        this.addLanguage("zh_cn", "无限能量");
+        this.addLanguage("zh_cn", "item.jiucore.infinite_energy.full", "已充满能量.");
+        this.addLanguage("zh_cn", "item.jiucore.infinite_energy.empty", "已抽空能量.");
+
+//        this.addLanguage("en_us", "Infinite Energy");
+        this.addLanguage("en_us", "item.jiucore.infinite_energy.full", "Energy has been fulled.");
+        this.addLanguage("en_us", "item.jiucore.infinite_energy.empty", "Energy has been drained.");
     }
 
     @Override

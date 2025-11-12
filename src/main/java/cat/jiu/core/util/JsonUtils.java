@@ -7,7 +7,9 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+@SuppressWarnings("unchecked")
 public class JsonUtils {
+    public static final String DEFAULT_CHARSET = "UTF-8";
     public static final Gson GSON =        new GsonBuilder().serializeNulls()                    .create();
     public static final Gson GSON_FORMAT = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
     public static final com.google.gson.JsonParser parser = new com.google.gson.JsonParser();
@@ -98,16 +100,23 @@ public class JsonUtils {
     }
 
     public static <T extends JsonElement> T parse(File file) {
+        return parse(file, DEFAULT_CHARSET);
+    }
+    public static <T extends JsonElement> T parse(File file, String charset) {
         try {
-            return parseThrow(file);
+            return parseThrow(file, charset);
         }catch(Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
     public static <T extends JsonElement> T parse(String path) {
+        return parse(path, DEFAULT_CHARSET);
+    }
+    public static <T extends JsonElement> T parse(String path, String charset) {
         try {
-            return parseThrow(path);
+            return parseThrow(path, charset);
         }catch(Exception e) {
             e.printStackTrace();
             return null;
@@ -115,43 +124,68 @@ public class JsonUtils {
     }
 
     public static <T extends JsonElement> T parse(InputStream path) {
+        return parse(path, DEFAULT_CHARSET);
+    }
+    public static <T extends JsonElement> T parse(InputStream path, String charset) {
         try {
-            return parseThrow(path);
+            return parseThrow(path, charset);
         }catch(Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-
     public static <T extends JsonElement> T parseThrow(File file) throws Exception {
-        return (T) parser.parse(new InputStreamReader(new FileInputStream(file)));
+        return parseThrow(file, DEFAULT_CHARSET);
     }
+    public static <T extends JsonElement> T parseThrow(File file, String charset) throws Exception {
+        return (T) JsonParser.parseReader(new InputStreamReader(new FileInputStream(file), charset));
+    }
+
     public static <T extends JsonElement> T parseThrow(String path) throws Exception {
-        return (T) parser.parse(new InputStreamReader(new FileInputStream(path)));
+        return parseThrow(path, DEFAULT_CHARSET);
     }
+    public static <T extends JsonElement> T parseThrow(String path, String charset) throws Exception {
+        return (T) JsonParser.parseReader(new InputStreamReader(new FileInputStream(path), charset));
+    }
+
     public static <T extends JsonElement> T parseThrow(InputStream path) throws Exception {
-        return (T) parser.parse(new InputStreamReader(path));
+        return parseThrow(path, DEFAULT_CHARSET);
+    }
+    public static <T extends JsonElement> T parseThrow(InputStream path, String charset) throws Exception {
+        return (T) JsonParser.parseReader(new InputStreamReader(path, charset));
     }
 
     public static boolean toJsonFile(String path, Object src, boolean format) {
-        return toJsonFile(new File(path), src, format);
+        return toJsonFile(path, src, format, DEFAULT_CHARSET);
+    }
+    public static boolean toJsonFile(String path, Object src, boolean format, String charset) {
+        return toJsonFile(new File(path), src, format, charset);
     }
     public static boolean toJsonFile(File file, Object src, boolean format) {
+        return toJsonFile(file, src, format, DEFAULT_CHARSET);
+    }
+    public static boolean toJsonFile(File file, Object src, boolean format, String charset) {
         try {
-            return toJsonFileThrow(file, src, format);
+            return toJsonFileThrow(file, src, format, charset);
         } catch (Exception e) {e.printStackTrace();return false;}
     }
 
     public static boolean toJsonFileThrow(String file, Object src, boolean format) throws Exception {
-        return toJsonFileThrow(new File(file), src, format);
+        return toJsonFileThrow(file, src, format, DEFAULT_CHARSET);
+    }
+    public static boolean toJsonFileThrow(String file, Object src, boolean format, String charset) throws Exception {
+        return toJsonFileThrow(new File(file), src, format, charset);
     }
     public static boolean toJsonFileThrow(File file, Object src, boolean format) throws Exception {
+        return toJsonFileThrow(file, src, format, DEFAULT_CHARSET);
+    }
+    public static boolean toJsonFileThrow(File file, Object src, boolean format, String charset) throws Exception {
         if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
         if (file.exists()) file.delete();
 
         file.createNewFile();
-        OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file));
+        OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), charset);
         write.write((format ? GSON_FORMAT : GSON).toJson(src));
         write.flush();
         write.close();

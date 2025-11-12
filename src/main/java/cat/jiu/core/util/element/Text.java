@@ -1,13 +1,16 @@
 package cat.jiu.core.util.element;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.api.element.IText;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
@@ -23,6 +26,9 @@ public class Text implements IText {
 	protected Object[] args = EMPTY_ARGS;
 	protected boolean center;
 	protected boolean vanillaWrap;
+	protected boolean isScrollText;
+	protected boolean isAlignRight;
+	protected MutableComponent component;
 
 	public Text(Component component){
 		if (component instanceof MutableComponent mutable) {
@@ -46,12 +52,15 @@ public class Text implements IText {
 		}
 	}
 	public Text(JsonObject json) {
-		this.readFrom(json);
+		this.read(json);
 	}
 	public Text(CompoundTag nbt) {
-		this.readFrom(nbt);
+		this.read(nbt);
 	}
-	
+	public Text(IData.IMapData<?> data) {
+		this.read(data);
+	}
+
 	public String getText() {
 		return key;
 	}
@@ -87,14 +96,57 @@ public class Text implements IText {
 		this.vanillaWrap = isVanillaWrap;
 		return this;
 	}
-	
+
+	@Override
+	public boolean isScrollText() {
+		return this.isScrollText;
+	}
+	@Override
+	public Text setScrollText(boolean scroll) {
+		this.isScrollText = scroll;
+		return this;
+	}
+
+	@Override
+	public boolean isAlignRightRender() {
+		return this.isAlignRight;
+	}
+
+	@Override
+	public Text setAlignRightRender(boolean alignRight) {
+		this.isAlignRight = alignRight;
+		return this;
+	}
+
 	public Text copy() {
-		return new Text(this.writeTo(CompoundTag.class));
+		return new Text(this.write(new CompoundTag()));
+	}
+
+	@Override
+	public MutableComponent toTextComponent() {
+		if (this.component == null) {
+			this.component = Component.translatable(this.getText(), IText.format(this.getParameters()));
+		}
+		return this.component;
+	}
+
+	@Override
+	public MutableComponent toTextComponent(ChatFormatting color) {
+		this.toTextComponent();
+		this.component.setStyle(this.component.getStyle().applyFormat(color));
+		return this.component;
+	}
+
+	@Override
+	public MutableComponent toTextComponent(TextColor color) {
+		this.toTextComponent();
+		this.component.setStyle(this.component.getStyle().withColor(color));
+		return this.component;
 	}
 
 	@Override
 	public String toString() {
-		return String.valueOf(this.writeTo(JsonObject.class));
+		return String.valueOf(this.write(new JsonObject()));
 	}
 	@Override
 	public int hashCode() {

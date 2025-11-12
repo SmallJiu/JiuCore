@@ -1,5 +1,6 @@
 package cat.jiu.core.util.element.image.gif;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.util.element.image.ImageBuffered;
 import cat.jiu.core.util.client.GifDecoder;
 import com.google.gson.JsonObject;
@@ -42,14 +43,7 @@ public abstract class BaseGifImage extends ImageBuffered {
     public abstract ResourceLocation getImageType();
 
     @Override
-    public abstract JsonObject write(JsonObject data);
-
+    public abstract IData.IMapData<?> write(IData.IMapData<?> data);
     @Override
-    public abstract void read(JsonObject data);
-
-    @Override
-    public abstract CompoundTag write(CompoundTag data);
-
-    @Override
-    public abstract void read(CompoundTag data);
+    public abstract void read(IData.IMapData<?> data);
 }

@@ -8,13 +8,8 @@ import java.util.List;
 import java.util.Set;
 
 public class Configuration implements IMixinConfigPlugin {
-	private boolean enableMixin = false;
 	@Override
 	public void onLoad(String mixinPackage) {
-		try {
-			Class.forName("cat.jiu.core.CoreMain", false, this.getClass().getClassLoader());
-			this.enableMixin = true;
-		}catch (Exception ignored) {}
 	}
 
 	@Override
@@ -24,7 +19,7 @@ public class Configuration implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		return this.enableMixin;
+		return true;
 	}
 
 	@Override

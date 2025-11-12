@@ -1,8 +1,9 @@
 package cat.jiu.core.util.client;
 
+import cat.jiu.core.util.Randoms;
 import cat.jiu.core.util.element.sound.SoundMC;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
@@ -11,13 +12,16 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class FollowPosSoundInstance extends AbstractTickableSoundInstance {
     private boolean followEntity;
-    private Entity entity;
+    private Entity entity = Minecraft.getInstance().player;
     private BlockPos pos;
     public FollowPosSoundInstance(SoundMC sound) {
-        super(sound.getSoundEvent(), sound.getSoundChannel(), SoundInstance.createUnseededRandom());
+        super(sound.getSoundEvent(), sound.getSoundChannel(), Randoms.getRandomSource());
         this.looping = sound.isSoundLooping();
-        this.volume = sound.getCurrentSoundVolume();
+        this.volume = AudioSystem.getMinecraftVolume(sound.getSoundChannel());
         this.pitch = sound.getSoundPitch();
+        if (this.entity != null) {
+            this.pos = this.entity.blockPosition();
+        }
     }
 
     public void setFollowEntity(Entity entity) {
@@ -39,13 +43,17 @@ public class FollowPosSoundInstance extends AbstractTickableSoundInstance {
     @Override
     public void tick() {
         if (this.followEntity) {
-            this.x = this.entity.getX();
-            this.y = this.entity.getY();
-            this.z = this.entity.getZ();
+            if (this.entity != null) {
+                this.x = this.entity.getX();
+                this.y = this.entity.getY();
+                this.z = this.entity.getZ();
+            }
         }else {
-            this.x = this.pos.getX();
-            this.y = this.pos.getY();
-            this.z = this.pos.getZ();
+            if (this.pos != null) {
+                this.x = this.pos.getX();
+                this.y = this.pos.getY();
+                this.z = this.pos.getZ();
+            }
         }
     }
 }

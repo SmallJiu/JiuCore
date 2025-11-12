@@ -1,6 +1,6 @@
 package cat.jiu.core.util.registry;
 
-import cat.jiu.core.api.FailBack;
+import cat.jiu.core.api.Lambdas;
 import cat.jiu.core.api.serializable.IJsonSerializable;
 import cat.jiu.core.api.serializable.INBTSerializable;
 import cat.jiu.core.util.Utils;
@@ -16,23 +16,24 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Deprecated(since = "1.20.1-0.0.1-2025.8.10")
 public class DynamicRegistry<K, V extends IJsonSerializable & INBTSerializable & Supplier<K>> {
-    public static <K, V> FailBack<K, JsonObject, V> jsonFailBack(ResourceLocation typeID) {
+    public static <K, V> Lambdas.Function2<K, JsonObject, V> jsonFailBack(ResourceLocation typeID) {
         return (id, data)->{
             LogManager.getLogger("Registry").fatal("{} is not register to {}.", id, typeID);
             return null;
         };
     }
-    public static <K, V> FailBack<K, CompoundTag, V> nbtFailBack(ResourceLocation typeID) {
+    public static <K, V> Lambdas.Function2<K, CompoundTag, V> nbtFailBack(ResourceLocation typeID) {
         return (id, data)->{
             LogManager.getLogger("Registry").fatal("{} is not register to {}.", id, typeID);
             return null;
         };
     }
 
-    protected final ConcurrentHashMap<K, Getter<V>> registry = new ConcurrentHashMap<>();
-    protected FailBack<K, JsonObject, V> jsonFailBack;
-    protected FailBack<K, CompoundTag, V> nbtFailBack;
+    protected final ConcurrentHashMap<K, Getter<? extends V>> registry = new ConcurrentHashMap<>();
+    protected Lambdas.Function2<K, JsonObject, V> jsonFailBack;
+    protected Lambdas.Function2<K, CompoundTag, V> nbtFailBack;
     protected Function<CompoundTag, K> nbtKeyGetter;
     protected Function<JsonObject, K> jsonKeyGetter;
 
@@ -46,8 +47,8 @@ public class DynamicRegistry<K, V extends IJsonSerializable & INBTSerializable &
     }
 
     public DynamicRegistry(
-            FailBack<K, JsonObject, V> jsonFailBack,
-            FailBack<K, CompoundTag, V> nbtFailBack
+            Lambdas.Function2<K, JsonObject, V> jsonFailBack,
+            Lambdas.Function2<K, CompoundTag, V> nbtFailBack
     ) {
         this.jsonFailBack = jsonFailBack;
         this.nbtFailBack = nbtFailBack;
@@ -73,8 +74,8 @@ public class DynamicRegistry<K, V extends IJsonSerializable & INBTSerializable &
     }
 
     public DynamicRegistry<K, V> setFailBack(
-            FailBack<K, JsonObject, V> jsonFailBack,
-            FailBack<K, CompoundTag, V> nbtFailBack
+            Lambdas.Function2<K, JsonObject, V> jsonFailBack,
+            Lambdas.Function2<K, CompoundTag, V> nbtFailBack
     ) {
         this.jsonFailBack = jsonFailBack;
         this.nbtFailBack = nbtFailBack;
@@ -107,7 +108,7 @@ public class DynamicRegistry<K, V extends IJsonSerializable & INBTSerializable &
         });
     }
 
-    public K register(K id, Function<CompoundTag, V> nbtGetter, Function<JsonObject, V> jsonGetter) {
+    public <T extends V> K register(K id, Function<CompoundTag, T> nbtGetter, Function<JsonObject, T> jsonGetter) {
         if (!this.registry.containsKey(id)) {
             this.registry.put(id, new Getter<>(nbtGetter, jsonGetter));
         }
@@ -117,9 +118,11 @@ public class DynamicRegistry<K, V extends IJsonSerializable & INBTSerializable &
     public void unregister(K id) {
         this.registry.remove(id);
     }
-
     public boolean registered(K id) {
         return this.registry.containsKey(id);
+    }
+    public boolean hasEntry(){
+        return !this.registry.isEmpty();
     }
 
     public V get(K id, CompoundTag tag) {

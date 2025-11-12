@@ -1,13 +1,9 @@
 package cat.jiu.core.util.element.image;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.element.image.gif.BaseGifImage;
 import cat.jiu.core.util.client.GifDecoder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.imageio.ImageIO;
@@ -114,72 +110,36 @@ public class ImageJarPath extends BaseGifImage {
     }
 
     @Override
-    public JsonObject write(JsonObject data) {
+    public IData.IMapData<?> write(IData.IMapData<?> data) {
         this.writeBaseInfo(data);
-        JsonArray array = new JsonArray();
+        IData.IListData<?> array = data.newList();
         this.paths.forEach((clazz, list)->{
-            JsonObject object = new JsonObject();
-            object.addProperty("clazz", String.valueOf(clazz));
+            IData.IMapData<?> object = data.newMap();
+            object.putData("clazz", String.valueOf(clazz));
 
-            JsonArray array1 = new JsonArray();
-            list.forEach(array1::add);
-            object.add("path", array1);
+            IData.IListData<?> array1 = data.newList();
+            list.forEach(array1::putData);
+            object.putData("path", array1);
 
-            array.add(object);
+            array.putData(object);
         });
-        data.add("paths", array);
+        data.putData("paths", array);
         return data;
     }
 
     @Override
-    public void read(JsonObject data) {
+    public void read(IData.IMapData<?> data) {
         this.readBaseInfo(data);
-        data.getAsJsonArray("paths").forEach(element -> {
-            JsonObject object = element.getAsJsonObject();
+        data.getMap("paths", data.emptyMap()).foreach((k,v) -> {
+            IData.IMapData<?> object = v.getAsMap();
             try {
-                Class<?> clazz = Class.forName(object.get("clazz").getAsString());
-                object.getAsJsonArray("path").forEach(path->
-                    this.addPaths(clazz, path.getAsString())
+                Class<?> clazz = Class.forName(object.getString("clazz", ""));
+                object.getList("path", String.class, data.emptyList()).foreach((k1,v1)->
+                    this.addPaths(clazz, v1.getAsPrimitive().getAsString())
                 );
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
-    }
-
-    @Override
-    public CompoundTag write(CompoundTag data) {
-        this.writeBaseInfo(data);
-        ListTag array = new ListTag();
-        this.paths.forEach((clazz, list)->{
-            CompoundTag object = new CompoundTag();
-            object.putString("clazz", String.valueOf(clazz));
-
-            ListTag array1 = new ListTag();
-            list.forEach(path->array1.add(StringTag.valueOf(path)));
-            object.put("path", array1);
-
-            array.add(object);
-        });
-        data.put("paths", array);
-        return data;
-    }
-
-    @Override
-    public void read(CompoundTag data) {
-        this.readBaseInfo(data);
-        ListTag array = data.getList("paths", 10);
-        for (int i = 0; i < array.size(); i++) {
-            CompoundTag object = array.getCompound(i);
-            try {
-                Class<?> clazz = Class.forName(object.getString("clazz"));
-                ListTag array1 = data.getList("path", 8);
-                for (int i1 = 0; i1 < array1.size(); i1++) {
-                    this.addPaths(clazz, array1.getString(i1));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

@@ -1,11 +1,10 @@
 package cat.jiu.core.util.element.image;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.element.image.gif.BaseGifImage;
 import cat.jiu.core.util.client.GifDecoder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
@@ -100,44 +99,23 @@ public class ImageFilePath extends BaseGifImage {
     }
 
     @Override
-    public JsonObject write(JsonObject data) {
+    public IData.IMapData<?> write(IData.IMapData<?> data) {
         this.writeBaseInfo(data);
-        JsonArray array = new JsonArray();
+        IData.IListData<?> array = data.newList();
         for (String image : this.paths) {
-            array.add(image);
+            array.putData(image);
         }
-        data.add("paths", array);
+        data.putData("paths", array);
         return data;
     }
 
     @Override
-    public void read(JsonObject data) {
+    public void read(IData.IMapData<?> data) {
         this.readBaseInfo(data);
-        JsonArray array = data.getAsJsonArray("paths");
+        IData.IListData<?> array = data.getList("paths", String.class, data.emptyList());
         this.paths = new String[array.size()];
         for (int i = 0; i < array.size(); i++) {
-            this.paths[i] = array.get(i).getAsString();
-        }
-    }
-
-    @Override
-    public CompoundTag write(CompoundTag data) {
-        this.writeBaseInfo(data);
-        ListTag array = new ListTag();
-        for (String image : this.paths) {
-            array.add(StringTag.valueOf(image));
-        }
-        data.put("paths", array);
-        return data;
-    }
-
-    @Override
-    public void read(CompoundTag data) {
-        this.readBaseInfo(data);
-        ListTag array = data.getList("paths", 8);
-        this.paths = new String[array.size()];
-        for (int i = 0; i < array.size(); i++) {
-            this.paths[i] = array.getString(i);
+            this.paths[i] = array.getString(i, "");
         }
     }
 }

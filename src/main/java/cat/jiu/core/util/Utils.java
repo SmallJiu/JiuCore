@@ -2,7 +2,11 @@ package cat.jiu.core.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -14,13 +18,10 @@ public class Utils {
 		return (T)other;
 	}
 
+	@Deprecated
 	@SafeVarargs
 	public static <T, R> R[] castArray(Function<Integer, R[]> arrayCreate, Function<T, R> objCast, T... other) {
-		R[] array = arrayCreate.apply(other.length);
-		for (int i = 0; i < array.length; i++) {
-			array[i] = objCast.apply(other[i]);
-		}
-		return array;
+		return ArrayUtils.cast(arrayCreate, objCast, other);
 	}
 
 	public static ResourceLocation location(String key) {
@@ -28,6 +29,27 @@ public class Utils {
 	}
 	public static ResourceLocation location(String name, String path) {
 		return ResourceLocation.tryBuild(name, path);
+	}
+
+	public static void spawnItem(Player player, Iterable<ItemStack> stacks) {
+		for (ItemStack stack : stacks) {
+			spawnItem(player, stack);
+		}
+	}
+	public static void spawnItem(Player player, ItemStack stack) {
+		spawnItem(player.level(), player.position(), stack);
+	}
+	public static void spawnItem(Level world, Vec3 pos, Iterable<ItemStack> stacks) {
+		for (ItemStack stack : stacks) {
+			spawnItem(world, pos, stack);
+		}
+	}
+	public static void spawnItem(Level world, Vec3 pos, ItemStack stack) {
+		if(!stack.isEmpty()){
+			ItemEntity item = new ItemEntity(world, pos.x, pos.y, pos.z, stack.copy());
+			item.setPickUpDelay(1);
+			world.addFreshEntity(item);
+		}
 	}
 
 	@OnlyIn(Dist.CLIENT)

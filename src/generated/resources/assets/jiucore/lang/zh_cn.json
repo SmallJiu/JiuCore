@@ -1,18 +1,17 @@
 {
-  "info.hold.un": "§7按住 §f%s §7以显示更多信息.",
   "info.config.clear": "清空",
+  "info.config.not_enough_permissions": "你没有足够的权限来编辑此服务器配置，但你仍可查看。",
   "info.config.reload": "重载",
-  "info.config.undo": "撤回操作",
   "info.config.reset": "重置至默认",
   "info.config.save": "保存并退出",
   "info.config.save.0": "使用 'Esc键' 退出但不保存配置文件",
   "info.config.save.1": "保存",
+  "info.config.undo": "撤回操作",
   "info.config.world_restart": "需要重启世界",
-  "info.config.not_enough_permissions": "你没有足够的权限来编辑此服务器配置，但你仍可查看。",
-
-  "item.jiucore.infinite_water": "无限水",
+  "info.hold.un": "§7按住 §f%s §7以显示更多信息.",
   "item.jiucore.infinite_bucket": "无底桶",
   "item.jiucore.infinite_energy": "无限能量",
+  "item.jiucore.infinite_energy.empty": "已抽空能量.",
   "item.jiucore.infinite_energy.full": "已充满能量.",
-  "item.jiucore.infinite_energy.empty": "已抽空能量."
+  "item.jiucore.infinite_water": "无限水"
 }

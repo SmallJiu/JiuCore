@@ -1,38 +1,56 @@
 package cat.jiu.core.api.element;
 
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderGuiEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 
-public interface IOverlay/* extends INBTSerializable, IJsonSerializable, Supplier<ResourceLocation>*/ {
+import java.util.function.Supplier;
 
-    @OnlyIn(Dist.CLIENT)
-    void render(GuiGraphics graphics);
-
+public interface IOverlay extends Supplier<Class<?>> {
     /**
      * @return true if canceled all overlay render.
      */
     @OnlyIn(Dist.CLIENT)
-    boolean render(GuiGraphics graphics, RenderGuiEvent event, int windowCenterX, int windowCenterY, boolean preEvent);
+    boolean render(ForgeGui hud, Window window, GuiGraphics graphics, float partialTicks, ResourceLocation overlay);
 
     /**
      * @return true if canceled all overlay response keyTyped.
      */
-    @OnlyIn(Dist.CLIENT)
-    boolean keyTyped(int key, int scanCode, int action, int modifiers);
+    default boolean keyTyped(int key, int scanCode, int action, int modifiers) {
+        return false;
+    }
 
     /**
-     * @return true if type or event is you need.
-     */
-    @OnlyIn(Dist.CLIENT)
-    boolean isEffectType(boolean isPreEvent);
-
-    /**
+     * @param overlay overlay name
      * @return true if this overlay instance is enable on window render.
      */
-    @OnlyIn(Dist.CLIENT)
-    boolean isEnable();
+    boolean isEnable(ResourceLocation overlay, EventAction event);
 
-    boolean canRemove(boolean preEvent);
+    default boolean canRemove(boolean preEvent) {
+        return false;
+    }
+    default boolean canRemove(ResourceLocation overlayName, EventAction event) {
+        return this.canRemove(event.isPreRenderEvent());
+    }
+
+    @Override
+    default Class<?> get() {
+        return this.getClass();
+    }
+
+    enum EventAction {
+        KEY_TYPED, RENDER_PRE, RENDER_POST;
+        public boolean isPreRenderEvent() {
+            return this == RENDER_PRE;
+        }
+        public boolean isPostRenderEvent() {
+            return this == RENDER_POST;
+        }
+        public boolean isKeyTypedEvent() {
+            return this == KEY_TYPED;
+        }
+    }
 }

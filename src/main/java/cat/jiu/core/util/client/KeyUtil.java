@@ -17,6 +17,9 @@ public class KeyUtil {
     public static KeyUtil of(String name, InputConstants.Type type, int keyCode, String category) {
         return new KeyUtil(name, type, keyCode, category);
     }
+    public static KeyUtil of(KeyMapping keyMapping) {
+        return new KeyUtil(keyMapping);
+    }
 
     public final KeyMapping keyMapping;
     public KeyUtil(KeyMapping keyMapping) {

@@ -1,12 +1,11 @@
 package cat.jiu.core.util.element.image;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.api.element.IImage;
 import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.RenderUtils;
-import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -57,28 +56,15 @@ public class ImageGL extends IImage.BaseImage {
     }
 
     @Override
-    public JsonObject write(JsonObject json) {
-        super.write(json);
-        json.addProperty("glID", this.glID);
-        return json;
+    public IData.IMapData<?> write(IData.IMapData<?> data) {
+        super.write(data);
+        data.putData("glID", this.glID);
+        return data;
     }
 
     @Override
-    public void read(JsonObject json) {
-        super.read(json);
-        this.setImage(json.has("glID") ? json.get("glID").getAsInt() : -1);
-    }
-
-    @Override
-    public CompoundTag write(CompoundTag nbt) {
-        super.write(nbt);
-        nbt.putInt("glID", this.glID);
-        return nbt;
-    }
-
-    @Override
-    public void read(CompoundTag nbt) {
-        super.read(nbt);
-        this.setImage(nbt.contains("glID") ? nbt.getInt("glID") : -1);
+    public void read(IData.IMapData<?> data) {
+        super.read(data);
+        this.setImage(data.getInt("glID", -1));
     }
 }

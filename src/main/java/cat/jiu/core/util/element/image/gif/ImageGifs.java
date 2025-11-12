@@ -1,5 +1,6 @@
 package cat.jiu.core.util.element.image.gif;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.GifDecoder;
 import com.google.gson.JsonObject;
@@ -33,25 +34,13 @@ public class ImageGifs extends BaseGifImage {
     }
 
     @Override
-    public JsonObject write(JsonObject data) {
+    public IData.IMapData<?> write(IData.IMapData<?> data) {
         this.writeBaseInfo(data);
         return data;
     }
 
     @Override
-    public void read(JsonObject data) {
-        this.readBaseInfo(data);
-
-    }
-
-    @Override
-    public CompoundTag write(CompoundTag data) {
-        this.writeBaseInfo(data);
-        return data;
-    }
-
-    @Override
-    public void read(CompoundTag data) {
+    public void read(IData.IMapData<?> data) {
         this.readBaseInfo(data);
 
     }

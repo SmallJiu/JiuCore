@@ -1,6 +1,5 @@
 package cat.jiu.core.mixin;
 
-import cat.jiu.core.CoreMain;
 import cat.jiu.core.event.client.TextFormatEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraftforge.common.MinecraftForge;
@@ -9,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = I18n.class, remap = !CoreMain.DEV)
+@Mixin(I18n.class)
 public class MixinI18n {
     @Inject(
             at = @At("HEAD"),

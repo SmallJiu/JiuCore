@@ -28,10 +28,10 @@ public class CoreConfig {
 
     @OnlyIn(Dist.CLIENT)
     public static void registerConfigScreen() {
-        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, ()->new ConfigScreenHandler.ConfigScreenFactory((mc, parent)->
+        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, ()->new ConfigScreenHandler.ConfigScreenFactory(
 //                new cat.jiu.core.util.client.config.GuiConfig("/config/jiu/core/configs.toml", parent, CoreConfig.CONFIG_MAIN)
 //                new cat.jiu.core.util.client.config.GuiConfig(parent, CoreMain.MODID)
-                new cat.jiu.core.util.client.config.GuiConfig(parent)
+                cat.jiu.core.util.client.config.GuiConfig::new
         ));
         EnumEntry.registerNameGetter(SoundSource.class, source -> "soundCategory." + source.getName());
 

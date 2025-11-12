@@ -1,5 +1,6 @@
 package cat.jiu.core.util.timer;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.api.ITimer;
 import cat.jiu.sql.SQLValues;
 import com.google.gson.JsonObject;
@@ -133,40 +134,23 @@ public class MillisTimer implements ITimer {
 		if(!this.isStarted()) return -1;
 		return this.getLastMillis() % 1000 / 50;
 	}
-	
+
 	@Override
-	public CompoundTag write(CompoundTag nbt) {
-		if(nbt==null) nbt = new CompoundTag();
-		nbt.putLong("ms", this.millis);
-		nbt.putLong("sysMillis", this.sysMillis);
-		nbt.putLong("current", this.currentMillis);
-		nbt.putBoolean("isSys", true);
-		return nbt;
+	public IData.IMapData<?> write(IData.IMapData<?> data) {
+		data.putData("ms", this.millis);
+		data.putData("sysMillis", this.sysMillis);
+		data.putData("current", this.currentMillis);
+		data.putData("isSys", true);
+		return data;
 	}
-	
+
 	@Override
-	public void read(CompoundTag nbt) {
-		this.millis = nbt.getLong("ms");
-		this.sysMillis = nbt.getLong("sysMillis");
-		this.currentMillis = nbt.getLong("current");
+	public void read(IData.IMapData<?> data) {
+		this.millis = data.getLong("ms", 0);
+		this.sysMillis = data.getLong("sysMillis", 0);
+		this.currentMillis = data.getLong("current", 0);
 	}
-	
-	@Override
-	public JsonObject write(JsonObject json) {
-		if(json==null) json = new JsonObject();
-		json.addProperty("ms", this.millis);
-		json.addProperty("sysMillis", this.sysMillis);
-		json.addProperty("current", this.currentMillis);
-		json.addProperty("isSys", true);
-		return json;
-	}
-	@Override
-	public void read(JsonObject json) {
-		this.millis = json.get("ms").getAsLong();
-		this.sysMillis = json.get("sysMillis").getAsLong();
-		this.currentMillis = json.get("current").getAsLong();
-	}
-	
+
 	@Override
 	public SQLValues write(SQLValues value) {
 		if(value==null) value = new SQLValues();

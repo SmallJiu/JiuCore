@@ -1,53 +1,93 @@
 package cat.jiu.core.util.base;
 
+import cat.jiu.core.api.IStuff;
+import cat.jiu.core.util.registry.DynamicLanguageProvider;
+import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
-public class BaseBlock extends Block {
-    private ResourceKey<CreativeModeTab> creativeTab = CreativeModeTabs.BUILDING_BLOCKS;
-    public BaseBlock(Properties properties) {
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+public class BaseBlock extends Block implements IStuff {
+    public static final Object VALUE = "";
+    private static final ConcurrentHashMap<BaseBlock, Object> MAP = new ConcurrentHashMap<>();
+    public static Set<BaseBlock> registerBlocks(){
+        return MAP.keySet();
+    }
+
+    public BaseBlock(Properties properties, AbstractRegistrate<?> registrate) {
         super(properties);
-        FMLJavaModLoadingContext.get().getModEventBus().register(this);
+        MAP.put(this, VALUE);
+        this.registrate = registrate;
+        registrate.addDataGenerator(DynamicLanguageProvider.TYPE, this::registerLanguage);
+    }
+
+    protected final AbstractRegistrate<?> registrate;
+    @Override
+    public AbstractRegistrate<?> getRegistrate() {
+        return null;
+    }
+
+    private ArrayList<Language> languages;
+    @Override
+    public List<Language> getLanguages() {
+        if (this.languages == null) {
+            this.languages = new ArrayList<>();
+        }
+        return this.languages;
+    }
+
+    public <T extends IStuff> T  addLanguage(String languageCode, String name) {
+        return IStuff.super.addLanguage(languageCode, this::getDescriptionId, name);
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, BlockGetter pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
-        this.addTooltip(pLevel, pStack, pIsAdvanced, pTooltipComponents);
+    public void appendHoverText(ItemStack stack, BlockGetter level, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        this.addTooltip(stack, level, tooltipComponents, tooltipFlag);
     }
-    protected void addTooltip(BlockGetter world, ItemStack stack, TooltipFlag isAdvanced, List<Component> tooltips){
+    protected void addTooltip(ItemStack stack, BlockGetter level, List<Component> tooltipComponents, TooltipFlag tooltipFlag){
 
     }
 
+    private ArrayList<Property<?>> properties;
+    public <T extends IStuff> T  addProperty(Property<?> property) {
+        if (this.properties == null) {
+            this.properties = new ArrayList<>();
+        }
+        this.properties.add(property);
+        return this.self();
+    }
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-
+        if (this.properties != null && !this.properties.isEmpty()) {
+            builder.add(this.properties.toArray(Property[]::new));
+        }
     }
 
-    public ResourceKey<CreativeModeTab> getCreativeTab() {
-        return creativeTab;
-    }
-
-    public BaseBlock setCreativeTab(ResourceKey<CreativeModeTab> tab) {
-        this.creativeTab = tab;
-        return this;
+    private Consumer<RegisterCapabilitiesEvent> onCapabilityRegister;
+    public <T extends IStuff> T  registerCapability(Consumer<RegisterCapabilitiesEvent> onCapabilityRegister) {
+        this.onCapabilityRegister = onCapabilityRegister;
+        return this.self();
     }
     @SubscribeEvent
-    public void addCreativeTab(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == this.getCreativeTab()) {
-            event.accept(this);
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        for (BaseBlock block : registerBlocks()) {
+            if (block.onCapabilityRegister != null) {
+                block.onCapabilityRegister.accept(event);
+            }
         }
     }
 }

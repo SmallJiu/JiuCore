@@ -1,18 +1,12 @@
 package cat.jiu.core.util;
 
-import com.google.common.collect.Lists;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import net.minecraft.nbt.*;
 import net.minecraft.util.StringUtil;
-import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.Map;
 
 public class NBTUtils {
     public static Tag get(CompoundTag data, String k, Tag failBack) {
@@ -96,41 +90,45 @@ public class NBTUtils {
         return failBack;
     }
 
+    public static ListTag asList(double[] value) {
+        ListTag list = new ListTag();
+        for (double v : value) {
+            list.add(DoubleTag.valueOf(v));
+        }
+        return list;
+    }
+    public static ListTag asList(float[] value) {
+        ListTag list = new ListTag();
+        for (float v : value) {
+            list.add(FloatTag.valueOf(v));
+        }
+        return list;
+    }
+    public static ListTag asList(short[] value) {
+        ListTag list = new ListTag();
+        for (short v : value) {
+            list.add(ShortTag.valueOf(v));
+        }
+        return list;
+    }
+
     public static JsonElement toJson(Tag base) {
         if(base instanceof NumericTag) {
             return new JsonPrimitive(((NumericTag) base).getAsNumber());
         }else if(base instanceof StringTag) {
-            JsonArray num_array = getNumberArray((StringTag) base);
-            if(num_array != null) return num_array;
-
             return new JsonPrimitive(base.getAsString());
         }else if(base instanceof CompoundTag) {
             return toJson((CompoundTag) base);
-        }else if(base instanceof ListTag) {
-            return toJson((ListTag) base);
-        }else if(base instanceof IntArrayTag) {
-            JsonArray array = new JsonArray();
-            for(int i : ((IntArrayTag)base).getAsIntArray()) {
-                array.add(i);
-            }
-            return array;
-        }else if(base instanceof ByteArrayTag) {
-            JsonArray array = new JsonArray();
-            for(byte i : ((ByteArrayTag)base).getAsByteArray()) {
-                array.add(i);
-            }
-            return array;
+        }else if(base instanceof CollectionTag) {
+            return toJson((CollectionTag<?>) base);
         }
-        return null;
+        return JsonNull.INSTANCE;
     }
 
-    public static JsonArray toJson(ListTag list) {
+    public static JsonArray toJson(CollectionTag<?> list) {
         JsonArray array = new JsonArray();
-        for (Tag inbt : list) {
-            JsonElement e = toJson(inbt);
-            if (e != null) {
-                array.add(e);
-            }
+        for (Tag tag : list) {
+            array.add(toJson(tag));
         }
         return array;
     }
@@ -148,16 +146,18 @@ public class NBTUtils {
                         if(!obj.has("string")) {
                             obj.add("string", new JsonObject());
                         }
-                        obj.get("string").getAsJsonObject().add(key, pri);
+                        obj.getAsJsonObject("string").add(key, pri);
                     }else if(pri.isBoolean()) {
                         if(!obj.has("boolean")) {
                             obj.add("boolean", new JsonObject());
                         }
-                        obj.get("boolean").getAsJsonObject().add(key, pri);
+                        obj.getAsJsonObject("boolean").add(key, pri);
                     }
                 }else if(e.isJsonObject()) {
-                    if(!obj.has("tags")) obj.add("tags", new JsonObject());
-                    obj.get("tags").getAsJsonObject().add(key, e);
+                    if(!obj.has("tags")) {
+                        obj.add("tags", new JsonObject());
+                    }
+                    obj.getAsJsonObject("tags").add(key, e);
                 }else if(e.isJsonArray()) {
                     obj.add(key, e);
                 }
@@ -165,6 +165,272 @@ public class NBTUtils {
         }
         return obj;
     }
+
+    public static JsonObject toNormalJson(JsonObject obj) {
+        JsonObject object = new JsonObject();
+        for(Map.Entry<String, JsonElement> objTags : obj.entrySet()) {
+            String key = objTags.getKey();
+            JsonElement value = objTags.getValue();
+            if("string".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsString());
+                }
+                continue;
+            }
+            if("boolean".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsBoolean());
+                }
+                continue;
+            }
+            if("int".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsInt());
+                }
+                continue;
+            }
+            if("long".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsLong());
+                }
+                continue;
+            }
+            if("float".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsFloat());
+                }
+                continue;
+            }
+            if("double".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsDouble());
+                }
+                continue;
+            }
+            if("byte".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsByte());
+                }
+                continue;
+            }
+            if("short".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue().getAsShort());
+                }
+                continue;
+            }
+            if("int_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.add(entry.getKey(), entry.getValue().getAsJsonArray());
+                }
+                continue;
+            }
+            if("short_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.add(entry.getKey(), entry.getValue().getAsJsonArray());
+                }
+                continue;
+            }
+            if("byte_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.add(entry.getKey(), entry.getValue().getAsJsonArray());
+                }
+                continue;
+            }
+            if("double_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.add(entry.getKey(), entry.getValue().getAsJsonArray());
+                }
+                continue;
+            }
+            if("float_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.add(entry.getKey(), entry.getValue().getAsJsonArray());
+                }
+                continue;
+            }
+            if("long_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    object.add(entry.getKey(), entry.getValue().getAsJsonArray());
+                }
+                continue;
+            }
+            if("tags".equals(key)) {
+                for(Map.Entry<String, JsonElement> tags : value.getAsJsonObject().entrySet()) {
+                    object.add(tags.getKey(), toNormalJson(tags.getValue().getAsJsonObject()));
+                }
+                continue;
+            }
+            if(value.isJsonObject()) {
+                object.add(key, toNormalJson(value.getAsJsonObject()));
+                continue;
+            }
+            if(value.isJsonArray()) {
+                object.add(key, value.getAsJsonArray());
+            }
+        }
+        return object;
+    }
+
+    public static CompoundTag toNBT(JsonObject obj) {
+        CompoundTag tag = new CompoundTag();
+        for(Map.Entry<String, JsonElement> objTags : obj.entrySet()) {
+            String key = objTags.getKey();
+            JsonElement value = objTags.getValue();
+            if("string".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putString(entry.getKey(), entry.getValue().getAsString());
+                }
+                continue;
+            }
+            if("boolean".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putBoolean(entry.getKey(), entry.getValue().getAsBoolean());
+                }
+                continue;
+            }
+            if("int".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putInt(entry.getKey(), entry.getValue().getAsInt());
+                }
+                continue;
+            }
+            if("long".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putLong(entry.getKey(), entry.getValue().getAsLong());
+                }
+                continue;
+            }
+            if("float".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putFloat(entry.getKey(), entry.getValue().getAsFloat());
+                }
+                continue;
+            }
+            if("double".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putDouble(entry.getKey(), entry.getValue().getAsDouble());
+                }
+                continue;
+            }
+            if("byte".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putByte(entry.getKey(), entry.getValue().getAsByte());
+                }
+                continue;
+            }
+            if("short".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putShort(entry.getKey(), entry.getValue().getAsShort());
+                }
+                continue;
+            }
+            if("int_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putIntArray(entry.getKey(), ArrayUtils.toIntArray(entry.getValue().getAsJsonArray()));
+                }
+                continue;
+            }
+            if("short_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.put(entry.getKey(), asList(ArrayUtils.toShortArray(entry.getValue().getAsJsonArray())));
+                }
+                continue;
+            }
+            if("byte_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putByteArray(entry.getKey(), ArrayUtils.toByteArray(entry.getValue().getAsJsonArray()));
+                }
+                continue;
+            }
+            if("double_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.put(entry.getKey(), asList(ArrayUtils.toDoubleArray(entry.getValue().getAsJsonArray())));
+                }
+                continue;
+            }
+            if("float_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.put(entry.getKey(), asList(ArrayUtils.toFloatArray(entry.getValue().getAsJsonArray())));
+                }
+                continue;
+            }
+            if("long_array".equals(key)) {
+                for(Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                    tag.putLongArray(entry.getKey(), ArrayUtils.toLongArray(entry.getValue().getAsJsonArray()));
+                }
+                continue;
+            }
+            if("tags".equals(key)) {
+                for(Map.Entry<String, JsonElement> tags : value.getAsJsonObject().entrySet()) {
+                    tag.put(tags.getKey(), toNBT(tags.getValue().getAsJsonObject()));
+                }
+                continue;
+            }
+            if(value.isJsonObject()) {
+                tag.put(key, toNBT(value.getAsJsonObject()));
+                continue;
+            }
+            if(value.isJsonArray()) {
+                tag.put(key, toNBT(value.getAsJsonArray()));
+            }
+        }
+        return tag;
+    }
+
+    public static ListTag toNBT(JsonArray array) {
+        ListTag list = new ListTag();
+        for(int i = 0; i < array.size(); i++) {
+            JsonElement array_element = array.get(i);
+            if(array_element.isJsonObject()) {
+                list.add(toNBT(array_element.getAsJsonObject()));
+                continue;
+            }
+            if(array_element.isJsonArray()) {
+                list.add(toNBT(array_element.getAsJsonArray()));
+                continue;
+            }
+            if(array_element.isJsonPrimitive()) {
+                JsonPrimitive pri = array_element.getAsJsonPrimitive();
+                if(pri.isString()) {
+                    list.add(StringTag.valueOf(pri.getAsString()));
+                    continue;
+                }
+                if(pri.isBoolean()) {
+                    list.add(ByteTag.valueOf(pri.getAsBoolean()));
+                    continue;
+                }
+                if(pri.isNumber()) {
+                    Number num = pri.getAsNumber();
+                    if(num instanceof Integer) {
+                        list.add(IntTag.valueOf((Integer) num));
+                        continue;
+                    }
+                    if(num instanceof Double) {
+                        list.add(DoubleTag.valueOf((Double) num));
+                        continue;
+                    }
+                    if(num instanceof Byte) {
+                        list.add(ByteTag.valueOf((Byte) num));
+                        continue;
+                    }
+                    if(num instanceof Long) {
+                        list.add(LongTag.valueOf((Long) num));
+                        continue;
+                    }
+                    if(num instanceof Float) {
+                        list.add(FloatTag.valueOf((Float) num));
+                        continue;
+                    }
+                    if(num instanceof Short) {
+                        list.add(ShortTag.valueOf((Short) num));
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
     private static void addNumber(JsonObject obj, String key, JsonPrimitive pri) {
         Number num = pri.getAsNumber();
         if(num instanceof Integer) {
@@ -198,147 +464,5 @@ public class NBTUtils {
             }
             obj.get("long").getAsJsonObject().add(key, pri);
         }
-    }
-
-    private static JsonArray getNumberArray(StringTag str) {
-        String s = str.getAsString().toLowerCase();
-        if(s.contains("short_array@")) {
-            JsonArray num_array = new JsonArray();
-            String[] num_strs = custemSplitString("@", s);
-            if(num_strs.length >= 2) {
-                String nums = num_strs[1];
-                if(nums.contains(",")) {
-                    for (Short num : toNumberArray(Short.class, custemSplitString(",", nums))) {
-                        num_array.add(num);
-                    }
-                }else {
-                    num_array.add(Short.parseShort(nums));
-                }
-            }
-            return num_array;
-        }else if(s.contains("double_array@")) {
-            JsonArray num_array = new JsonArray();
-            String[] num_strs = custemSplitString("@", s);
-            if(num_strs.length >= 2) {
-                String nums = num_strs[1];
-                if(nums.contains(",")) {
-                    for (Double num : toNumberArray(Double.class, custemSplitString(",", nums))) {
-                        num_array.add(num);
-                    }
-                }else {
-                    num_array.add(Double.parseDouble(nums));
-                }
-            }
-            return num_array;
-        }else if(s.contains("float_array@")) {
-            JsonArray num_array = new JsonArray();
-            String[] num_strs = custemSplitString("@", s);
-            if(num_strs.length >= 2) {
-                String nums = num_strs[1];
-                if(nums.contains(",")) {
-                    for (Float num : toNumberArray(Float.class, custemSplitString(",", nums))) {
-                        num_array.add(num);
-                    }
-                }else {
-                    num_array.add(Float.parseFloat(nums));
-                }
-            }
-            return num_array;
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T extends Number> T[] toNumberArray(Class<T> num, String[] strs) {
-        if(num == Long.class) {
-            Long[] numss = new Long[strs.length];
-            for (int i = 0; i < strs.length; i++) {
-                numss[i] = Long.parseLong(strs[i]);
-            }
-            return (T[]) numss;
-        }else if(num == Integer.class) {
-            Integer[] numss = new Integer[strs.length];
-            for (int i = 0; i < strs.length; i++) {
-                numss[i] = Integer.parseInt(strs[i]);
-            }
-            return (T[]) numss;
-        }else if(num == Short.class) {
-            Short[] numss = new Short[strs.length];
-            for (int i = 0; i < strs.length; i++) {
-                numss[i] = Short.parseShort(strs[i]);
-            }
-            return (T[]) numss;
-        }else if(num == Byte.class) {
-            Byte[] numss = new Byte[strs.length];
-            for (int i = 0; i < strs.length; i++) {
-                numss[i] = Byte.parseByte(strs[i]);
-            }
-            return (T[]) numss;
-        }else if(num == Double.class) {
-            Double[] numss = new Double[strs.length];
-            for (int i = 0; i < strs.length; i++) {
-                numss[i] = Double.parseDouble(strs[i]);
-            }
-            return (T[]) numss;
-        }else if(num == Float.class) {
-            Float[] numss = new Float[strs.length];
-            for (int i = 0; i < strs.length; i++) {
-                numss[i] = Float.parseFloat(strs[i]);
-            }
-            return (T[]) numss;
-        }
-        return null;
-    }
-    private static <T> String toString(T[] args) {
-        if(args == null || args.length == 0) {
-            return "null";
-        }
-        List<String> l = Lists.newArrayList();
-        for(T i : args) {
-            l.add(i.toString());
-        }
-        return toString(l.toArray(new String[0]));
-    }
-
-    private static Short[] toArray(short[] args) {
-        Short[] arg = new Short[args.length];
-        for (int i = 0; i < arg.length; i++) {
-            arg[i] = args[i];
-        }
-        return arg;
-    }
-
-    private static Double[] toArray(double[] args) {
-        Double[] arg = new Double[args.length];
-        for (int i = 0; i < arg.length; i++) {
-            arg[i] = args[i];
-        }
-        return arg;
-    }
-
-    private static Float[] toArray(float[] args) {
-        Float[] arg = new Float[args.length];
-        for (int i = 0; i < arg.length; i++) {
-            arg[i] = args[i];
-        }
-        return arg;
-    }
-
-    private static String[] custemSplitString(String arg, String separator){
-        if(StringUtils.isEmpty(arg)) {
-            return new String[] {"null"};
-        }
-        return arg.split("" + separator);
-    }
-
-    private static String toString(String[] args) {
-        if(args == null || args.length == 0) {
-            return "null";
-        }
-        StringJoiner j = new StringJoiner(",");
-        for(String arg : args) {
-            j.add(arg);
-        }
-        return j.toString();
     }
 }

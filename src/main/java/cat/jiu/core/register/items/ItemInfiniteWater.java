@@ -1,5 +1,6 @@
 package cat.jiu.core.register.items;
 
+import cat.jiu.core.CoreMain;
 import cat.jiu.core.util.base.BaseItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
@@ -7,7 +8,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlockContainer;
@@ -16,16 +16,14 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
 public class ItemInfiniteWater extends BaseItem {
-    public ItemInfiniteWater() {
-        super(new Properties()
-                .stacksTo(1)
-                .rarity(Rarity.RARE)
-        );
+    public ItemInfiniteWater(Properties properties) {
+        super(properties, CoreMain.registrate());
+//        this.addLanguage("en_us", "Infinite Water");
+        this.addLanguage("zh_cn", "无限水");
         CauldronInteraction.EMPTY.put(this, ((pBlockState, pLevel, pBlockPos, pPlayer, pHand, pStack) -> {
             pLevel.setBlockAndUpdate(pBlockPos, Blocks.WATER_CAULDRON.defaultBlockState().setValue(BlockStateProperties.LEVEL_CAULDRON, 3));
             pLevel.playSound(pPlayer, pBlockPos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS);
@@ -34,7 +32,6 @@ public class ItemInfiniteWater extends BaseItem {
         }));
     }
 
-    @NotNull
     @Override
     public InteractionResult useOn(UseOnContext ctx) {
         boolean placed = false;
@@ -68,7 +65,7 @@ public class ItemInfiniteWater extends BaseItem {
     public net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(ItemStack stack, @Nullable net.minecraft.nbt.CompoundTag nbt) {
         return new net.minecraftforge.fluids.capability.templates.FluidHandlerItemStackSimple(stack, 1000){
             @Override
-            public @NotNull FluidStack getFluid() {
+            public FluidStack getFluid() {
                 return new FluidStack(Fluids.WATER, 1000);
             }
         };

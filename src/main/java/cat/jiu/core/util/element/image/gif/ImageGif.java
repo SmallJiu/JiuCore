@@ -1,5 +1,6 @@
 package cat.jiu.core.util.element.image.gif;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.GifDecoder;
 import com.google.gson.JsonArray;
@@ -25,43 +26,22 @@ public class ImageGif extends BaseGifImage {
     }
 
     @Override
-    public JsonObject write(JsonObject data) {
+    public IData.IMapData<?> write(IData.IMapData<?> data) {
         this.writeBaseInfo(data);
-        JsonArray array = new JsonArray();
+        IData.IListData<?> array = data.newList();
         for (int i = 0; i < this.getGif().getAllTextureCount(); i++) {
-            array.add(this.writeTo(new JsonObject(), this.getGif().getImage(i)));
+            array.putData(this.writeTo(data.newMap(), this.getGif().getImage(i)));
         }
-        data.add("frames", array);
+        data.putData("frames", array);
         return data;
     }
 
     @Override
-    public void read(JsonObject data) {
+    public void read(IData.IMapData<?> data) {
         this.readBaseInfo(data);
         this.setGif(new GifDecoder.GifTextures());
-        for (JsonElement element : data.getAsJsonArray("frames")) {
-            ((GifDecoder.GifTextures)this.getGif()).addTexture(new GifDecoder.SingletonGifTexture(this.readFrom(element.getAsJsonObject())));
-        }
-    }
-
-    @Override
-    public CompoundTag write(CompoundTag data) {
-        this.writeBaseInfo(data);
-        ListTag array = new ListTag();
-        for (int i = 0; i < this.getGif().getAllTextureCount(); i++) {
-            array.add(this.writeTo(new CompoundTag(), this.getGif().getImage(i)));
-        }
-        data.put("frames", array);
-        return data;
-    }
-
-    @Override
-    public void read(CompoundTag data) {
-        this.readBaseInfo(data);
-        this.setGif(new GifDecoder.GifTextures());
-        ListTag array = data.getList("frames", 10);
-        for (int i = 0; i < array.size(); i++) {
-            ((GifDecoder.GifTextures)this.getGif()).addTexture(new GifDecoder.SingletonGifTexture(this.readFrom(array.getCompound(i))));
-        }
+        data.getList("frames", IData.IMapData.class, data.emptyList()).foreach((i, element) ->
+            ((GifDecoder.GifTextures)this.getGif()).addTexture(new GifDecoder.SingletonGifTexture(this.readFrom(element.getAsMap())))
+        );
     }
 }

@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Deprecated(since = "1.20.1-0.0.1-2025.8.10")
 public interface ISerializable extends IJsonSerializable, INBTSerializable, ISQLSerializable {
 	@SuppressWarnings("unchecked")
 	default <T> T writeTo(Class<T> type) {

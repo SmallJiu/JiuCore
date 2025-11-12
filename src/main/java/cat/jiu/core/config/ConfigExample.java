@@ -1,6 +1,6 @@
 package cat.jiu.core.config;
 
-import cat.jiu.core.util.client.config.BaseConfig;
+import cat.jiu.core.util.base.BaseConfig;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.*;
@@ -46,7 +46,7 @@ public class ConfigExample extends BaseConfig {
 
         this.STRING_TYPE_IN_LIST = builder.worldRestart()
                 .comment("string type config,", "value can be any char.")
-                .define("string_type_inlist", ()->"this is a string in list.", k->Arrays.asList("123", "s").contains(String.valueOf(k)));
+                .define("string_type_inlist", "this is a string in list.", k->Arrays.asList("123", "s").contains(String.valueOf(k)));
 
         this.BOOLEAN_TYPE = builder.worldRestart()
                 .comment("boolean type config,", "value can be true or false")

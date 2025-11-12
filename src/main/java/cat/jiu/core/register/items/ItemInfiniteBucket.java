@@ -1,5 +1,6 @@
 package cat.jiu.core.register.items;
 
+import cat.jiu.core.CoreMain;
 import cat.jiu.core.util.base.BaseItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
@@ -11,7 +12,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -21,17 +21,15 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.fluids.FluidStack;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class ItemInfiniteBucket extends BaseItem {
-    public ItemInfiniteBucket() {
-        super(new Properties()
-                .stacksTo(1)
-                .rarity(Rarity.RARE)
-        );
+    public ItemInfiniteBucket(Properties properties) {
+        super(properties, CoreMain.registrate());
+//        this.addLanguage("en_us", "Infinite Bucket");
+        this.addLanguage("zh_cn", "无底桶");
         CauldronInteraction interaction = (BlockState pBlockState, Level pLevel, BlockPos pBlockPos, Player pPlayer, InteractionHand pHand, ItemStack pStack) -> {
             boolean flag = pBlockState.hasProperty(BlockStateProperties.LEVEL_CAULDRON) && pBlockState.getValue(BlockStateProperties.LEVEL_CAULDRON) == 3;
             SoundEvent sound = SoundEvents.BUCKET_FILL;
@@ -89,7 +87,7 @@ public class ItemInfiniteBucket extends BaseItem {
     public net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(ItemStack stack, @Nullable net.minecraft.nbt.CompoundTag nbt) {
         return new net.minecraftforge.fluids.capability.templates.FluidHandlerItemStackSimple(stack, 1000){
             @Override
-            public @NotNull FluidStack getFluid() {
+            public FluidStack getFluid() {
                 return FluidStack.EMPTY;
             }
         };

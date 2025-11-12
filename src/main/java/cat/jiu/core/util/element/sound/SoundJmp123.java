@@ -1,10 +1,10 @@
 package cat.jiu.core.util.element.sound;
 
+import cat.jiu.core.api.IData;
 import cat.jiu.core.api.element.ISound;
-import cat.jiu.core.util.JsonUtils;
-import cat.jiu.core.util.NBTUtils;
 import cat.jiu.core.util.Utils;
 import cat.jiu.core.util.client.AudioSystem;
+import cat.jiu.core.util.element.data.NBTData;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +28,20 @@ public class SoundJmp123 extends ISound.BaseSound {
         this.audio = audio;
         this.setSoundChannel(audio.getSoundChannel());
     }
+    @Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+    public SoundJmp123(CompoundTag data) {
+        this();
+        this.read(data);
+    }
+    @Deprecated(since = "1.20.1-0.0.1-2025.8.10")
+    public SoundJmp123(JsonObject data) {
+        this();
+        this.read(data);
+    }
+    public SoundJmp123(IData.IMapData<?> data) {
+        this();
+        this.read(data);
+    }
 
     public AudioSystem.Audio getAudio() {
         return audio;
@@ -41,7 +55,11 @@ public class SoundJmp123 extends ISound.BaseSound {
 
     @Override
     public SoundJmp123 copy() {
-        return new SoundJmp123(AudioSystem.Audio.create(this.getAudio().write(new CompoundTag())));
+        return new SoundJmp123(AudioSystem.Audio.create(this.getAudio().write(NBTData.map())));
+    }
+
+    public UUID getUUID() {
+        return uid;
     }
 
     @Override
@@ -57,7 +75,6 @@ public class SoundJmp123 extends ISound.BaseSound {
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public boolean isPlayed() {
         return !this.isStopped();
@@ -71,7 +88,6 @@ public class SoundJmp123 extends ISound.BaseSound {
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public boolean isPaused() {
         return AudioSystem.isPaused(this.uid);
@@ -85,27 +101,19 @@ public class SoundJmp123 extends ISound.BaseSound {
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public boolean isStopped() {
         return this.uid == null || AudioSystem.isClose(this.uid);
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public float getFloatDuration() {
         return this.isPlayed() ? AudioSystem.getFloatDuration(this.uid) : 0;
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public float getFloatElapse() {
         return this.isPlayed() ? AudioSystem.getFloatElapse(this.uid) : 0;
-    }
-
-    @Override
-    public float getCurrentSoundVolume() {
-        return this.isPlayed() ? AudioSystem.getVolume(this.uid) : -40;
     }
 
     @Override
@@ -130,28 +138,14 @@ public class SoundJmp123 extends ISound.BaseSound {
     }
 
     @Override
-    public JsonObject write(JsonObject data) {
-        super.write(data);
-        data.add("audio", this.audio.write(new JsonObject()));
-        return data;
+    public IData.IMapData<?> write(IData.IMapData<?> data) {
+        data.putData("audio", this.audio.write(data.newMap()));
+        return super.write(data);
     }
 
     @Override
-    public void read(JsonObject data) {
+    public void read(IData.IMapData<?> data) {
+        this.setAudio(AudioSystem.Audio.create(data.getMap("audio", data.emptyMap())));
         super.read(data);
-        this.setAudio(AudioSystem.Audio.create(JsonUtils.get(data, "audio", new JsonObject())));
-    }
-
-    @Override
-    public CompoundTag write(CompoundTag data) {
-        super.write(data);
-        data.put("file", this.audio.write(new CompoundTag()));
-        return data;
-    }
-
-    @Override
-    public void read(CompoundTag data) {
-        super.read(data);
-        this.setAudio(AudioSystem.Audio.create(NBTUtils.get(data, "audio", new CompoundTag())));
     }
 }

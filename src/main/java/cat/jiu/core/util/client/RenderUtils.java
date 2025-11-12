@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,6 +19,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
@@ -28,6 +32,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RenderUtils {
 
@@ -49,22 +54,24 @@ public class RenderUtils {
         int
                 x2 = x + width,
                 y2 = y + height;
+
         float
-                minU = (u + 0.0F) / (float)textureWidth,
-                maxU = (u + (float)uWidth) / (float)textureWidth,
-                minV = (v + 0.0F) / (float)textureHeight,
-                maxV = (v + (float)vHeight) / (float)textureHeight;
+                minU = (u + 0.0F) / textureWidth,
+                maxU = (u + (float)uWidth) / textureWidth,
+                minV = (v + 0.0F) / textureHeight,
+                maxV = (v + (float)vHeight) / textureHeight;
+
         int blitOffset = 0;
 
-        bindTexture(texture);
+        RenderSystem.setShaderTexture(0, texture);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         Matrix4f matrix4f = graphics.pose().last().pose();
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.vertex(matrix4f, (float) x, (float) y, (float)blitOffset).uv(minU, minV).endVertex();
-        bufferbuilder.vertex(matrix4f, (float) x, (float)y2, (float)blitOffset).uv(minU, maxV).endVertex();
+        bufferbuilder.vertex(matrix4f, (float)x, (float)y, (float)blitOffset).uv(minU, minV).endVertex();
+        bufferbuilder.vertex(matrix4f, (float)x, (float)y2, (float)blitOffset).uv(minU, maxV).endVertex();
         bufferbuilder.vertex(matrix4f, (float)x2, (float)y2, (float)blitOffset).uv(maxU, maxV).endVertex();
-        bufferbuilder.vertex(matrix4f, (float)x2, (float) y, (float)blitOffset).uv(maxU, minV).endVertex();
+        bufferbuilder.vertex(matrix4f, (float)x2, (float)y, (float)blitOffset).uv(maxU, minV).endVertex();
         BufferUploader.drawWithShader(bufferbuilder.end());
     }
     public static void draw(GuiGraphics graphics, int texture, int x, int y, int width, int height, float u, float v, int textureWidth, int textureHeight) {
@@ -156,17 +163,30 @@ public class RenderUtils {
     }
 
     public static List<FormattedCharSequence> split(String text, int maxLength, boolean useMcWarp) {
-        return split(Component.translatable(text), maxLength, useMcWarp);
+        return split(Component.literal(text), maxLength, useMcWarp);
     }
     public static List<FormattedCharSequence> split(Component text, int maxLength, boolean useMcWarp) {
         if (useMcWarp) {
             return getFontRenderer().split(text, maxLength);
         }else {
             List<FormattedCharSequence> list = new ArrayList<>();
-            StringBuilder sb = new StringBuilder();
-            for (char c : text.getString().toCharArray()) {
-                sb.append(c);
-                if (width(sb.toString()) >= maxLength) {
+            if (width(text) <= maxLength) {
+                list.add(FormattedCharSequence.forward(text.getString(), Style.EMPTY));
+            }else {
+                StringBuilder sb = new StringBuilder();
+                for (char c : text.getString().toCharArray()) {
+                    if (c == '\n') {
+                        list.add(FormattedCharSequence.forward(sb.toString(), Style.EMPTY));
+                        sb.setLength(0);
+                    } else {
+                        sb.append(c);
+                        if (width(sb.toString()) >= maxLength) {
+                            list.add(FormattedCharSequence.forward(sb.toString(), Style.EMPTY));
+                            sb.setLength(0);
+                        }
+                    }
+                }
+                if (!sb.isEmpty()) {
                     list.add(FormattedCharSequence.forward(sb.toString(), Style.EMPTY));
                 }
             }
@@ -194,6 +214,13 @@ public class RenderUtils {
             drawCenteredString(graphics, s, x, y, color, drawShadow);
             y += getFontHeight() + 1;
         }
+    }
+    public static void drawScaledString(GuiGraphics graphics, String text, int x, int y, int color, boolean drawShadow, float scale, float z) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, z);
+        graphics.pose().scale(scale, scale, 0);
+        drawString(graphics, text, x, y, color, drawShadow);
+        graphics.pose().popPose();
     }
 
     /**
@@ -278,6 +305,12 @@ public class RenderUtils {
             y += getFontHeight()+ marinDown;
         }
     }
+    public static void renderScrollingString(GuiGraphics guiGraphics, String text, int x, int y, int width, int height, int color, boolean drawShadow) {
+        renderScrollingComponent(guiGraphics, Component.literal(text), x, y, width, height, color, drawShadow);
+    }
+    public static void renderScrollingString(GuiGraphics guiGraphics, String text, int x, int y, int width, int color, boolean drawShadow) {
+        renderScrollingComponent(guiGraphics, Component.literal(text), x, y, width, getFontHeight(), color, drawShadow);
+    }
 
         // Component
 
@@ -300,6 +333,13 @@ public class RenderUtils {
             y += getFontHeight() + 1;
         }
     }
+    public static void drawScaledComponent(GuiGraphics graphics, Component text, int x, int y, int color, boolean drawShadow, float scale, float z) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, z);
+        graphics.pose().scale(scale, scale, 0);
+        drawComponent(graphics, text, x, y, color, drawShadow);
+        graphics.pose().popPose();
+    }
 
     public static void drawRightComponent(GuiGraphics graphics, Component text, int x, int y, int color, boolean drawShadow) {
         drawComponent(graphics, text, x - width(text), y, color, drawShadow);
@@ -313,6 +353,29 @@ public class RenderUtils {
         for (Component s : text) {
             drawComponent(graphics, s, x, y, color, drawShadow);
             y += getFontHeight() + 1;
+        }
+    }
+
+    public static void renderScrollingComponent(GuiGraphics guiGraphics, Component text, int x, int y, int width, int color, boolean drawShadow) {
+        renderScrollingComponent(guiGraphics, text, x, y, width, getFontHeight(), color, drawShadow);
+    }
+    public static void renderScrollingComponent(GuiGraphics guiGraphics, Component text, int x, int y, int width, int height, int color, boolean drawShadow) {
+        int maxX = x + width;
+        int maxY = y + height;
+        int textWidth = width(text);
+        int j = (y + maxY - 9) / 2 + 1;
+        int k = maxX - x;
+        if (textWidth > k) {
+            int l = textWidth - k;
+            double d0 = (double) Util.getMillis() / 1000.0D;
+            double d1 = Math.max((double)l * 0.5D, 3.0D);
+            double d2 = Math.sin((Math.PI / 2D) * Math.cos((Math.PI * 2D) * d0 / d1)) / 2.0D + 0.5D;
+            double d3 = Mth.lerp(d2, 0.0D, l);
+            guiGraphics.enableScissor(x, y, maxX, maxY);
+            guiGraphics.drawString(getFontRenderer(), text, x - (int)d3, j, color, drawShadow);
+            guiGraphics.disableScissor();
+        } else {
+            drawCenteredComponent(guiGraphics, text, (x + maxX) / 2, j, color, drawShadow);
         }
     }
 
@@ -378,6 +441,13 @@ public class RenderUtils {
             y += getFontHeight() + 1;
         }
     }
+    public static void drawScaledComponent(GuiGraphics graphics, FormattedCharSequence text, int x, int y, int color, boolean drawShadow, float scale, float z) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, z);
+        graphics.pose().scale(scale, scale, 0);
+        drawSequence(graphics, text, x, y, color, drawShadow);
+        graphics.pose().popPose();
+    }
 
     public static void drawRightSequence(GuiGraphics graphics, FormattedCharSequence text, int x, int y, int color, boolean drawShadow) {
         drawSequence(graphics, text, x - width(text), y, color, drawShadow);
@@ -391,6 +461,29 @@ public class RenderUtils {
         for (FormattedCharSequence s : text) {
             drawSequence(graphics, s, x, y, color, drawShadow);
             y += getFontHeight() + 1;
+        }
+    }
+
+    public static void renderScrollingSequence(GuiGraphics guiGraphics, FormattedCharSequence text, int x, int y, int width, int color, boolean drawShadow) {
+        renderScrollingSequence(guiGraphics, text, x, y, width, getFontHeight(), color, drawShadow);
+    }
+    public static void renderScrollingSequence(GuiGraphics guiGraphics, FormattedCharSequence text, int x, int y, int width, int height, int color, boolean drawShadow) {
+        int maxX = x + width;
+        int maxY = y + height;
+        int textWidth = width(text);
+        int j = (y + maxY - 9) / 2 + 1;
+        int k = maxX - x;
+        if (textWidth > k) {
+            int l = textWidth - k;
+            double d0 = (double) Util.getMillis() / 1000.0D;
+            double d1 = Math.max((double)l * 0.5D, 3.0D);
+            double d2 = Math.sin((Math.PI / 2D) * Math.cos((Math.PI * 2D) * d0 / d1)) / 2.0D + 0.5D;
+            double d3 = Mth.lerp(d2, 0.0D, l);
+            guiGraphics.enableScissor(x, y, maxX, maxY);
+            guiGraphics.drawString(getFontRenderer(), text, x - (int)d3, j, color, drawShadow);
+            guiGraphics.disableScissor();
+        } else {
+            drawCenteredSequence(guiGraphics, text, (x + maxX) / 2, j, color, drawShadow);
         }
     }
 
@@ -489,30 +582,33 @@ public class RenderUtils {
         vLine(graphics, x + width + 1, y, height, bgColor);
     }
 
-    public static void hLineGradient(GuiGraphics graphics, boolean anti, int pX1, int pY1, int pX2, int pY2, int pColorFrom, int pColorTo) {
+    public static void hLineGradient(GuiGraphics graphics, boolean anti, int x, int y, int width, int height, int colorFrom, int colorTo, Object nothing) {
+        hLineGradient(graphics, anti, x, y, x+width, y+height, colorFrom, colorTo);
+    }
+    public static void hLineGradient(GuiGraphics graphics, boolean anti, int x, int y, int x2, int y2, int colorFrom, int colorTo) {
         VertexConsumer pConsumer = graphics.bufferSource().getBuffer(RenderType.gui());
 
-        float fromAlpha = (float) FastColor.ARGB32.alpha(pColorFrom) / 255.0F;
-        float fromRed = (float)FastColor.ARGB32.red(pColorFrom) / 255.0F;
-        float fromGreen = (float)FastColor.ARGB32.green(pColorFrom) / 255.0F;
-        float fromBlue = (float)FastColor.ARGB32.blue(pColorFrom) / 255.0F;
-        float toAlpha = (float)FastColor.ARGB32.alpha(pColorTo) / 255.0F;
-        float toRed = (float)FastColor.ARGB32.red(pColorTo) / 255.0F;
-        float toGreen = (float)FastColor.ARGB32.green(pColorTo) / 255.0F;
-        float toBlue = (float)FastColor.ARGB32.blue(pColorTo) / 255.0F;
+        float fromAlpha = (float) FastColor.ARGB32.alpha(colorFrom) / 255.0F;
+        float fromRed = (float)FastColor.ARGB32.red(colorFrom) / 255.0F;
+        float fromGreen = (float)FastColor.ARGB32.green(colorFrom) / 255.0F;
+        float fromBlue = (float)FastColor.ARGB32.blue(colorFrom) / 255.0F;
+        float toAlpha = (float)FastColor.ARGB32.alpha(colorTo) / 255.0F;
+        float toRed = (float)FastColor.ARGB32.red(colorTo) / 255.0F;
+        float toGreen = (float)FastColor.ARGB32.green(colorTo) / 255.0F;
+        float toBlue = (float)FastColor.ARGB32.blue(colorTo) / 255.0F;
         Matrix4f matrix4f = graphics.pose().last().pose();
         // toRed, toGreen, toBlue, toAlpha
         // fromRed, fromGreen, fromBlue, fromAlpha
         if (anti) {
-            pConsumer.vertex(matrix4f, (float)pX1, (float)pY1, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
-            pConsumer.vertex(matrix4f, (float)pX1, (float)pY2, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
-            pConsumer.vertex(matrix4f, (float)pX2, (float)pY2, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
-            pConsumer.vertex(matrix4f, (float)pX2, (float)pY1, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x, (float)y, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x, (float)y2, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x2, (float)y2, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x2, (float)y, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
         }else {
-            pConsumer.vertex(matrix4f, (float)pX1, (float)pY1, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
-            pConsumer.vertex(matrix4f, (float)pX1, (float)pY2, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
-            pConsumer.vertex(matrix4f, (float)pX2, (float)pY2, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
-            pConsumer.vertex(matrix4f, (float)pX2, (float)pY1, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x, (float)y, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x, (float)y2, (float)0).color(fromRed, fromGreen, fromBlue, fromAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x2, (float)y2, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
+            pConsumer.vertex(matrix4f, (float)x2, (float)y, (float)0).color(toRed, toGreen, toBlue, toAlpha).endVertex();
         }
     }
 
@@ -523,6 +619,42 @@ public class RenderUtils {
     public static void tooltipBackground(GuiGraphics graphics, int x, int y, int width, int height, int bgColor, int borderColor, boolean centerWidth, boolean centerHeight) {
         TooltipRenderUtil.renderTooltipBackground(graphics, x - (centerWidth ? (width / 2) : 0), y - (centerHeight ? (height / 2) : 0), width, height, 0, bgColor, bgColor, borderColor, borderColor);
     }
+
+    public static void drawTextTooltip(GuiGraphics graphics, int mouseX, int mouseY, Collection<IText> tooltips) {
+        graphics.renderComponentTooltip(getFontRenderer(), tooltips.stream().map(IText::toTextComponent).toList(), mouseX, mouseY);
+    }
+    public static void drawTextTooltip(GuiGraphics graphics, int mouseX, int mouseY, IText... tooltips) {
+       graphics.renderComponentTooltip(getFontRenderer(), Arrays.stream(tooltips).map(IText::toTextComponent).toList(), mouseX, mouseY);
+    }
+    public static void drawStringTooltip(GuiGraphics graphics, int mouseX, int mouseY, Collection<String> tooltips) {
+        graphics.renderComponentTooltip(getFontRenderer(), tooltips.stream().map(Component::translatable).collect(Collectors.toUnmodifiableList()), mouseX, mouseY);
+    }
+    public static void drawStringTooltip(GuiGraphics graphics, int mouseX, int mouseY, String... tooltips) {
+       graphics.renderComponentTooltip(getFontRenderer(), Arrays.stream(tooltips).map(Component::translatable).collect(Collectors.toUnmodifiableList()), mouseX, mouseY);
+    }
+    public static void drawComponentTooltip(GuiGraphics graphics, int mouseX, int mouseY, List<Component> tooltips) {
+        graphics.renderComponentTooltip(getFontRenderer(), tooltips, mouseX, mouseY);
+    }
+    public static void drawComponentTooltip(GuiGraphics graphics, int mouseX, int mouseY, Component... tooltips) {
+       graphics.renderComponentTooltip(getFontRenderer(), Arrays.asList(tooltips), mouseX, mouseY);
+    }
+    public static void drawSequenceTooltip(GuiGraphics graphics, int mouseX, int mouseY, List<FormattedCharSequence> tooltips) {
+        graphics.renderTooltip(getFontRenderer(), tooltips, mouseX, mouseY);
+    }
+    public static void drawSequenceTooltip(GuiGraphics graphics, int mouseX, int mouseY, FormattedCharSequence... tooltips) {
+       graphics.renderTooltip(getFontRenderer(), Arrays.asList(tooltips), mouseX, mouseY);
+    }
+    public static void drawItemStackTooltip(GuiGraphics graphics, int mouseX, int mouseY, ItemStack stack, Collection<Component> otherTooltips) {
+        List<Component> components = stack.getTooltipLines(Minecraft.getInstance().player, Minecraft.getInstance().options.advancedItemTooltips ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL);
+        components.addAll(otherTooltips);
+        graphics.renderComponentTooltip(getFontRenderer(), components, mouseX, mouseY);
+    }
+    public static void drawItemStackTooltip(GuiGraphics graphics, int mouseX, int mouseY, ItemStack stack, Component... otherTooltips) {
+       List<Component> components = stack.getTooltipLines(Minecraft.getInstance().player, Minecraft.getInstance().options.advancedItemTooltips ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL);
+       components.addAll(Arrays.asList(otherTooltips));
+       graphics.renderComponentTooltip(getFontRenderer(), components, mouseX, mouseY);
+    }
+
 
     public static String toTitleCase(String s) {
        return toTitleCase(s, Locale.ROOT);
