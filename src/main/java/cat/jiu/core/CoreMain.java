@@ -87,6 +87,7 @@ public class CoreMain {
         new CommandJiuCore().register(event);
     }
 
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public void onClientCommandRegister(RegisterClientCommandsEvent event) {
         new BaseCommand.Builder("configUI")
