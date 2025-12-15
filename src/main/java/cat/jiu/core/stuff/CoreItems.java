@@ -1,9 +1,9 @@
-package cat.jiu.core.register;
+package cat.jiu.core.stuff;
 
 import cat.jiu.core.CoreMain;
-import cat.jiu.core.register.items.ItemInfiniteBucket;
-import cat.jiu.core.register.items.ItemInfiniteEnergy;
-import cat.jiu.core.register.items.ItemInfiniteWater;
+import cat.jiu.core.stuff.items.ItemInfiniteBucket;
+import cat.jiu.core.stuff.items.ItemInfiniteEnergy;
+import cat.jiu.core.stuff.items.ItemInfiniteWater;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;

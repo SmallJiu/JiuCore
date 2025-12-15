@@ -99,6 +99,17 @@ public class JsonUtils {
         return failBack;
     }
 
+    public static JsonElement parseString(String json) throws JsonSyntaxException {
+        return JsonParser.parseString(json);
+    }
+    public static JsonElement parseString(String json, JsonElement failback) {
+        try {
+            return parseString(json);
+        }catch (Exception e) {
+            return failback;
+        }
+    }
+
     public static <T extends JsonElement> T parse(File file) {
         return parse(file, DEFAULT_CHARSET);
     }

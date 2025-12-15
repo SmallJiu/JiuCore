@@ -1,4 +1,4 @@
-package cat.jiu.core.register.items;
+package cat.jiu.core.stuff.items;
 
 import cat.jiu.core.CoreMain;
 import cat.jiu.core.util.base.BaseItem;
@@ -11,7 +11,6 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;

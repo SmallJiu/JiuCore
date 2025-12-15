@@ -272,15 +272,7 @@ public class GifDecoder {
 		}
 		public BufferedTexture(int id, BufferedImage image, boolean useCalloc) {
 			this.id = id;
-			this.image = image;
-			this.pixels = new NativeImage(image.getWidth(), image.getHeight(), useCalloc);
-
-			for (int y = 0; y < image.getHeight(); y++) {
-				for (int x = 0; x < image.getWidth(); x++) {
-					int abgr = image.getRGB(x, y);
-					this.getPixels().setPixelRGBA(x, y, (abgr & 0xFF00FF00) | ((abgr & 0xFF) << 16) | ((abgr >> 16) & 0xFF));
-				}
-			}
+			this.setImage(image, useCalloc);
 
 			if (!RenderSystem.isOnRenderThread()) {
 				RenderSystem.recordRenderCall(() -> {
@@ -301,7 +293,7 @@ public class GifDecoder {
 				this.bind();
 				this.pixels.upload(0, 0, 0, false);
 			}else {
-				LOGGER.warn("Trying to upload disposed texture {}", this.getId());
+				LOGGER.warn("Trying to upload disposed texture: {}", this.getId());
 			}
 		}
 
@@ -316,6 +308,12 @@ public class GifDecoder {
 		public void setImage(BufferedImage image, boolean useCalloc) {
 			this.image = image;
 			this.setPixels(new NativeImage(image.getWidth(), image.getHeight(), useCalloc));
+			for (int y = 0; y < image.getHeight(); y++) {
+				for (int x = 0; x < image.getWidth(); x++) {
+					int abgr = image.getRGB(x, y);
+					this.getPixels().setPixelRGBA(x, y, (abgr & 0xFF00FF00) | ((abgr & 0xFF) << 16) | ((abgr >> 16) & 0xFF));
+				}
+			}
 		}
 		public void setPixels(NativeImage pPixels) {
 			if (this.pixels != null) {

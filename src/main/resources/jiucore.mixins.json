@@ -6,7 +6,7 @@
   "refmap": "jiucore.mixin.refmap.json",
   "plugin": "cat.jiu.core.mixin.Configuration",
   "mixins": [
-    "MixinRegistrateAbstractBuilder"
+//    "MixinRegistrateAbstractBuilder"
   ],
   "client": [
     "MixinSoundManager",

@@ -40,30 +40,49 @@ public interface ICommand extends Command<CommandSourceStack>, Lambdas.Function2
     int execute(MinecraftServer server, CommandSource sender, String[] args, CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException;
 
     default LiteralCommandNode<CommandSourceStack> register(RegisterCommandsEvent event) {
-        LiteralCommandNode<CommandSourceStack> node = event.getDispatcher().register(this.apply(event, Commands.literal(this.getName()).requires(this::checkPermission)));
+        return this.register(event, false);
+    }
+    default LiteralCommandNode<CommandSourceStack> register(RegisterCommandsEvent event, boolean childrenCommand) {
+        LiteralArgumentBuilder<CommandSourceStack> node = this.apply(event, Commands.literal(this.getName()).requires(this::checkPermission));
+        LiteralCommandNode<CommandSourceStack> result = childrenCommand ? node.build() : event.getDispatcher().register(node);
         List<String> alias = this.getAliases();
         if(alias!=null && !alias.isEmpty()){
-            alias.forEach(alia->event.getDispatcher().register(Commands.literal(alia).redirect(node)));
+            alias.forEach(alia->event.getDispatcher().register(Commands.literal(alia).redirect(result)));
         }
-        return node;
+        return result;
     }
 
-    /**
-     * @deprecated {@link #register(RegisterCommandsEvent)}
-     */
     @Deprecated
     default LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralCommandNode<CommandSourceStack> node = dispatcher.register(this.apply(Commands.literal(this.getName()).requires(this::checkPermission)));
+        return this.register(dispatcher, false);
+    }
+    /**
+     * @deprecated {@link #register(RegisterCommandsEvent, boolean)}
+     */
+    @Deprecated
+    default LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, boolean childrenCommand) {
+        LiteralArgumentBuilder<CommandSourceStack> node = this.apply(Commands.literal(this.getName()).requires(this::checkPermission));
+        LiteralCommandNode<CommandSourceStack> result = childrenCommand ? node.build() : dispatcher.register(node);
         List<String> alias = this.getAliases();
         if(alias!=null && !alias.isEmpty()){
-            alias.forEach(alia->dispatcher.register(Commands.literal(alia).redirect(node)));
+            alias.forEach(alia->dispatcher.register(Commands.literal(alia).redirect(result)));
         }
-        return node;
+        return result;
     }
 
     @OnlyIn(Dist.CLIENT)
-    default void registerForClient(RegisterClientCommandsEvent event) {
-        event.getDispatcher().register(this.apply(Commands.literal(this.getName()).requires(this::checkPermission)));
+    default LiteralCommandNode<CommandSourceStack> registerForClient(RegisterClientCommandsEvent event) {
+        return this.registerForClient(event, false);
+    }
+    @OnlyIn(Dist.CLIENT)
+    default LiteralCommandNode<CommandSourceStack> registerForClient(RegisterClientCommandsEvent event, boolean childrenCommand) {
+        LiteralArgumentBuilder<CommandSourceStack> node = this.apply(Commands.literal(this.getName()).requires(this::checkPermission));
+        LiteralCommandNode<CommandSourceStack> result = childrenCommand ? node.build() : event.getDispatcher().register(node);
+        List<String> alias = this.getAliases();
+        if(alias!=null && !alias.isEmpty()){
+            alias.forEach(alia->event.getDispatcher().register(Commands.literal(alia).redirect(result)));
+        }
+        return result;
     }
 
     @Override

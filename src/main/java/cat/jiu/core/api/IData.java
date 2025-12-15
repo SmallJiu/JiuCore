@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public interface IData<T> {
+    char NULL_CHAR = '\0';
     static IData<? extends Tag> create(Tag data) {
         if (data instanceof CompoundTag) {
             return NBTData.map((CompoundTag) data);
@@ -45,7 +46,7 @@ public interface IData<T> {
 
     T getData();
     default String asString() {
-        return this.getData().toString();
+        return String.valueOf(this.getData());
     }
 
     default boolean isMap(){
@@ -91,6 +92,74 @@ public interface IData<T> {
             throw new IllegalStateException("Not a null:" + this.asString());
         }
     }
+
+    default byte getAsByte(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsByte();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default short getAsShort(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsShort();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default int getAsInt(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsInt();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default long getAsLong(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsLong();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default float getAsFloat(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsFloat();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default double getAsDouble(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsDouble();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default Number getAsNumber() {
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsNumber();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default char getAsChar(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsChar();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default String getAsString(){
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsString();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default boolean getAsBoolean() {
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsBoolean();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+    default ResourceLocation getAsLocation() {
+        if (this.isPrimitive()) {
+            return this.getAsPrimitive().getAsLocation();
+        }
+        throw new IllegalStateException("Not a primitive:" + this.asString());
+    }
+
     
     static <T> T[] getArray(IMapData<?> mapData, String key, Class<T> typeClass, Function<Integer, T[]> newArray, Lambdas.Function2<IListData<?>, Integer, T> elementGetter, T[] failback) {
         if (mapData.isEmpty()) {
@@ -287,6 +356,31 @@ public interface IData<T> {
             return this.getNumberArray(key, ArrayUtils.EMPTY_NUMBER_ARRAY);
         }
 
+        default char getChar(String key) {
+            return this.getChar(key, NULL_CHAR);
+        }
+        default char getChar(String key, char failback){
+            String s = this.getString(key, null);
+            if(s == null || s.isEmpty()){
+                return failback;
+            }
+            return s.charAt(0);
+        }
+        default char[] getCharArray(String key) {
+            return this.getCharArray(key, ArrayUtils.EMPTY_CHAR_ARRAY);
+        }
+        default char[] getCharArray(String key, char[] failback) {
+            IListData<?> list = this.getList(key, String.class, null);
+            if (list == null) {
+                return failback;
+            }
+            char[] result = new char[list.size()];
+            list.foreach((i,data)->
+                result[i] = data.getAsPrimitive().getAsChar()
+            );
+            return result;
+        }
+
         String getString(String key, String failback);
         default String getString(String key) {
             return this.getString(key, "");
@@ -450,6 +544,17 @@ public interface IData<T> {
         default IMapData<T> putData(String key, boolean[] data) {
             IListData<?> list = this.newList();
             for (boolean datum : data) {
+                list.putData(datum);
+            }
+            return this.putData(key, list);
+        }
+
+        default IMapData<T> putData(String key, char data){
+            return this.putData(key, String.valueOf(data));
+        }
+        default IMapData<T> putData(String key, char[] data) {
+            IListData<?> list = this.newList();
+            for (char datum : data) {
                 list.putData(datum);
             }
             return this.putData(key, list);
@@ -647,6 +752,31 @@ public interface IData<T> {
             return this.getNumberArray(index, ArrayUtils.EMPTY_NUMBER_ARRAY);
         }
 
+        default char getChar(int index) {
+            return this.getChar(index, NULL_CHAR);
+        }
+        default char getChar(int index, char failback) {
+            String s = this.getString(index, null);
+            if (s == null || s.isEmpty()) {
+                return failback;
+            }
+            return s.charAt(0);
+        }
+        default char[] getCharArray(int index) {
+            return this.getCharArray(index, ArrayUtils.EMPTY_CHAR_ARRAY);
+        }
+        default char[] getCharArray(int index, char[] failback) {
+            IListData<?> list = this.getList(index, String.class, null);
+            if (list == null) {
+                return failback;
+            }
+            char[] result = new char[list.size()];
+            list.foreach((i,data)->
+                    result[i] = data.getAsPrimitive().getAsChar()
+            );
+            return result;
+        }
+
         String getString(int index, String failback);
         default String getString(int index) {
             return this.getString(index, "");
@@ -840,6 +970,17 @@ public interface IData<T> {
             return this.putData(list);
         }
 
+        default IListData<T> putData(char data) {
+            return this.putData(String.valueOf(data));
+        }
+        default IListData<T> putData(char[] data) {
+            IListData<?> list = this.newList();
+            for (char datum : data) {
+                list.putData(datum);
+            }
+            return this.putData(list);
+        }
+
         IListData<T> putData(String data);
         default IListData<T> putData(String[] data) {
             IListData<?> list = this.newList();
@@ -875,6 +1016,9 @@ public interface IData<T> {
                 other.setData(this.getAsArray());
             }
             return other;
+        }
+        default IPrimitiveData<T> setData(char data) {
+            return this.setData(String.valueOf(data));
         }
         IPrimitiveData<T> setData(String data);
         IPrimitiveData<T> setData(boolean data);
@@ -961,6 +1105,20 @@ public interface IData<T> {
         boolean getAsBoolean();
         boolean[] getAsBooleanArray();
 
+		default boolean isChar() {
+            return this.isString();
+        }
+		default char getAsChar() {
+            if (this.isString()) {
+                String s = this.getAsString();
+                if (!s.isEmpty()) {
+                    return s.charAt(0);
+                }
+            }
+            return NULL_CHAR;
+        }
+		char[] getAsCharArray();
+
         boolean isString();
         String getAsString();
         String[] getAsStringArray();
@@ -984,6 +1142,7 @@ public interface IData<T> {
     interface IMaker {
         IMapData<?> emptyMap();
         IListData<?> emptyList();
+
         IMapData<?> newMap();
         IListData<?> newList();
         IPrimitiveData<?> newPrimitive();
@@ -991,9 +1150,9 @@ public interface IData<T> {
 
         default IData<?> castData(IData<?> other) {
             if (other instanceof IMapData) {
-                return ((IMapData<?>) other).transfer(this.newMap());
+                return other.getAsMap().transfer(this.newMap());
             }else if (other instanceof IListData) {
-                return ((IListData<?>) other).transfer(this.newList());
+                return other.getAsList().transfer(this.newList());
             }else if (other instanceof IPrimitiveData) {
                 return other.getAsPrimitive().transfer(this.newPrimitive());
             }

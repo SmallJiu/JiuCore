@@ -5,11 +5,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -155,46 +155,22 @@ public class RenderUtils {
         return getFontRenderer().width(s);
     }
 
+    @Deprecated
     public static MutableComponent copyOnClickedText(Component component) {
-        String pText = component.getString();
-        return ComponentUtils.wrapInSquareBrackets(Component.literal(pText).withStyle((style) ->
-            style.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, pText)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CommonComponents.GUI_COPY_LINK_TO_CLIPBOARD)).withInsertion(pText)
-        ));
+        return TextUtils.copyOnClickedText(component);
     }
 
+    @Deprecated
     public static List<FormattedCharSequence> split(String text, int maxLength, boolean useMcWarp) {
-        return split(Component.literal(text), maxLength, useMcWarp);
-    }
-    public static List<FormattedCharSequence> split(Component text, int maxLength, boolean useMcWarp) {
-        if (useMcWarp) {
-            return getFontRenderer().split(text, maxLength);
-        }else {
-            List<FormattedCharSequence> list = new ArrayList<>();
-            if (width(text) <= maxLength) {
-                list.add(FormattedCharSequence.forward(text.getString(), Style.EMPTY));
-            }else {
-                StringBuilder sb = new StringBuilder();
-                for (char c : text.getString().toCharArray()) {
-                    if (c == '\n') {
-                        list.add(FormattedCharSequence.forward(sb.toString(), Style.EMPTY));
-                        sb.setLength(0);
-                    } else {
-                        sb.append(c);
-                        if (width(sb.toString()) >= maxLength) {
-                            list.add(FormattedCharSequence.forward(sb.toString(), Style.EMPTY));
-                            sb.setLength(0);
-                        }
-                    }
-                }
-                if (!sb.isEmpty()) {
-                    list.add(FormattedCharSequence.forward(sb.toString(), Style.EMPTY));
-                }
-            }
-            return list;
-        }
+        return TextUtils.split(text, maxLength, useMcWarp);
     }
 
-        // string
+    @Deprecated
+    public static List<FormattedCharSequence> split(Component text, int maxLength, boolean useMcWarp) {
+        return TextUtils.split(text, maxLength, useMcWarp);
+    }
+
+    // string
 
     public static void drawString(GuiGraphics graphics, String text, int x, int y, int color, boolean drawShadow) {
         graphics.drawString(getFontRenderer(), text, x, y, color, drawShadow);
@@ -548,6 +524,9 @@ public class RenderUtils {
    public static void vLine(GuiGraphics graphics, int x, int y, int height, int color) {
         graphics.vLine(x, y, y + height, color);
    }
+    public static void hLine(GuiGraphics graphics, EditBox box, int color) {
+        hLine(graphics, box.getX(), box.getY() + box.getHeight() - 2, box.getWidth(), color);
+    }
 
    public static void fillCentered(GuiGraphics graphics, int x, int y, int width, int height, int color1, int color2) {
         fill(graphics, x - width/2, y, width, height, color1, color2);

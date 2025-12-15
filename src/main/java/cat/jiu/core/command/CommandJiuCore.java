@@ -5,22 +5,17 @@ import cat.jiu.core.api.IData;
 import cat.jiu.core.util.DataUtils;
 import cat.jiu.core.util.DevMessageEvent;
 import cat.jiu.core.util.JsonUtils;
-import cat.jiu.core.util.SideProxy;
 import cat.jiu.core.util.base.BaseCommand;
-import cat.jiu.core.util.client.config.GuiConfig;
+import cat.jiu.core.util.client.TextUtils;
 import cat.jiu.core.util.element.data.JsonData;
 import cat.jiu.core.util.element.data.NBTData;
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.client.Minecraft;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -62,7 +57,7 @@ public class CommandJiuCore extends BaseCommand.BaseTree {
                                             String modid = ctx.getArgument("modid", String.class);
                                             ModFileInfo mod = FMLLoader.getLoadingModList().getModFileById(modid);
                                             if (mod!=null) {
-                                                sender.sendSystemMessage(Component.literal("Mod: " + modid + ", File: " + mod.getFile().getFileName() + "."));
+                                                sender.sendSystemMessage(Component.literal("Mod: " + modid + ", File: " + mod.getFile().getFileName()));
                                             }else {
                                                 sender.sendSystemMessage(Component.literal("Not found mod."));
                                             }
@@ -74,15 +69,19 @@ public class CommandJiuCore extends BaseCommand.BaseTree {
                                         .argument((cmd, node)->node.then(Commands.argument("package", StringArgumentType.string()).executes(cmd)))
                                         .execute((server, sender, args, ctx) -> {
                                             String mod_package = ctx.getArgument("package", String.class);
+                                            boolean hasResult = false;
                                             for (ModInfo mod : FMLLoader.getLoadingModList().getMods()) {
                                                 for (String aPackage : mod.getOwningFile().getFile().getSecureJar().getPackages()) {
                                                     if (aPackage.contains(mod_package)) {
-                                                        sender.sendSystemMessage(Component.literal("Mod: " + mod.getModId() + ", File: " + mod.getOwningFile().getFile().getFileName() + "."));
-                                                        return Command.SINGLE_SUCCESS;
+                                                        sender.sendSystemMessage(Component.literal("Mod: " + mod.getModId() + ", File: " + mod.getOwningFile().getFile().getFileName()));
+                                                        hasResult = true;
+                                                        break;
                                                     }
                                                 }
                                             }
-                                            sender.sendSystemMessage(Component.literal("Not found mod."));
+                                            if (!hasResult) {
+                                                sender.sendSystemMessage(Component.literal("Not found mod."));
+                                            }
                                             return Command.SINGLE_SUCCESS;
                                         })
                                         .build())
@@ -94,7 +93,9 @@ public class CommandJiuCore extends BaseCommand.BaseTree {
                                     BlockEntity te = ctx.getSource().getLevel().getBlockEntity(BlockPosArgument.getBlockPos(ctx, "pos"));
                                     if (te != null) {
                                         sender.sendSystemMessage(Component.literal("Block entity class: " + te.getClass()));
-                                        sender.sendSystemMessage(Component.literal("Block entity data: " + te.serializeNBT()));
+                                        sender.sendSystemMessage(Component.literal("Block entity data: ")
+                                                .append(TextUtils.copyOnClickedText(Component.literal(te.serializeNBT()+"")))
+                                        );
                                     }else {
                                         sender.sendSystemMessage(Component.literal("Not found Block Entity."));
                                     }

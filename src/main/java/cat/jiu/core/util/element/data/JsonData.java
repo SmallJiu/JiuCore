@@ -404,10 +404,8 @@ public class JsonData {
             if (this.isEmpty()) {
                 return failback;
             }
-            if (this.containsKey(index)) {
-                return this.getData().get(index);
-            }
-            return failback;
+            JsonElement element = this.getData().get(index);
+            return element != null ? element : failback;
         }
 
         @Override
@@ -486,10 +484,8 @@ public class JsonData {
             if (this.isEmpty()) {
                 return failback;
             }
-            if (this.containsKey(index)) {
-                return this.getData().get(index).getAsBigInteger();
-            }
-            return failback;
+            JsonElement element = this.getData().get(index);
+            return element instanceof JsonPrimitive ? element.getAsBigInteger() : failback;
         }
 
         @Override
@@ -497,10 +493,8 @@ public class JsonData {
             if (this.isEmpty()) {
                 return failback;
             }
-            if (this.containsKey(index)) {
-                return this.getData().get(index).getAsBigDecimal();
-            }
-            return failback;
+            JsonElement element = this.getData().get(index);
+            return element instanceof JsonPrimitive ? element.getAsBigDecimal() : failback;
         }
 
         @Override
@@ -622,6 +616,7 @@ public class JsonData {
         public PrimitiveData setData(IListData<?> data) {
             this.data = new JsonArray();
             data.transfer(list(this.getData().getAsJsonArray()));
+            this.cacheList = list(this.getData().getAsJsonArray());
             return this;
         }
 
@@ -635,10 +630,13 @@ public class JsonData {
                     this.getData().getAsJsonArray().add((Boolean) t);
                 }else if (t instanceof Number) {
                     this.getData().getAsJsonArray().add((Number) t);
+                }else if (t instanceof Character) {
+                    this.getData().getAsJsonArray().add((Character) t);
                 }else {
                     this.getData().getAsJsonArray().add(String.valueOf(t));
                 }
             }
+            this.cacheList = list(this.getData().getAsJsonArray());
             return this;
         }
 
@@ -752,10 +750,7 @@ public class JsonData {
 
         @Override
         public boolean isBoolean() {
-            if (this.getData() instanceof JsonPrimitive) {
-                return this.getData().getAsJsonPrimitive().isBoolean();
-            }
-            return false;
+            return this.getData() instanceof JsonPrimitive && this.getData().getAsJsonPrimitive().isBoolean();
         }
 
         @Override
@@ -764,6 +759,14 @@ public class JsonData {
                 return ArrayUtils.toArray(ArrayUtils.asArray(this.getData().getAsJsonArray(), Boolean[]::new, JsonElement::getAsBoolean, ArrayUtils.EMPTY_BOOLEAN_ARRAY_));
             }
             return ArrayUtils.EMPTY_BOOLEAN_ARRAY;
+        }
+
+        @Override
+        public char[] getAsCharArray() {
+            if (this.getData() instanceof JsonArray) {
+                return ArrayUtils.toArray(ArrayUtils.asArray(this.getData().getAsJsonArray(), Character[]::new, JsonElement::getAsCharacter, ArrayUtils.EMPTY_CHAR_ARRAY_));
+            }
+            return ArrayUtils.EMPTY_CHAR_ARRAY;
         }
 
         @Override
@@ -776,10 +779,7 @@ public class JsonData {
 
         @Override
         public boolean isString() {
-            if (this.getData() instanceof JsonPrimitive) {
-                return this.getData().getAsJsonPrimitive().isString();
-            }
-            return false;
+            return this.getData() instanceof JsonPrimitive && this.getData().getAsJsonPrimitive().isString();
         }
 
         @Override
@@ -790,10 +790,14 @@ public class JsonData {
             return ArrayUtils.EMPTY_STRING_ARRAY;
         }
 
+        protected IData.IListData<?> cacheList;
         @Override
-        public IListData<?> getAsArray() {
+        public IData.IListData<?> getAsArray() {
             if (this.isArray()) {
-                return list(this.getData().getAsJsonArray());
+                if (this.cacheList == null) {
+                    this.cacheList = list(this.getData().getAsJsonArray());
+                }
+                return this.cacheList;
             }
             return EMPTY_LIST;
         }

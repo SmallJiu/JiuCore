@@ -1,4 +1,4 @@
-package cat.jiu.core.register.items;
+package cat.jiu.core.stuff.items;
 
 import cat.jiu.core.CoreMain;
 import cat.jiu.core.util.base.BaseItem;

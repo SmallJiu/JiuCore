@@ -58,7 +58,7 @@ public class BaseItem extends Item implements IStuff {
     }
 
     private Consumer<RegisterCapabilitiesEvent> onCapabilityRegister;
-    public <T extends IStuff> T  registerCapability(Consumer<RegisterCapabilitiesEvent> onCapabilityRegister) {
+    public <T extends IStuff> T registerCapability(Consumer<RegisterCapabilitiesEvent> onCapabilityRegister) {
         this.onCapabilityRegister = onCapabilityRegister;
         return this.self();
     }

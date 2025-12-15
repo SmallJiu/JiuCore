@@ -1,4 +1,4 @@
-package cat.jiu.core.register.items;
+package cat.jiu.core.stuff.items;
 
 import cat.jiu.core.CoreMain;
 import cat.jiu.core.util.base.BaseItem;
@@ -28,8 +28,8 @@ import java.util.Optional;
 public class ItemInfiniteBucket extends BaseItem {
     public ItemInfiniteBucket(Properties properties) {
         super(properties, CoreMain.registrate());
-//        this.addLanguage("en_us", "Infinite Bucket");
         this.addLanguage("zh_cn", "无底桶");
+
         CauldronInteraction interaction = (BlockState pBlockState, Level pLevel, BlockPos pBlockPos, Player pPlayer, InteractionHand pHand, ItemStack pStack) -> {
             boolean flag = pBlockState.hasProperty(BlockStateProperties.LEVEL_CAULDRON) && pBlockState.getValue(BlockStateProperties.LEVEL_CAULDRON) == 3;
             SoundEvent sound = SoundEvents.BUCKET_FILL;

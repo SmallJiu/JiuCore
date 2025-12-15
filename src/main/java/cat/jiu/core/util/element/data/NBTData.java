@@ -853,6 +853,7 @@ public class NBTData {
         public PrimitiveData setData(IListData<?> data) {
             this.data = new ListTag();
             data.transfer(list((CollectionTag<?>) this.getData()));
+            this.cacheList = list((CollectionTag<?>) this.getData());
             return this;
         }
 
@@ -900,7 +901,11 @@ public class NBTData {
                     for (Object t : data) {
                         ((ListTag)this.getData()).add((Tag) t);
                     }
-                } else if (data[0] instanceof String) {
+                }else if (data[0] instanceof String) {
+                    for (Object t : data) {
+                        ((ListTag)this.getData()).add(StringTag.valueOf(String.valueOf(t)));
+                    }
+                }else if (data[0] instanceof Character) {
                     for (Object t : data) {
                         ((ListTag)this.getData()).add(StringTag.valueOf(String.valueOf(t)));
                     }
@@ -908,7 +913,7 @@ public class NBTData {
                     for (Object t : data) {
                         ((ListTag)this.getData()).add(ByteTag.valueOf((Boolean) t));
                     }
-                } else if (data[0] instanceof Number) {
+                }else if (data[0] instanceof Number) {
                     Number n = (Number)data[0];
                     if (n instanceof Byte) {
                         for (Object t : data) {
@@ -941,6 +946,7 @@ public class NBTData {
                     }
                 }
             }
+            this.cacheList = list((CollectionTag<?>) this.getData());
             return this;
         }
 
@@ -1094,6 +1100,14 @@ public class NBTData {
         }
 
         @Override
+        public char[] getAsCharArray() {
+            if (this.getData() instanceof ListTag) {
+                return ArrayUtils.toArray(ArrayUtils.asArray((ListTag) this.getData(), Character[]::new, tag -> tag instanceof StringTag ? tag.getAsString().charAt(0) : IData.NULL_CHAR, ArrayUtils.EMPTY_CHAR_ARRAY_));
+            }
+            return ArrayUtils.EMPTY_CHAR_ARRAY;
+        }
+
+        @Override
         public boolean isString() {
             return this.getData() instanceof StringTag;
         }
@@ -1122,10 +1136,14 @@ public class NBTData {
             return ArrayUtils.EMPTY_STRING_ARRAY;
         }
 
+        protected IData.IListData<?> cacheList;
         @Override
-        public IListData<?> getAsArray() {
+        public IData.IListData<?> getAsArray() {
             if (this.isArray()) {
-                return list((CollectionTag<?>) this.data);
+                if (this.cacheList == null) {
+                    this.cacheList = list((CollectionTag<?>) this.getData());
+                }
+                return this.cacheList;
             }
             return EMPTY_LIST;
         }

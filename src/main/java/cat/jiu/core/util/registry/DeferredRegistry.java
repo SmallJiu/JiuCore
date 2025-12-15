@@ -1,10 +1,14 @@
 package cat.jiu.core.util.registry;
 
+import cat.jiu.core.api.IData;
+import cat.jiu.core.util.element.data.JsonData;
+import cat.jiu.core.util.element.data.NBTData;
 import com.google.gson.JsonObject;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryObject;
@@ -15,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class DeferredRegistry<V> {
     public static <K, V> Function<K, RegistryObject<V>> failBack(ResourceLocation typeID) {
@@ -27,8 +32,7 @@ public class DeferredRegistry<V> {
     protected final DeferredRegister<V> registry;
     protected final ConcurrentHashMap<String, RegistryObject<V>> entries = new ConcurrentHashMap<>();
     protected Function<String, RegistryObject<V>> failBack;
-    protected Function<CompoundTag, String> nbtKeyGetter;
-    protected Function<JsonObject, String> jsonKeyGetter;
+    protected Function<IData.IMapData<?>, String> keyGetter;
 
     public DeferredRegistry(DeferredRegister<V> register) {
         this.registry = register;
@@ -46,14 +50,13 @@ public class DeferredRegistry<V> {
     public void init(){}
 
     public DeferredRegistry<V> setKeyGetter() {
-        return this.setKeyGetter(
-                data-> data.getString(StaticRegistry.DEFAULT_ID_TAG_NAME),
-                data-> data.get(StaticRegistry.DEFAULT_ID_TAG_NAME).getAsString()
-        );
+        return this.setKeyGetter(StaticRegistry.DEFAULT_ID_TAG_NAME);
     }
-    public DeferredRegistry<V> setKeyGetter(Function<CompoundTag, String> nbtKeyGetter, Function<JsonObject, String> jsonKeyGetter) {
-        this.nbtKeyGetter = nbtKeyGetter;
-        this.jsonKeyGetter = jsonKeyGetter;
+    public DeferredRegistry<V> setKeyGetter(String idName) {
+        return setKeyGetter(idName, "");
+    }
+    public DeferredRegistry<V> setKeyGetter(String idName, String failback) {
+        this.keyGetter = data -> data.getString(idName, failback);
         return this;
     }
 
@@ -62,15 +65,18 @@ public class DeferredRegistry<V> {
         return this;
     }
 
+    public void registerBus(IEventBus bus) {
+        this.registry.register(bus);
+    }
     public DeferredRegistry<V> register(Consumer<DeferredRegistry<V>> register) {
         register.accept(this);
         return this;
     }
-    public RegistryObject<V> register(String name, V instance) {
+    public RegistryObject<V> register(String name, Supplier<V> instance) {
         if (this.entries.containsKey(name)) {
             return this.entries.get(name);
         }
-        RegistryObject<V> object = this.registry.register(name, ()->instance);
+        RegistryObject<V> object = this.registry.register(name, instance);
         this.entries.put(name, object);
         return object;
     }
@@ -85,15 +91,16 @@ public class DeferredRegistry<V> {
         }
         return this.failBack.apply(name);
     }
+
     public RegistryObject<V> get(CompoundTag data) {
-        if (this.nbtKeyGetter != null) {
-            return this.get(this.nbtKeyGetter.apply(data));
-        }
-        return null;
+        return this.get(NBTData.map(data));
     }
     public RegistryObject<V> get(JsonObject data) {
-        if (this.jsonKeyGetter != null) {
-            return this.get(this.jsonKeyGetter.apply(data));
+        return this.get(JsonData.map(data));
+    }
+    public RegistryObject<V> get(IData.IMapData<?> data) {
+        if (this.keyGetter != null) {
+            return this.get(this.keyGetter.apply(data));
         }
         return null;
     }

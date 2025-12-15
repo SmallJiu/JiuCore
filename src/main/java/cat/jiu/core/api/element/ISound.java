@@ -66,7 +66,7 @@ public interface ISound extends IDataSerializable<IData.IMapData<?>>, Supplier<R
     ISound setSoundChannel(SoundSource source);
     static SoundSource getSoundChannelByName(String name){
         for (SoundSource value : SoundSource.values()) {
-            if(value.getName().contentEquals(name)){
+            if(value.getName().equalsIgnoreCase(name)){
                 return value;
             }
         }

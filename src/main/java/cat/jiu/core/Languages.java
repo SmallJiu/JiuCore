@@ -8,7 +8,7 @@ class Languages {
         zh_cn(provider);
     }
 
-    static void en_us(DynamicLanguageProvider provider) {
+    private static void en_us(DynamicLanguageProvider provider) {
         provider.setLanguageCode("en_us");
         provider.add("info.hold.un", "§7Hold §f%s §7to show more message.");
         provider.add("info.config.clear", "Clear");
@@ -21,7 +21,7 @@ class Languages {
         provider.add("info.config.world_restart", "Need restart world.");
         provider.add("info.config.not_enough_permissions", "You do not have enough permissions to edit the server config. You can still look at the current values here though.");
     }
-    static void zh_cn(DynamicLanguageProvider provider) {
+    private static void zh_cn(DynamicLanguageProvider provider) {
         provider.setLanguageCode("zh_cn");
         provider.add("info.hold.un", "§7按住 §f%s §7以显示更多信息.");
         provider.add("info.config.clear", "清空");
