@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -61,38 +62,38 @@ public class AudioSystem {
             stop(audio.getUUID());
         }
         UUID id = UUID.randomUUID();
-        audio.uid = id;
         jmp123.output.Audio jmp_audio = new jmp123.output.Audio();
         PlayBack player = new PlayBack(jmp_audio);
         Thread thread = new Thread(()->{
                 do {
-                    MinecraftForge.EVENT_BUS.post(new Event.Loop.Pre(id, audio));
-                    boolean success = false;
-                    try {
-                        play(audio, id, jmp_audio, player, false, 0);
-                        audio.addLoopCount();
-                        success = true;
-                    }catch (Exception e){
-                        LOGGER.error("Unable to play audio. Try other file. file: ' {} ', loop: {}, uid: {}, info: {}", audio.getFile(), audio.getLoopCount(), id, e);
+                    if (!MinecraftForge.EVENT_BUS.post(new Event.Loop.Pre(id, audio))){
+                        boolean success = false;
+                        try {
+                            play(audio, id, jmp_audio, player, false, 0);
+                            audio.addLoopCount();
+                            success = true;
+                        }catch (Exception e){
+                            LOGGER.error("Unable to play audio. Try other file. file: ' {} ', loop: {}, uid: {}, info: {}", audio.getFile(), audio.getLoopCount(), id, e);
 
-                        // TODO 按顺序尝试播放音频文件
-                        if (audio.hasRetryFiles()) {
-                            for (int retryIndex = 0; retryIndex < audio.getRetryFiles().size(); retryIndex++) {
-                                try {
-                                    play(audio, id, jmp_audio, player, true, retryIndex);
-                                    audio.addLoopCount();
-                                    success = true;
-                                    break;
-                                } catch (Exception ex) {
-                                    LOGGER.error("Unable to play other audio. index: {}, file: ' {} ', loop: {}, uid: {}, info: {}", retryIndex, audio.getRetryFile(retryIndex), audio.getLoopCount(), id, e);
+                            // TODO 按顺序尝试播放音频文件
+                            if (audio.hasRetryFiles()) {
+                                for (int retryIndex = 0; retryIndex < audio.getRetryFiles().size(); retryIndex++) {
+                                    try {
+                                        play(audio, id, jmp_audio, player, true, retryIndex);
+                                        audio.addLoopCount();
+                                        success = true;
+                                        break;
+                                    } catch (Exception ex) {
+                                        LOGGER.error("Unable to play other audio. index: {}, file: ' {} ', loop: {}, uid: {}, info: {}", retryIndex, audio.getRetryFile(retryIndex), audio.getLoopCount(), id, e);
+                                    }
                                 }
                             }
                         }
+                        MinecraftForge.EVENT_BUS.post(new Event.Loop.Post(id, audio, success));
+                        try {
+                            Thread.sleep(audio.getLoopDelay());
+                        } catch (Exception ignored) {}
                     }
-                    MinecraftForge.EVENT_BUS.post(new Event.Loop.Post(id, audio, success));
-                    try {
-                        Thread.sleep(audio.getLoopDelay());
-                    } catch (Exception ignored) {}
                 }while (!audio.isClose() && audio.isCanLopping());
                 stop(id);
         });
@@ -321,7 +322,7 @@ public class AudioSystem {
         }
 
         public UUID play() {
-            return AudioSystem.play(this);
+            return this.uid = AudioSystem.play(this);
         }
 
         public void pause(boolean pause) {
@@ -366,6 +367,10 @@ public class AudioSystem {
             return file;
         }
         File fileObj;
+
+        /**
+         * @return if audio file is a network url, it will return a empty file.
+         */
         public File getFileObject(){
             if (this.fileObj == null) {
                 this.fileObj = new File(this.getFile());
@@ -377,13 +382,12 @@ public class AudioSystem {
             return this.addRetryFile(file.getPath());
         }
         public Audio addRetryFile(String file) {
-            if (file == null) {
-                return this;
+            if (file != null) {
+                if (this.retryFiles == null) {
+                    this.retryFiles = new ArrayList<>();
+                }
+                this.retryFiles.add(file);
             }
-            if (this.retryFiles == null) {
-                this.retryFiles = new ArrayList<>();
-            }
-            this.retryFiles.add(file);
             return this;
         }
         public String getRetryFile(int index) {
@@ -395,16 +399,21 @@ public class AudioSystem {
         public boolean hasRetryFiles(){
             return this.retryFiles != null && !this.retryFiles.isEmpty();
         }
+
         Map<String, File> retryFileObjs;
+        @Nullable
         public File getRetryFileObject(int index) {
             if (this.retryFileObjs == null) {
                 this.retryFileObjs = new HashMap<>();
             }
             String retryFile = this.getRetryFile(index);
-            if (!this.retryFileObjs.containsKey(retryFile)) {
-                this.retryFileObjs.put(retryFile, new File(retryFile));
+            if (!retryFile.startsWith("http")){
+                if (!this.retryFileObjs.containsKey(retryFile)) {
+                    this.retryFileObjs.put(retryFile, new File(retryFile));
+                }
+                return this.retryFileObjs.get(retryFile);
             }
-            return this.retryFileObjs.get(retryFile);
+            return null;
         }
         @Deprecated
         public Audio setRetryFile(String retryFile) {
@@ -496,7 +505,6 @@ public class AudioSystem {
         public IData.IMapData<?> write(IData.IMapData<?> data) {
             data.putData("file", this.getFile().replace('\\', '/'));
             if (this.getRetryFiles() != null && !this.getRetryFiles().isEmpty()) {
-                data.putData("retryFile", this.getRetryFile(0).replace('\\', '/'));
                 IData.IListData<?> retros = data.newList();
                 for (String retryFile : this.getRetryFiles()) {
                     retros.putData(retryFile.replace('\\', '/'));
@@ -554,7 +562,7 @@ public class AudioSystem {
         }
         static SoundSource getSoundChannelByName(String name){
             for (SoundSource value : SoundSource.values()) {
-                if(value.getName().contentEquals(name)){
+                if(value.getName().equalsIgnoreCase(name)){
                     return value;
                 }
             }
@@ -573,17 +581,8 @@ public class AudioSystem {
             return this.uid.equals(uuid);
         }
         public boolean is(String file) {
-            if (this.audio.getFile().equals(file)) {
-                return true;
-            }
-            if (this.audio.hasRetryFiles()) {
-                for (String retryFile : this.audio.getRetryFiles()) {
-                    if (retryFile.equals(file)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return this.audio.getFile().equals(file)
+               || (this.audio.hasRetryFiles() && this.audio.getRetryFiles().contains(file));
         }
         @Cancelable
         public static class Played extends Event {
@@ -600,9 +599,18 @@ public class AudioSystem {
             }
         }
         public static class Loop {
+            @Cancelable
             public static class Pre extends Event {
                 public Pre(UUID uid, Audio audio) {
                     super(uid, audio);
+                }
+
+                @Override
+                public void setCanceled(boolean cancel) {
+                    super.setCanceled(cancel);
+                    if (cancel) {
+                        this.audio.addLoopCount();
+                    }
                 }
             }
             public static class Post extends Event {

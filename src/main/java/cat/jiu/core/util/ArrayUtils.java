@@ -9,34 +9,37 @@ import java.math.BigInteger;
 import java.util.function.Function;
 
 public class ArrayUtils {
-    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
-    public static final Byte[] EMPTY_BYTE_ARRAY_ = new Byte[0];
+    public static final byte[] EMPTY_BYTE_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_BYTE_ARRAY;
+    public static final Byte[] EMPTY_BYTE_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_BYTE_OBJECT_ARRAY;
 
-    public static final short[] EMPTY_SHORT_ARRAY = new short[0];
-    public static final Short[] EMPTY_SHORT_ARRAY_ = new Short[0];
+    public static final short[] EMPTY_SHORT_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_SHORT_ARRAY;
+    public static final Short[] EMPTY_SHORT_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_SHORT_OBJECT_ARRAY;
 
-    public static final int[] EMPTY_INT_ARRAY = new int[0];
-    public static final Integer[] EMPTY_INT_ARRAY_ = new Integer[0];
+    public static final int[] EMPTY_INT_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_INT_ARRAY;
+    public static final Integer[] EMPTY_INT_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_INTEGER_OBJECT_ARRAY;
 
-    public static final long[] EMPTY_LONG_ARRAY = new long[0];
-    public static final Long[] EMPTY_LONG_ARRAY_ = new Long[0];
+    public static final long[] EMPTY_LONG_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_LONG_ARRAY;
+    public static final Long[] EMPTY_LONG_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_LONG_OBJECT_ARRAY;
 
-    public static final float[] EMPTY_FLOAT_ARRAY = new float[0];
-    public static final Float[] EMPTY_FLOAT_ARRAY_ = new Float[0];
+    public static final float[] EMPTY_FLOAT_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_FLOAT_ARRAY;
+    public static final Float[] EMPTY_FLOAT_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_FLOAT_OBJECT_ARRAY;
 
-    public static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
-    public static final Double[] EMPTY_DOUBLE_ARRAY_ = new Double[0];
+    public static final double[] EMPTY_DOUBLE_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_DOUBLE_ARRAY;
+    public static final Double[] EMPTY_DOUBLE_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_DOUBLE_OBJECT_ARRAY;
 
     public static final Number[] EMPTY_NUMBER_ARRAY = new Number[0];
 
     public static final BigInteger[] EMPTY_BIG_INTEGER_ARRAY = new BigInteger[0];
     public static final BigDecimal[] EMPTY_BIG_DECIMAL_ARRAY = new BigDecimal[0];
 
-    public static final boolean[] EMPTY_BOOLEAN_ARRAY = new boolean[0];
-    public static final Boolean[] EMPTY_BOOLEAN_ARRAY_ = new Boolean[0];
+    public static final boolean[] EMPTY_BOOLEAN_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_BOOLEAN_ARRAY;
+    public static final Boolean[] EMPTY_BOOLEAN_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_BOOLEAN_OBJECT_ARRAY;
 
-    public static final String[] EMPTY_STRING_ARRAY = new String[0];
-    
+    public static final char[] EMPTY_CHAR_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_CHAR_ARRAY;
+    public static final Character[] EMPTY_CHAR_ARRAY_ = org.apache.commons.lang3.ArrayUtils.EMPTY_CHARACTER_OBJECT_ARRAY;
+
+    public static final String[] EMPTY_STRING_ARRAY = org.apache.commons.lang3.ArrayUtils.EMPTY_STRING_ARRAY;
+
     @SafeVarargs
     public static <T, R> R[] cast(Function<Integer, R[]> arrayCreate, Function<T, R> objCast, T... other) {
         R[] array = arrayCreate.apply(other.length);
@@ -60,144 +63,52 @@ public class ArrayUtils {
     }
     
     public static byte[] toArray(Byte[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_BYTE_ARRAY;
-        }
-        byte[] result = new byte[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
     }
     public static Byte[] toArray(byte[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_BYTE_ARRAY_;
-        }
-        Byte[] result = new Byte[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
     }
     public static short[] toArray(Short[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_SHORT_ARRAY;
-        }
-        short[] result = new short[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
     }
     public static Short[] toArray(short[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_SHORT_ARRAY_;
-        }
-        Short[] result = new Short[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
     }
     public static int[] toArray(Integer[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_INT_ARRAY;
-        }
-        int[] result = new int[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
     }
     public static Integer[] toArray(int[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_INT_ARRAY_;
-        }
-        Integer[] result = new Integer[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
     }
     public static long[] toArray(Long[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_LONG_ARRAY;
-        }
-        long[] result = new long[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
     }
     public static Long[] toArray(long[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_LONG_ARRAY_;
-        }
-        Long[] result = new Long[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
     }
     public static float[] toArray(Float[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_FLOAT_ARRAY;
-        }
-        float[] result = new float[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
     }
     public static Float[] toArray(float[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_FLOAT_ARRAY_;
-        }
-        Float[] result = new Float[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
     }
     public static double[] toArray(Double[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_DOUBLE_ARRAY;
-        }
-        double[] result = new double[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
     }
     public static Double[] toArray(double[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_DOUBLE_ARRAY_;
-        }
-        Double[] result = new Double[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
     }
     public static boolean[] toArray(Boolean[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_BOOLEAN_ARRAY;
-        }
-        boolean[] result = new boolean[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
     }
     public static Boolean[] toArray(boolean[] array) {
-        if (array == null || array.length == 0) {
-            return EMPTY_BOOLEAN_ARRAY_;
-        }
-        Boolean[] result = new Boolean[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i];
-        }
-        return result;
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
+    }
+    public static char[] toArray(Character[] array) {
+        return org.apache.commons.lang3.ArrayUtils.toPrimitive(array);
+    }
+    public static Character[] toArray(char[] array) {
+        return org.apache.commons.lang3.ArrayUtils.toObject(array);
     }
 
     public static String[] toStringArray(JsonArray array) {
@@ -322,7 +233,7 @@ public class ArrayUtils {
     public static JsonArray toBigIntegerJsonArray(BigInteger[] array) {
         JsonArray result = new JsonArray();
         for (BigInteger num : array) {
-            result.add(num.toString());
+            result.add(num);
         }
         return result;
     }
@@ -336,7 +247,7 @@ public class ArrayUtils {
     public static JsonArray toBigDecimalJsonArray(BigDecimal[] array) {
         JsonArray result = new JsonArray();
         for (BigDecimal num : array) {
-            result.add(num.toString());
+            result.add(num);
         }
         return result;
     }

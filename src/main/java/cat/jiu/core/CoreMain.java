@@ -4,7 +4,7 @@ import cat.jiu.core.api.element.IImage;
 import cat.jiu.core.api.element.ISound;
 import cat.jiu.core.command.CommandJiuCore;
 import cat.jiu.core.config.CoreConfig;
-import cat.jiu.core.register.CoreItems;
+import cat.jiu.core.stuff.CoreItems;
 import cat.jiu.core.util.SideProxy;
 import cat.jiu.core.util.base.BaseCommand;
 import cat.jiu.core.util.client.config.GuiConfig;
@@ -12,12 +12,8 @@ import cat.jiu.core.util.registry.CoreRegistrate;
 import cat.jiu.core.util.registry.DynamicLanguageProvider;
 import com.mojang.brigadier.Command;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -45,10 +41,11 @@ public class CoreMain {
     }
 
     public CoreMain() {
-        registrate = CoreRegistrate.create(MODID)
-                .defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
-        registrate().addDataGenerator(DynamicLanguageProvider.TYPE, Languages::bootstrap);
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        registrate = CoreRegistrate.create(MODID).nullDefaultTab();
+        registrate().addDataGenerator(DynamicLanguageProvider.TYPE, Languages::bootstrap);
+
         bus.addListener(this::setup);
         if (SideProxy.isClient()) {
             bus.addListener(this::onClientSetup);

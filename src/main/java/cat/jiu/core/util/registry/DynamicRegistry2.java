@@ -51,8 +51,11 @@ public class DynamicRegistry2<K, V extends IDataSerializable<IData.IMapData<?>> 
     }
 
     public DynamicRegistry2<K, V> setStringKeyGetter(Function<String, K> keyInstance){
+        return this.setKeyGetter(StaticRegistry.DEFAULT_ID_TAG_NAME, keyInstance);
+    }
+    public DynamicRegistry2<K, V> setKeyGetter(String keyName, Function<String, K> keyInstance){
         return this.setKeyGetter(
-                data -> keyInstance.apply(data.getString(StaticRegistry.DEFAULT_ID_TAG_NAME, ""))
+                data -> keyInstance.apply(data.getString(keyName))
         );
     }
     public DynamicRegistry2<K, V> setKeyGetter(Function<IData.IMapData<?>, K> getter) {

@@ -3,6 +3,7 @@ package cat.jiu.core.api.element;
 import cat.jiu.core.api.IData;
 import cat.jiu.core.api.serializable.IDataSerializable;
 import cat.jiu.core.util.client.RenderUtils;
+import cat.jiu.core.util.client.TextUtils;
 import cat.jiu.core.util.element.Text;
 import cat.jiu.core.util.element.data.JsonData;
 import cat.jiu.core.util.element.data.NBTData;
@@ -25,7 +26,6 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.codehaus.plexus.util.dag.DAG;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -113,7 +113,7 @@ public interface IText extends IDataSerializable<IData.IMapData<?>> {
 			RenderUtils.renderScrollingComponent(graphics, toTextComponent(), x, y, width, color, drawShadow);
 			height = RenderUtils.fontHeight();
 		}else {
-			List<FormattedCharSequence> texts = RenderUtils.split(this.toTextComponent(), width, this.isVanillaWrap());
+			List<FormattedCharSequence> texts = TextUtils.split(this.toTextComponent(), width, this.isVanillaWrap());
 			for (FormattedCharSequence text : texts) {
 				if (this.isCenter()) {
 					RenderUtils.drawCenteredSequence(graphics, text, x + width/2, y, color, drawShadow);
@@ -148,7 +148,7 @@ public interface IText extends IDataSerializable<IData.IMapData<?>> {
 
 	@OnlyIn(Dist.CLIENT)
 	default List<FormattedCharSequence> split(int width) {
-		return RenderUtils.split(this.toTextComponent(), width, this.isVanillaWrap());
+		return TextUtils.split(this.toTextComponent(), width, this.isVanillaWrap());
 	}
 
 	static Object[] format(Object... args) {
@@ -173,7 +173,7 @@ public interface IText extends IDataSerializable<IData.IMapData<?>> {
 		if (this.isScrollText()) {
 			return RenderUtils.fontHeight() + 1;
 		}else {
-			return (RenderUtils.fontHeight() + 1) * RenderUtils.split(this.toTextComponent(), width, this.isVanillaWrap()).size();
+			return (RenderUtils.fontHeight() + 1) * TextUtils.split(this.toTextComponent(), width, this.isVanillaWrap()).size();
 		}
 	}
 
@@ -276,7 +276,7 @@ public interface IText extends IDataSerializable<IData.IMapData<?>> {
 	static Object[] readArgs(IData.IListData<?> data) {
 		Object[] parameters = new Object[data.size()];
 		for(int i = 0; i < parameters.length; i++) {
-			parameters[i] = dataToArg(data.getMap(i, data.emptyMap()));
+			parameters[i] = dataToArg(data.getMap(i));
 		}
 		return parameters;
 	}

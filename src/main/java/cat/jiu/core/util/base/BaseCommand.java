@@ -13,6 +13,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import net.minecraft.commands.CommandSource;
@@ -22,6 +23,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 
 import java.util.*;
@@ -29,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class BaseCommand {
@@ -61,14 +64,27 @@ public class BaseCommand {
         }
 
         @Override
-        public LiteralCommandNode<CommandSourceStack> register(RegisterCommandsEvent event) {
-            CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+        public LiteralCommandNode<CommandSourceStack> register(RegisterCommandsEvent event, boolean childrenCommand) {
+            return this.register(event.getDispatcher(), v->v.register(event, true), childrenCommand);
+        }
+
+        @Override
+        public LiteralCommandNode<CommandSourceStack> registerForClient(RegisterClientCommandsEvent event, boolean childrenCommand) {
+            return this.register(event.getDispatcher(), v->v.registerForClient(event, true), childrenCommand);
+        }
+
+        protected LiteralCommandNode<CommandSourceStack> register(
+                CommandDispatcher<CommandSourceStack> dispatcher,
+                Function<ICommand, CommandNode<CommandSourceStack>> children,
+                boolean childrenCommand
+        ) {
             LiteralArgumentBuilder<CommandSourceStack> s;
+
             if(!this.commandMap.isEmpty() || !this.aliasMap.isEmpty()){
                 LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal(this.getName()).requires(this::checkPermission);
                 // TODO 注册子命令
-                this.commandMap.forEach((k,v) -> builder.then(v.register(event)).requires(v::checkPermission).executes(v));
-                this.aliasMap.forEach((k,v) -> builder.then(v.register(event)).requires(v::checkPermission).executes(v));
+                this.commandMap.forEach((k,v) -> builder.then(children.apply(v)));
+                this.aliasMap.forEach((k,v) -> builder.then(children.apply(v)));
                 s = builder;
             }else {
                 // TODO 注册空命令树
@@ -76,7 +92,7 @@ public class BaseCommand {
                         .requires(this::checkPermission)
                         .executes(this);
             }
-            LiteralCommandNode<CommandSourceStack> cmd = dispatcher.register(s);
+            LiteralCommandNode<CommandSourceStack> cmd = childrenCommand ? s.build() : dispatcher.register(s);
 
             // TODO 注册别名
             if(this.getAliases()!=null && !this.getAliases().isEmpty()){
@@ -144,6 +160,9 @@ public class BaseCommand {
 
         @Override
         public int execute(MinecraftServer server, CommandSource sender, String[] args, CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+            if (this.commandMap.isEmpty() || this.aliasMap.isEmpty()) {
+                ctx.getSource().sendFailure(Component.literal("This command has not children commands, please report to the mod authors."));
+            }
             return ICommand.SINGLE_SUCCESS;
         }
     }
@@ -242,7 +261,7 @@ public class BaseCommand {
                     if (Builder.this.execute != null) {
                         return Builder.this.execute.apply(server, sender, args, ctx);
                     }
-                    throw new SimpleCommandExceptionType(Component.literal("The command is not implement, report the mod authors")).create();
+                    throw new SimpleCommandExceptionType(Component.literal("This command is not being implemented, please report to the mod authors.")).create();
                 }
 
                 @Override
@@ -263,25 +282,25 @@ public class BaseCommand {
         public final Lambdas.Function_WithException<StringReader, T, CommandSyntaxException> getter;
         public final Function<T, String> toString;
 
-        protected CommandArgumentType(Lambdas.Function_WithException<StringReader, T, CommandSyntaxException> getter, Function<T, String> toString, Function<CommandContext<?>, Iterable<String>> suggestions) {
+        public CommandArgumentType(Lambdas.Function_WithException<StringReader, T, CommandSyntaxException> getter, Function<T, String> toString, Function<CommandContext<?>, Iterable<String>> suggestions) {
             this.getter = getter;
             this.toString = toString;
             this.suggestions = suggestions;
         }
-        protected CommandArgumentType(Lambdas.Function_WithException<String      , T, CommandSyntaxException> getter, Function<T, String> toString, Function<CommandContext<?>, Iterable<String>> suggestions, int $) {
+        public CommandArgumentType(Lambdas.Function_WithException<String      , T, CommandSyntaxException> getter, Function<T, String> toString, Function<CommandContext<?>, Iterable<String>> suggestions, int $) {
             this.suggestions = suggestions;
-            this.getter = reader-> getter.apply(this.parseString(reader));
+            this.getter = reader-> getter.apply(reader.readUnquotedString());
             this.toString = toString;
         }
-        protected CommandArgumentType(Lambdas.Function_WithException<String, T, CommandSyntaxException> getter, Function<T, String> toString, List<T> suggestions) {
+        public CommandArgumentType(Lambdas.Function_WithException<String, T, CommandSyntaxException> getter, Function<T, String> toString, List<T> suggestions) {
             this.suggestions = ctx-> suggestions.stream().map(toString).collect(Collectors.toList());
-            this.getter = reader-> getter.apply(this.parseString(reader));
+            this.getter = reader-> getter.apply(reader.readUnquotedString());
             this.toString = toString;
         }
         @SafeVarargs
-        protected CommandArgumentType(Lambdas.Function_WithException<String, T, CommandSyntaxException> getter, Function<T, String> toString, T... suggestions) {
+        public CommandArgumentType(Lambdas.Function_WithException<String, T, CommandSyntaxException> getter, Function<T, String> toString, T... suggestions) {
             this.suggestions = ctx-> Arrays.stream(suggestions).map(toString).collect(Collectors.toList());
-            this.getter = reader-> getter.apply(this.parseString(reader));
+            this.getter = reader-> getter.apply(reader.readUnquotedString());
             this.toString = toString;
         }
 

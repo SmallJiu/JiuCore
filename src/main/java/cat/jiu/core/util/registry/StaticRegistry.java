@@ -2,6 +2,8 @@ package cat.jiu.core.util.registry;
 
 import cat.jiu.core.api.IData;
 import cat.jiu.core.util.Utils;
+import cat.jiu.core.util.element.data.JsonData;
+import cat.jiu.core.util.element.data.NBTData;
 import com.google.gson.JsonObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -25,9 +27,7 @@ public class StaticRegistry<K, V extends Supplier<K>> {
 
     protected final ConcurrentHashMap<K, V> registry = new ConcurrentHashMap<>();
     protected Function<K, V> failBack;
-    protected Function<CompoundTag, K> nbtKeyGetter;
-    protected Function<JsonObject, K> jsonKeyGetter;
-    protected Function<IData.IMapData<?>, K> dataKeyGetter;
+    protected Function<IData.IMapData<?>, K> keyGetter;
 
     public StaticRegistry() {
     }
@@ -43,17 +43,16 @@ public class StaticRegistry<K, V extends Supplier<K>> {
 
     public void init(){}
 
-    public StaticRegistry<K, V> setKeyGetter(Function<String, K> keyInstance){
+    public StaticRegistry<K, V> setStringKeyGetter(Function<String, K> keyInstance){
+        return this.setKeyGetter(DEFAULT_ID_TAG_NAME, keyInstance);
+    }
+    public StaticRegistry<K, V> setKeyGetter(String keyName, Function<String, K> keyInstance){
         return this.setKeyGetter(
-                data-> keyInstance.apply(data.getString(DEFAULT_ID_TAG_NAME)),
-                data-> keyInstance.apply(data.get(DEFAULT_ID_TAG_NAME).getAsString()),
-                data -> keyInstance.apply(data.getString(DEFAULT_ID_TAG_NAME))
+                data -> keyInstance.apply(data.getString(keyName))
         );
     }
-    public StaticRegistry<K, V> setKeyGetter(Function<CompoundTag, K> nbtKeyGetter, Function<JsonObject, K> jsonKeyGetter, Function<IData.IMapData<?>, K> dataKeyGetter) {
-        this.nbtKeyGetter = nbtKeyGetter;
-        this.jsonKeyGetter = jsonKeyGetter;
-        this.dataKeyGetter = dataKeyGetter;
+    public StaticRegistry<K, V> setKeyGetter(Function<IData.IMapData<?>, K> dataKeyGetter) {
+        this.keyGetter = dataKeyGetter;
         return this;
     }
 
@@ -96,20 +95,14 @@ public class StaticRegistry<K, V extends Supplier<K>> {
         return this.failBack.apply(id);
     }
     public V get(CompoundTag data) {
-        if (this.nbtKeyGetter != null) {
-            return this.get(this.nbtKeyGetter.apply(data));
-        }
-        return null;
+        return this.get(NBTData.map(data));
     }
     public V get(JsonObject data) {
-        if (this.jsonKeyGetter != null) {
-            return this.get(this.jsonKeyGetter.apply(data));
-        }
-        return null;
+        return this.get(JsonData.map(data));
     }
     public V get(IData.IMapData<?> data) {
-        if (this.dataKeyGetter != null) {
-            return this.get(this.dataKeyGetter.apply(data));
+        if (this.keyGetter != null) {
+            return this.get(this.keyGetter.apply(data));
         }
         return null;
     }
